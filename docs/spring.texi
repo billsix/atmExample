@@ -52,23 +52,19 @@ Foundation.
 @c %MENU% Purpose of the Spring Framework
 The Spring Framework is an excellent library for the Java programming language
 that faciliates flexible, layered enterprise application development.  The Spring Framework
-allows developers to freely create their own domain models, while easily integrating their domain
+allows developers to freely create their own domain model, while easily integrating their domain
 model into the Service Layer and Data Access Layer.  Furthermore, the domain model can  be integrated
-with standard JavaEE services such as JTA and JMS, which previously was only accomplished by using 
+with standard JavaEE services such as JTA and asynchronous-JMS, which previously was accomplished only by using 
 Enterprise JavaBeans.
 
-Spring also provides common interfaces for services which do not have an official JSR interface to allow 
-for independent implementations.  Two notable services are dynamic proxies creation, and the 
-execution of remote procedure calls.  These common interfaces allow a 
-developer to switch between different implementations with minimal impact to their code.  
 
 While there is already a plethora of documentation regarding Spring, most of it emphasizes the use of an XML-based 
 ApplicationContext for the purpose of Depedency Injection and Aspect Oriented Programming.  Dependency Injection 
-is a form of the Inversion of Control pattern.  While Dependency Injection  may be appealing in certain contexts, 
+is a form of the Inversion of Control pattern.  While Dependency Injection  may be appealing in certain contexts @footnote{See http://www.martinfowler.com/articles/injection.html }, 
 it is not a prerequisite for implementing Inversion of Control.  Aspect Oriented Programming is primarily used as a technique
 for intercepting method calls to the Service Layer and Data Access Layer, allowing a developer to code cross cutting concerns
-such as transaction management, or logging, without forcing the developer to copy the same boilerplate code repeatedly across
-their layers.
+such as transaction management, or logging, without forcing the developer to copy the same boilerplate code repeatedly across each class in
+those layers.
 
 I believe that the goals of Dependency Injection and AOP have merit.  As with any form of Inversion of Control,
 Dependency Injection helps to seperate configuration from application code.  Because the Java language's semantics do not
@@ -76,7 +72,7 @@ allow method interception natively, AOP can be useful by allowing boilerplate co
 classes.  
 
 With that said, Inversion of Control can also be implemented using the Service Locater pattern, and 
-cross cutting concerns can be addressed in a more intuitive manner by using method interception libraries.  Furthermore, the Service Locator
+cross cutting concerns can be addressed in a more intuitive manner by using method interception libraries.  More importantly, the Service Locator
 pattern and method interception are easily implemented in pure Java instead of relying on a Dependency Injection container.
 
 @node Getting Started,  , Introduction
@@ -87,8 +83,6 @@ somewhat familiar with the Java programming language and basic
 programming concepts.  Additionally, it is assumed that you have read Martin Fowler's 
 @emph{Patterns of Enterprise Application Architecture} (Addison-Wesley Professional, November 5, 2002), @uref{http://www.martinfowler.com/books.html#eaa}
 , and Christian Bauer's and Gavin King's @emph{Hibernate in Action} (Manning Publications, August 1, 2004), @uref{http://www.manning.com/bauer/}
-
-I wrote this paper because it's the kind of paper I would have liked to have when I first joined the workforce two years ago.
 
 @node Method Interception 
 @chapter Method Interception 
@@ -102,13 +96,16 @@ he should only read the first section.  The second section is on another form of
 @section Dynamic Proxies
 
 Dynamic languages such as Smalltalk-80, Objective C, and relative new-comer Ruby, are object-oriented, message-passing 
-languages which allow an object to inspect messages that are passed to it.  If the receiving object 
-does not have a method which corresponds to the message that it was passed, the object can decide what to
-do with the message.  This feature allows a developer to create proxy objects which forward these unknown messages
+languages which allow an object to inspect messages that are passed to it.  If the object receiving the message 
+does not have a method which corresponds to the message, the object can decide what to
+do with the message.  This feature allows a developer to create proxy objects which forward these messages
 to another object.
 
-@node Dynamic Proxy Example - Smalltalk-80
-@subsection Dynamic Proxy Example - Smalltalk-80
+@node Proxy Example - Smalltalk-80
+@subsection Proxy Example - Smalltalk-80
+
+The following Smalltalk class prints out ``forwaring the message'' before the message is passed onto the
+proxy's target.
 
 
 @smallexample
@@ -141,7 +138,7 @@ to dynamically proxy Java classes as well as interfaces.
 
 
 Assume that you are working on a Calculator Service which adds two numbers together.  
-The user must log in to the system before
+Assume that the user must log in to the system before
 accessing the Calculator Service.  There are two acceptance test cases for this story.  In the first, a user is
 denied access to a Calculator Service before the user provides it with a valid username/password pair.  In the second,
 a user supplies a correct username/password pair to the Calculator Service, after which he is able to add the 
@@ -186,13 +183,13 @@ public interface CalculatorService extends Authenticatable @{
 
 
 
-The implementation of CalculatorService could be structured by making the add 
-method check to make sure the user has an authenticated account.  This is not good because
+The implementation of CalculatorService could be implemented by making the add 
+method check to make sure the user has an authenticated account.  This would mean that
 any additional methods added to the CalculatorService would need to do the same thing at the beginning
 of each method.  This is the exact 
 situation where dynamic proxies are useful.  You could create a 
 dynamic proxy which inspects incoming MethodInvocations, initially only forwarding an  ``authenticate''  method call
-to the target, while throwing an Exception on any other method call.  Once the user 
+to the target, while throwing an InvalidStateException on any other method call.  Once the user 
 is authenticated, the proxy will then happily forward along all MethodInvocations and return their results.
 
 @smallexample
@@ -283,7 +280,86 @@ lets the proxy class itself provide the implemention an interface,
 while forwarding all other method calls to the target.  Introductions have an advantage over the Layer Supertype in the sense 
 that you are not forced to artifically create a class inheritence hierarchy.
 
-INTRODUCTION EXAMPLE HERE
+The CalculatorService interface no longer needs to extend the Authenticatable interface:
+
+@smallexample
+ public interface CalculatorService @{    
+    public Integer add(Integer first, Integer second);
+ @}
+@end smallexample
+
+The CalculatorServiceImplementation only needs the methods necessary for the CalculatorService interface.
+
+@smallexample
+public class CalculatorServiceImplementation implements CalculatorService@{    
+    public Integer add(Integer first, Integer second) @{
+        return first + second;
+    @}
+@}
+@end smallexample
+
+The Authenticatable interface can be implemented by the dynamic proxy itself, as follows
+
+
+@smallexample
+public class AuthenticatableIntroductionInterceptor extends DelegatingIntroductionInterceptor @{    
+    public void authenticate(String username, String password) @{
+        _isAuthenticated = true;
+    @}
+    public boolean isValidUser() @{
+        return _isAuthenticated;
+    @}    
+    public Object invoke(MethodInvocation invocation) throws Throwable @{
+        Method method = invocation.getMethod();
+        Object[] arguments = invocation.getArguments();
+        if(method.equals(Authenticatable.class.getMethod("authenticate", String.class, String.class)) ) @{
+            authenticate(((String)arguments[0]),((String) arguments[1]));
+            return null;
+        @} else if( isValidUser())@{
+            return invocation.proceed();
+        @}
+        throw new IllegalStateException("User is not authenticated");
+    @}    
+    private boolean _isAuthenticated = false;
+@}
+@end smallexample
+
+Spring requires that this class is wrapped in an IntroductionAdvisor
+
+@smallexample
+public class AuthenticatableIntroductionAdvisor extends DefaultIntroductionAdvisor@{
+    public AuthenticatableIntroductionAdvisor() @{
+        super(new AuthenticatableIntroductionInterceptor());
+    @}
+@}
+@end smallexample
+
+
+The CalculatorServiceTest is modified as follows:
+@smallexample
+    public void setUp() throws Exception@{
+        CalculatorServiceImplementation target = new CalculatorServiceImplementation();
+        ProxyFactoryBean factory = new ProxyFactoryBean();
+        factory.addAdvisor(new AuthenticatableIntroductionAdvisor());
+        factory.setTarget(target);
+        factory.setProxyInterfaces(new Class[]{CalculatorService.class, Authenticatable.class});
+        _calculatorService = (CalculatorService) factory.getObject();
+    @}    
+    public void testInvalidAccess() @{
+        try@{
+            _calculatorService.add(4,5);
+            fail("The user did not log in yet");
+        @} catch(IllegalStateException ise) @{
+        @}
+    @}    
+    public void testValidAccess() @{
+        ((Authenticatable)_calculatorService).authenticate("","");
+        _calculatorService.add(4,5);
+    @}
+@end smallexample
+
+
+
 
 Introductions are roughly, but not exactly, analogous to mixins in Ruby.  Introductions, like mixins, can 
 be great if you're only using one Introduction
