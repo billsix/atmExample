@@ -1,0 +1,41 @@
+Description:
+ This is a sample ATM application meant to show recent college graduates how to structure a JavaEE application using open source tools.  
+
+Website:
+ NONE
+
+Author's Build environment:
+ Ubuntu 7.0.4
+ Java 6
+ Postgresql 8.2 running on port 5432
+ Maven 2.0.4
+ Glassfish v1
+
+Important Files and Directories:
+ 
+ FILES
+ ./build.sh       
+   - Bash shell script which compiles the code, drops and creates the postgresql schemas, and runs the tests
+ ./dist.sh        
+   - Bash schell script which does all of the steps of build.sh, but also creates the executable JAR files and deployable WAR file
+ ./api            
+   - The domain model and interfaces for the service and data access layers
+ ./implementation 
+   - Implementations of the service and data access layers
+ ./richClient     
+   - The Swing rich client GUI for the application
+ ./webClient      
+   - The JSF webpage GUI for the application
+ ./implementation/target/ATM-implementation-jar-with-dependencies.jar
+   - After running dist.sh, this is the executable which runs the service layer, domain model, and data access layer, exposing them via RMI
+ ./richClient/target/ATM-richClient-jar-with-dependencies.jar
+   - After running dist.sh, this is the executable which runs GUI that connects to the service layer via RMI
+ ./webClient/target/ATM-webClient.war
+   - After running dist.sh, this is the executable which gets deployed on your JavaEE 5 application server
+
+Installation Instructions:
+ See INSTALL
+
+Mailing List Address:
+ None
+

@@ -1,0 +1,22 @@
+- Install Java 6, Maven 2, Glassfish v1, and PostgreSQL 8.2.
+- Log into postgresql, create a user account and a database.
+
+   For example, "su" to the postgres user, execute "psql" to get the postgresql shell.
+   Then, type the following into that postgresql shell
+    "CREATE USER wsix WITH PASSWORD 'password';
+    ALTER USER wsix CREATEDB ;"
+
+   Return to the bash shell to create the database.  
+   Execute "createdb hibernatetest"
+
+- Run "./dist.sh"  to build the JAR files for the server, rich client, and web client
+- To execute the GUI application 
+  - "cd" to ./bin
+  - Run "./runService.sh" to start the service layer
+  - Run "./runGui.sh" to execute the Swing GUI
+- To execute the web application 
+  -Consult Glassfish documentation on how to deploy a WAR file
+
+
+
+ 

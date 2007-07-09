@@ -1,0 +1,560 @@
+\input texinfo_times.tex
+@setfilename spring.info
+@settitle Introduction to the Spring Framework
+@paragraphindent 1
+@tex
+\global\bindingoffset=0.00in
+\global\normaloffset =0.00in
+@end tex
+@dircategory Spring Framework
+@direntry
+* Spring Framework: (spring).                 Spring Framework
+@end direntry
+@set xref-automatic-section-title
+@smallbook
+@set EDITION 1.0
+@set VERSION 2.0.x
+@set UPDATED 2007-06-03
+@set ISBN X-XXXXXX-XX-X
+@titlepage
+@sp 
+@title Introduction to the Spring Framework
+@subtitle For Spring version @value{VERSION}
+@sp 4
+@author by Bill Six
+@page
+@vskip 0pt plus 1filll
+This manual documents the Spring Framework version @value{VERSION}.
+@sp2
+@multitable @columnfractions .50 .50
+@item Published by:              @tab
+@item @tab
+@item Bill Six Press                  @tab Website: www.billsix.com
+@end multitable
+@sp 2
+Copyright @copyright{} 2007 Bill Six
+@sp 1
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the @acronym{GNU} Free Documentation License,
+Version 1.2, or any later version published by the Free Software
+Foundation.
+@end titlepage
+@page
+@contents
+@headings off
+@iftex
+@shorttitlepage Introduction to the Spring Framework
+@end iftex
+@headings on
+
+@node Introduction
+@chapter Introduction
+@c %MENU% Purpose of the Spring Framework
+The Spring Framework is an excellent library for the Java programming language
+that faciliates flexible, layered enterprise application development.  The Spring Framework
+allows developers to freely create their own domain models, while easily integrating their domain
+model into the Service Layer and Data Access Layer.  Furthermore, the domain model can  be integrated
+with standard JavaEE services such as JTA and JMS, which previously was only accomplished by using 
+Enterprise JavaBeans.
+
+Spring also provides common interfaces for services which do not have an official JSR interface to allow 
+for independent implementations.  Two notable services are dynamic proxies creation, and the 
+execution of remote procedure calls.  These common interfaces allow a 
+developer to switch between different implementations with minimal impact to their code.  
+
+While there is already a plethora of documentation regarding Spring, most of it emphasizes the use of an XML-based 
+ApplicationContext for the purpose of Depedency Injection and Aspect Oriented Programming.  Dependency Injection 
+is a form of the Inversion of Control pattern.  While Dependency Injection  may be appealing in certain contexts, 
+it is not a prerequisite for implementing Inversion of Control.  Aspect Oriented Programming is primarily used as a technique
+for intercepting method calls to the Service Layer and Data Access Layer, allowing a developer to code cross cutting concerns
+such as transaction management, or logging, without forcing the developer to copy the same boilerplate code repeatedly across
+their layers.
+
+I believe that the goals of Dependency Injection and AOP have merit.  As with any form of Inversion of Control,
+Dependency Injection helps to seperate configuration from application code.  Because the Java language's semantics do not
+allow method interception natively, AOP can be useful by allowing boilerplate code to be coded once and applied across multiple
+classes.  
+
+With that said, Inversion of Control can also be implemented using the Service Locater pattern, and 
+cross cutting concerns can be addressed in a more intuitive manner by using method interception libraries.  Furthermore, the Service Locator
+pattern and method interception are easily implemented in pure Java instead of relying on a Dependency Injection container.
+
+@node Getting Started,  , Introduction
+@section Getting Started
+
+This manual is written with the assumption that you are at least
+somewhat familiar with the Java programming language and basic
+programming concepts.  Additionally, it is assumed that you have read Martin Fowler's 
+@emph{Patterns of Enterprise Application Architecture} (Addison-Wesley Professional, November 5, 2002), @uref{http://www.martinfowler.com/books.html#eaa}
+, and Christian Bauer's and Gavin King's @emph{Hibernate in Action} (Manning Publications, August 1, 2004), @uref{http://www.manning.com/bauer/}
+
+I wrote this paper because it's the kind of paper I would have liked to have when I first joined the workforce two years ago.
+
+@node Method Interception 
+@chapter Method Interception 
+@c %MENU% Method Interception
+
+Before getting Spring's integration with Data Access technologies and transaction management, it's important to understand what
+method interception is and how to use dynamic proxies.  If the reader wants to get up and running quickly with Spring, 
+he should only read the first section.  The second section is on another form of dynamic proxies, called Introductions.
+
+@node Dynamic Proxies,  , Method Interception 
+@section Dynamic Proxies
+
+Dynamic languages such as Smalltalk-80, Objective C, and relative new-comer Ruby, are object-oriented, message-passing 
+languages which allow an object to inspect messages that are passed to it.  If the receiving object 
+does not have a method which corresponds to the message that it was passed, the object can decide what to
+do with the message.  This feature allows a developer to create proxy objects which forward these unknown messages
+to another object.
+
+@node Dynamic Proxy Example - Smalltalk-80
+@subsection Dynamic Proxy Example - Smalltalk-80
+
+
+@node Dynamic Proxy Example - Spring
+@subsection Dynamic Proxy Example - Spring
+
+Java does not allow the the inspection and redirection of MethodInvocations in the same manner, as that would 
+violate the type safety of the class.  However, in order to get around this limitation, 
+ JDK 1.4 introduced the notion of dynamic proxies.  A dynamic proxy is a Java class 
+which, at runtime, can be configured as a proxy to any number of Java interfaces: thus allowing safe type-casting of the proxy object 
+to a target interface.  Around the same time, an open source project called CGLIB was created,
+allowing similar proxying behavior via byte-code enhancement.  The additional benefit of CGLIB is that it allows a developer
+to dynamically proxy Java classes as well as interfaces.
+
+
+Assume that you are working on a Calculator Service which adds two numbers together.  
+The user must log in to the system before
+accessing the Calculator Service.  There are two acceptance test cases for this story.  In the first, a user is
+denied access to a Calculator Service before the user provides it with a valid username/password pair.  In the second,
+a user supplies a correct username/password pair to the Calculator Service, after which he is able to add the 
+two numbers.
+
+@smallexample
+public void testInvalidAccess() @{
+    try@{
+       _calculatorService.add(4,5);
+        fail("The user did not log in yet");
+    @} catch(IllegalStateException ise) @{
+    @}
+@}
+
+public void testValidAccess() @{
+   try@{
+        _calculatorService.authenticate("","");
+        _calculatorService.add(4,5);
+    @} catch(IllegalStateException ise) @{
+        fail("The user did log in correctly");
+    @}
+@}
+@end smallexample
+
+
+The first step in implementing this story is by creating an Authenticatable interface
+with the following methods:
+@smallexample
+public interface Authenticatable @{    
+    public void authenticate(String username, String password);
+    public boolean isValidUser();
+@}
+@end smallexample
+
+The second step is to create a Calculator Service
+ 
+@smallexample
+public interface CalculatorService extends Authenticatable @{    
+    public Integer add(Integer first, Integer second);
+@}
+@end smallexample
+
+
+
+The implementation of CalculatorService could be structured by making the add 
+method check to make sure the user has an authenticated account.  This is not good because
+any additional methods added to the CalculatorService would need to do the same thing at the beginning
+of each method.  This is the exact 
+situation where dynamic proxies are useful.  You could create a 
+dynamic proxy which inspects incoming MethodInvocations, initially only forwarding an  ``authenticate''  method call
+to the target, while throwing an Exception on any other method call.  Once the user 
+is authenticated, the proxy will then happily forward along all MethodInvocations and return their results.
+
+@smallexample
+public class AuthenticationInterceptor implements MethodInterceptor
+@{
+    public Object invoke(MethodInvocation invocation) throws Throwable
+    @{
+        Method method = invocation.getMethod();
+        Authenticatable authenticatable = (Authenticatable) invocation.getThis();
+        if(method.equals(Authenticatable.class.getMethod("authenticate", String.class, String.class)) ) @{
+            return invocation.proceed();
+        @} else if( authenticatable.isValidUser())@{
+            return invocation.proceed();
+        @}
+        throw new IllegalStateException("User is not authenticated");    
+    @}
+@}
+@end smallexample
+
+This allows the CalculatorService to be implemented as follows
+
+@smallexample
+public class CalculatorServiceImplementation implements CalculatorService @{    
+    public void authenticate(String username, String password) @{
+        _isAuthenticated = true;
+    @}
+    public boolean isValidUser() @{
+        return _isAuthenticated;
+    @}    
+    public Integer add(Integer first, Integer second) @{
+        return first + second;
+    @}
+    private boolean _isAuthenticated = false;
+@}
+@end smallexample
+
+Finally, the unit test will need to create dynamic proxy before the unit tests are executed
+
+@smallexample
+public class CalculatorServiceTest extends TestCase @{
+    public CalculatorServiceTest( String testName ) @{
+        super( testName );
+    @}    
+    public static Test suite() @{
+        return new TestSuite( CalculatorServiceTest.class );
+    @}    
+    public void setUp() throws Exception@{
+        CalculatorServiceImplementation target = new CalculatorServiceImplementation();
+        ProxyFactoryBean factory = new ProxyFactoryBean();
+        factory.addAdvice(new AuthenticationInterceptor());
+        factory.setTarget(target);
+        factory.setProxyInterfaces(new Class[]@{CalculatorService.class@});
+        _calculatorService = (CalculatorService) factory.getObject();
+    @}    
+    public void testInvalidAccess() @{
+        try@{
+            _calculatorService.add(4,5);
+            fail("The user did not log in yet");
+        @} catch(IllegalStateException ise) @{
+        @}
+    @}
+    public void testValidAccess() @{
+        try@{
+            _calculatorService.authenticate("","");
+            _calculatorService.add(4,5);
+        @} catch(IllegalStateException ise) @{
+            fail("The user did log in correctly");
+        @}
+    @}    
+    CalculatorService _calculatorService ;
+@}
+@end smallexample
+
+
+
+@node Introductions,  , Method Interception 
+@section Introductions
+
+While the dynamic proxy solution for the Authenticatable interface would work, any other services
+which implement the Authenticatable interface would be forced to implement the same logic.  
+One solution to avoid
+rewriting the same logic repeatedly would be to create a Layer Supertype which has the Authenticatable 
+implementation.  Since all services in the Service Layer sublcass the Layer Supertype, they will all be
+Authenticatable.  
+
+Another alternative is to use Introductions.  Spring, via CGLIB, offers a dynamic proxy alternative that 
+lets the proxy class itself provide the implemention an interface,
+while forwarding all other method calls to the target.  Introductions have an advantage over the Layer Supertype in the sense 
+that you are not forced to artifically create a class inheritence hierarchy.
+
+INTRODUCTION EXAMPLE HERE
+
+Introductions are roughly, but not exactly, analogous to mixins in Ruby.  Introductions, like mixins, can 
+be great if you're only using one Introduction
+to proxy a class.  However, a complication can come about once multiple Introductions are mixed 
+in when they have one or more identical method signatures in their interfaces.
+This is because Introductions are dynamic proxies which are mixed-in in a linear order.  
+If two Introductions have non-unique method signatures, the first Introduction
+that is mixed-in will have it's method shadowed because the other proxy that was mixed-in afterwards 
+will intercept the method call before it.  
+I do not know of a good solution to this issue in Java, besides ensuring that each Introduction's interfaces
+have distinct method signatures.  
+
+On a side note, a technique for fine-grained code reuse was developed for the Squeak dialect of 
+Smalltalk-80 that is not implemented using multiple-inheritance or proxies, called Traits.  For more 
+information about Traits, the reader should consult Stephane Ducasse's, et. al.,  paper called 
+``Traits: A mechanism for fine-grained reuse''. 
+
+@node Data Access 
+@chapter Data Access 
+@c %MENU% Data Access 
+
+Spring integrates with many different data access technologies, from full fledged object-relational mappers like
+Hibernate and the Java Persistence API, to lighter weight solutions like iBatis or JDBC.  
+The reader should consult PoEAA to see the different types of data access strategies.  I'm an object bigot,
+so I prefer a beastly domain model that is persisted using a Data Mapper; as such I find myself frequently
+using Hibernate for my data access needs. 
+
+Another notable thing about data access in Spring is that Spring catches all Exceptions thrown in the Data Access 
+Layer and casts them into a Spring DataAccessException.
+
+
+@node Data Access Layer,  , Data Access 
+@section Data Access Layer
+
+The following is a Layer Supertype for Hibernate based DataMappers
+
+@smallexample
+public class HibernateBaseDataMapper<T> extends HibernateDaoSupport implements BaseDataMapper<T>@{
+    public HibernateBaseDataMapper() @{
+        _persistentClass =  (Class<T>) ((ParameterizedType) getClass().
+                                                            getGenericSuperclass()).
+                                                            getActualTypeArguments()[0];
+    @}
+    public T load(Long id) @{
+        T entity = (T) getHibernateTemplate().load(_persistentClass, id);
+        getHibernateTemplate().initialize(entity);
+        return entity;
+    @}
+    public List<T> findAll() @{
+        return findByCriteria();
+    @}
+    protected List<T> findByExample(T exampleInstance, String[] excludeProperty) @{
+        Criteria crit = getSession().createCriteria(_persistentClass);
+        Example example =  Example.create(exampleInstance);
+        for (String exclude : excludeProperty) @{
+            example.excludeProperty(exclude);
+        @}
+        crit.add(example);
+        return crit.list();
+    @}
+    protected List<T> findByCriteria(Criterion... criterion) @{
+        Criteria crit = getSession().createCriteria(_persistentClass);
+        for (Criterion c : criterion) @{
+            crit.add(c);
+        @}
+        return crit.list();
+    @}
+    public T saveOrUpdate(T entity) @{
+        getHibernateTemplate().saveOrUpdate(entity);
+        return entity;
+    @}
+    public void delete(T entity) @{
+        getHibernateTemplate().delete(entity);
+    @}
+    public void flush() @{
+        getHibernateTemplate().flush();
+    @}
+    public void clear() @{
+        getHibernateTemplate().clear();
+    @}
+    private Class<T> _persistentClass;
+@}
+@end smallexample
+
+Concrete subclasses can take advantage of Java 5's Generics to inherit the base functionality, while adding
+its own functionality.
+
+@smallexample
+public class HibernateAccountDataMapper extends HibernateBaseDataMapper<Account> implements AccountDataMapper@{
+    public HibernateAccountDataMapper() @{
+    @}
+     public Account load(final String username) @{
+        Account toReturn = (Account) getHibernateTemplate().execute(new HibernateCallback() @{
+            public Object doInHibernate(Session session) throws HibernateException @{
+                Query query = session.createQuery(
+                        "from Account as account where account._username like :username");
+                query.setParameter("username", username, Hibernate.STRING);
+                return (Account) query.uniqueResult();
+            @}
+        @});
+        if(toReturn == null) @{
+            throw new DataRetrievalFailureException("No user with name " + username + " exists");
+        @}
+        return toReturn;
+    @}
+    public Account fetchAccountTransactions(final Account account) @{
+        getHibernateTemplate().initialize(account.getTransactionHistory());
+        return account;
+    @}
+@}
+@end smallexample
+
+These DataMappers need to connect to a datasource.  It can be done using a singelton Service Locator.
+
+@smallexample
+public class ServerSideServiceLocatorImplementation@{
+    private ServerSideServiceLocatorImplementation() @{
+        try@{
+            initializeDataSource();
+            initializeSessionFactory();
+            initializeTransactionManager();
+            initializeAccountDataMapper();
+        @} catch(Exception e) @{
+            e.printStackTrace();
+            System.exit(1);
+        @}
+    @}
+    private void initializeDataSource() @{
+        _dataSource = new BasicDataSource();
+        _dataSource.setDriverClassName("org.postgresql.Driver");
+        _dataSource.setUrl("jdbc:postgresql://localhost/hibernatetest");
+        _dataSource.setUsername("wsix");
+        _dataSource.setPassword("password");
+    @}
+    private void initializeSessionFactory() throws Exception @{
+        _sessionFactory = new LocalSessionFactoryBean();
+        Properties hibernateProperties = new Properties();
+        hibernateProperties.setProperty("hibernate.dialect","org.hibernate.dialect.PostgreSQLDialect");
+        _sessionFactory.setDataSource(_dataSource);
+        _sessionFactory.setMappingResources(new String[]@{"com/billsix/examples/atm/DomainObjects.hbm.xml"@});
+        _sessionFactory.setHibernateProperties(hibernateProperties);
+        _sessionFactory.afterPropertiesSet();
+    @}
+    private void initializeTransactionManager() @{
+        HibernateTransactionManager hibernateTransactionManager = new HibernateTransactionManager();
+        hibernateTransactionManager.setSessionFactory((org.hibernate.SessionFactory)_sessionFactory.getObject());
+        hibernateTransactionManager.afterPropertiesSet();
+        _transactionManager = hibernateTransactionManager;
+    @}
+    private void initializeAccountDataMapper() throws BeanInitializationException, IllegalArgumentException @{
+        HibernateAccountDataMapper hibernateAccountDataMapper = new HibernateAccountDataMapper();
+        hibernateAccountDataMapper.setSessionFactory((org.hibernate.SessionFactory)_sessionFactory.getObject());
+        hibernateAccountDataMapper.afterPropertiesSet();
+        _accountDataMapper = hibernateAccountDataMapper;
+    @}
+    private void addSecurityInterceptorToATM() throws AopConfigException @{
+        ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
+        proxyFactoryBean.addAdvice(new AuthenticationInterceptor());
+        proxyFactoryBean.setTarget(_atm);
+        _atm = (ATMService) proxyFactoryBean.getObject();
+    @}
+    private void addTransactionInterceptorToATM() throws AopConfigException @{
+        Properties transactionProperties = new Properties();
+        transactionProperties.setProperty("*", "PROPAGATION_REQUIRED,ISOLATION_READ_COMMITTED,-org.springframework.dao.DataAccessException");
+        TransactionProxyFactoryBean transactionProxyFactoryBean = new TransactionProxyFactoryBean();
+        transactionProxyFactoryBean.setTarget(_atm);
+        transactionProxyFactoryBean.setTransactionManager(_transactionManager);
+        transactionProxyFactoryBean.setTransactionAttributes(transactionProperties);
+        transactionProxyFactoryBean.afterPropertiesSet();
+        _atm = (ATMService) transactionProxyFactoryBean.getObject();
+    @}
+    public void dropAndCreateSchemas() @{
+        _sessionFactory.dropDatabaseSchema();
+        _sessionFactory.createDatabaseSchema();
+    @}
+    public PlatformTransactionManager getTransactionManager() @{
+        return _transactionManager;
+    @}
+    public  AccountDataMapper getAccountDataMapper() @{
+        return _accountDataMapper;
+    @}
+    public ATMService getAtmService() @{
+        return _atm;
+    @}
+    public synchronized static ServerSideServiceLocator getInstance() @{
+        return _instance;
+    @}
+    private RmiServiceExporter _rmiServiceExporter;
+    private BasicDataSource _dataSource ;
+    private LocalSessionFactoryBean _sessionFactory;
+    private PlatformTransactionManager _transactionManager  ;
+    private AccountDataMapper _accountDataMapper;
+    private ATMService _atm;
+    private static ServerSideServiceLocatorImplementation _instance = new ServerSideServiceLocatorImplementation();
+@}
+@end smallexample
+
+
+
+This brings me to my one complaint with Spring's design.  Each of these objects have empty constructors,
+and properties must be set using setter methods.  After all of the required properties are set, afterPropertiesSet()
+must be called.  I would prefer if Spring exposed constructors that took in the required properties, and within the
+constructor, afterPropertiesSet() would be called.
+
+
+      
+@node Transaction Management in the Service Layer,  , Data Access 
+@section Transaction Management in the Service Layer
+
+By default, if Hibernate is running in a managed environment (a JavaEE server such as JBoss, Glassfish, etc), it
+will use JTA as its transaction manager; allowing for Hibernate to participate in distributed transactions.  If
+Hibernate is running outside of a managed environment, it will use the standard JDBC transaction manager.  While 
+this is nice, you may want to use JTA while not being deployed on the application server.
+Spring provides the integration needed to achieve this.
+
+Spring defines an interface called the PlatformTransactionManager, for which there are multiple implementations.
+These include the HibernateTransactionManager, JTATransactionManager, and others.  By having the 
+PlatformTransactionManager interface, transaction management code in the Service Layer can be developed 
+irregardless of the underlying transaction management scheme.
+
+Furthermore, if most of the methods in each service in the Service Layer are transactional, and have the same isolation
+and propogation levels, dynamic proxies can be utilized to eliminate boilerplate transactional code.
+
+The service Lccccccccb
+
+
+@node Remoting
+@chapter Remoting
+@c %MENU% Remoting
+
+
+Spring integrates with many different remoting technologies, such as RMI, Hessian, Burlap, and Spring's own
+RMI over HTTP.  For the most part, these technologies are pretty interchangable.  However, remoting schemes such as
+Hessian and Burlap that use reflection-based serialization instead of native Java serialization
+fail when the domain model is persisted using Hibernate, or possibly any other bytecode-enhanced dynamic proxies.  
+
+One of the best features of Hibernate is that
+it allows a developer to fetch a specified subgraph of the persistent object model graph (thus, solving the n+1 select problem). 
+More likely than not, some of the objects in the fetched subgraph reference objects that were not fetched in
+the database roundtrip.  Hibernate does not model this dangling reference with a null pointer; instead, since Hibernate 
+uses CGLIB's dynamic proxies, the dangling reference is a proxy object to the unfetched object in the database.  Upon
+method calls to that dynamic proxy, the object will be fetched from the database.  This means that if you're in the UI Layer
+and as such the Hibernate Session (Hibernate's Unit Of Work) is closed, an Exception will be thrown.  
+If you're in the Service Tier or below and in
+a transactional context, the proxy will correctly fetched the object from the database.  
+
+(THIS SHOULD BE A SIDE NOTE)This lazy-loading is not usually an issue in regular development, as the UI tier 
+should know the subgraph of the object 
+model graph it wants to display.  
+
+RMI over HTTP is a good choice if you want to use RMI but you are behind a firewall.
+
+
+@node Issues with Dependency Injection
+@chapter Issues with Dependency Injection
+@c %MENU% Issues with Dependency Injection
+
+Martin Fowler has a good article on Dependency Injection.  http://www.martinfowler.com/articles/injection.html
+
+The only thing I can really add to his article is that I've seen a lot of otherwise rational developers do some
+peculiar things because they believe in the dogma of Dependency Injection.  
+For instance, I briefly worked on a project that used JavaServer Faces (which also 
+supports DI) and Spring.  It was a medium sized project, and as such, there were a non-trival 
+amount of classes in each Layer.  Because they were using DI, every class in each Layer 
+had to have its own private instance variables for each of the classes in the Layer below it.  
+There were about 10 classes in the UI Layer, 15 or so in the
+Service Layer, and 15 in the Data Access Layer.  That made for 2000+ injections, so it was no surprise
+that their Spring ApplicationContext alone was 6000+ lines.
+
+Given that, I'm sure if they had used Layer Supertypes to hold references to the classes in the Layer below,
+with bean inheritance in their ApplicationContext to avoid copying and pasting injections, 
+the number of injections would have been reasonable.  My only purpose for referencing this 
+occasion is that I've heard many developers praise DI, saying that it is important to object-oriented programming
+because it helps to serve as a way of separating interface from implementation; which I strongly disagree with.  
+It can be helpful to seperate service configuration from service use, but I believe the Service Locator
+to be a superior method of achieving the desired result.
+
+
+
+@node Conclusion
+@chapter Conclusion
+@c %MENU% Conclusion
+
+
+adsfadsfad
+
+@c Local Variables:
+@c ispell-local-pdict: "ispell-dict"
+@c End:
+@bye
+
