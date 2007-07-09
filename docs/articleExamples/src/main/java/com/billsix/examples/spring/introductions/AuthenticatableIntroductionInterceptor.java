@@ -27,7 +27,7 @@ import org.springframework.aop.support.DelegatingIntroductionInterceptor;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
-public class AuthenticatableIntroductionInterceptor extends DelegatingIntroductionInterceptor {
+public class AuthenticatableIntroductionInterceptor extends DelegatingIntroductionInterceptor implements Authenticatable{
     
     public void authenticate(String username, String password) {
         _isAuthenticated = true;
@@ -38,14 +38,10 @@ public class AuthenticatableIntroductionInterceptor extends DelegatingIntroducti
     
     public Object invoke(MethodInvocation invocation) throws Throwable {
         Method method = invocation.getMethod();
-        Object[] arguments = invocation.getArguments();
-        if(method.equals(Authenticatable.class.getMethod("authenticate", String.class, String.class)) ) {
-            authenticate(((String)arguments[0]),((String) arguments[1]));
-            return null;
-        } else if( isValidUser()){
-            return invocation.proceed();
+        if(!isValidUser() && !method.equals(Authenticatable.class.getMethod("authenticate", String.class, String.class))) {
+            throw new IllegalStateException("User is not authenticated");
         }
-        throw new IllegalStateException("User is not authenticated");
+        return super.invoke(invocation);
     }
     
     private boolean _isAuthenticated = false;

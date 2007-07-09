@@ -20,10 +20,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 package com.billsix.examples.spring.introductions;
+import com.billsix.examples.spring.dynamicproxies.Authenticatable;
 import org.springframework.aop.support.DefaultIntroductionAdvisor;
 
 public class AuthenticatableIntroductionAdvisor extends DefaultIntroductionAdvisor{
     public AuthenticatableIntroductionAdvisor() {
-        super(new AuthenticatableIntroductionInterceptor());
+        super(new AuthenticatableIntroductionInterceptor(), Authenticatable.class);
     }
 }
