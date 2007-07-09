@@ -111,6 +111,23 @@ to another object.
 @subsection Dynamic Proxy Example - Smalltalk-80
 
 
+@smallexample
+ ProtoObject subclass: #CustomProxyClass
+   instanceVariableNames: 'target'
+   classVariableNames: ''
+   poolDictionaries: ''
+   category: 'Examples'
+  
+ initializeTarget: t 
+   target := t
+
+ doesNotUnderstand: aMessage 
+   Transcript show: 'forwaring the message'; cr.
+   ^ target perform: aMessage selector withArguments: aMessage arguments
+
+@end smallexample
+
+
 @node Dynamic Proxy Example - Spring
 @subsection Dynamic Proxy Example - Spring
 
