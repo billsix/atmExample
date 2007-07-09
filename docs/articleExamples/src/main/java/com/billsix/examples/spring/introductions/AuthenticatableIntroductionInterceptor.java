@@ -21,7 +21,7 @@ THE SOFTWARE.
  */
 package com.billsix.examples.spring.introductions;
 
-import com.billsix.examples.spring.Authenticatable;
+import com.billsix.examples.spring.dynamicproxies.Authenticatable;
 import java.lang.reflect.Method;
 import org.springframework.aop.support.DelegatingIntroductionInterceptor;
 import org.aopalliance.intercept.MethodInterceptor;

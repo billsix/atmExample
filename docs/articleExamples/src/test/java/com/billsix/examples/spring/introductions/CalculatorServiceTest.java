@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 package com.billsix.examples.spring.introductions;
-import com.billsix.examples.spring.Authenticatable;
+import com.billsix.examples.spring.dynamicproxies.Authenticatable;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
