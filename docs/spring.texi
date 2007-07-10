@@ -397,22 +397,20 @@ Layer and casts them into a Spring DataAccessException.
 The following is a Layer Supertype for Hibernate based DataMappers
 
 @smallexample
-public class HibernateBaseDataMapper<T> extends HibernateDaoSupport implements BaseDataMapper<T>@{
+public class HibernateBaseDataMapper<T> implements BaseDataMapper<T>@{
     public HibernateBaseDataMapper() @{
-        _persistentClass =  (Class<T>) ((ParameterizedType) getClass().
-                                                            getGenericSuperclass()).
-                                                            getActualTypeArguments()[0];
+        _persistentClass =  (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
     @}
     public T load(Long id) @{
-        T entity = (T) getHibernateTemplate().load(_persistentClass, id);
-        getHibernateTemplate().initialize(entity);
+        T entity = (T) _sessionFactory.getCurrentSession().load(_persistentClass, id);
+        Hibernate.initialize(entity);
         return entity;
     @}
     public List<T> findAll() @{
         return findByCriteria();
     @}
     protected List<T> findByExample(T exampleInstance, String[] excludeProperty) @{
-        Criteria crit = getSession().createCriteria(_persistentClass);
+        Criteria crit = _sessionFactory.getCurrentSession().createCriteria(_persistentClass);
         Example example =  Example.create(exampleInstance);
         for (String exclude : excludeProperty) @{
             example.excludeProperty(exclude);
@@ -421,25 +419,29 @@ public class HibernateBaseDataMapper<T> extends HibernateDaoSupport implements B
         return crit.list();
     @}
     protected List<T> findByCriteria(Criterion... criterion) @{
-        Criteria crit = getSession().createCriteria(_persistentClass);
+        Criteria crit = _sessionFactory.getCurrentSession().createCriteria(_persistentClass);
         for (Criterion c : criterion) @{
             crit.add(c);
         @}
         return crit.list();
     @}
     public T saveOrUpdate(T entity) @{
-        getHibernateTemplate().saveOrUpdate(entity);
+        _sessionFactory.getCurrentSession().saveOrUpdate(entity);
         return entity;
     @}
     public void delete(T entity) @{
-        getHibernateTemplate().delete(entity);
+        _sessionFactory.getCurrentSession().delete(entity);
     @}
     public void flush() @{
-        getHibernateTemplate().flush();
+        _sessionFactory.getCurrentSession().flush();
     @}
     public void clear() @{
-        getHibernateTemplate().clear();
+        _sessionFactory.getCurrentSession().clear();
     @}
+    public void setSessionFactory(SessionFactory sessionFactory) @{
+        _sessionFactory = sessionFactory;
+    @}
+    protected SessionFactory _sessionFactory ;
     private Class<T> _persistentClass;
 @}
 @end smallexample
@@ -451,22 +453,18 @@ its own functionality.
 public class HibernateAccountDataMapper extends HibernateBaseDataMapper<Account> implements AccountDataMapper@{
     public HibernateAccountDataMapper() @{
     @}
-     public Account load(final String username) @{
-        Account toReturn = (Account) getHibernateTemplate().execute(new HibernateCallback() @{
-            public Object doInHibernate(Session session) throws HibernateException @{
-                Query query = session.createQuery(
-                        "from Account as account where account._username like :username");
-                query.setParameter("username", username, Hibernate.STRING);
-                return (Account) query.uniqueResult();
-            @}
-        @});
+    public Account load(final String username) @{        
+        Account toReturn = (Account) _sessionFactory.getCurrentSession()
+                .createQuery("from Account as account where account._username like :username")
+                .setParameter("username", username, Hibernate.STRING)
+                .uniqueResult();        
         if(toReturn == null) @{
             throw new DataRetrievalFailureException("No user with name " + username + " exists");
         @}
         return toReturn;
     @}
     public Account fetchAccountTransactions(final Account account) @{
-        getHibernateTemplate().initialize(account.getTransactionHistory());
+        Hibernate.initialize(account.getTransactionHistory());
         return account;
     @}
 @}
@@ -475,7 +473,7 @@ public class HibernateAccountDataMapper extends HibernateBaseDataMapper<Account>
 These DataMappers need to connect to a datasource.  It can be done using a singelton Service Locator.
 
 @smallexample
-public class ServerSideServiceLocatorImplementation@{
+public class ServerSideServiceLocatorImplementation implements ServerSideServiceLocator  @{
     private ServerSideServiceLocatorImplementation() @{
         try@{
             initializeDataSource();
@@ -495,25 +493,45 @@ public class ServerSideServiceLocatorImplementation@{
         _dataSource.setPassword("password");
     @}
     private void initializeSessionFactory() throws Exception @{
-        _sessionFactory = new LocalSessionFactoryBean();
+        _localSessionFactoryBean = new LocalSessionFactoryBean();
         Properties hibernateProperties = new Properties();
         hibernateProperties.setProperty("hibernate.dialect","org.hibernate.dialect.PostgreSQLDialect");
-        _sessionFactory.setDataSource(_dataSource);
-        _sessionFactory.setMappingResources(new String[]@{"com/billsix/examples/atm/DomainObjects.hbm.xml"@});
-        _sessionFactory.setHibernateProperties(hibernateProperties);
-        _sessionFactory.afterPropertiesSet();
+        _localSessionFactoryBean.setDataSource(_dataSource);
+        _localSessionFactoryBean.setMappingResources(new String[]@{"com/billsix/examples/atm/DomainObjects.hbm.xml"@});
+        _localSessionFactoryBean.setHibernateProperties(hibernateProperties);
+        _localSessionFactoryBean.afterPropertiesSet();
     @}
     private void initializeTransactionManager() @{
         HibernateTransactionManager hibernateTransactionManager = new HibernateTransactionManager();
-        hibernateTransactionManager.setSessionFactory((org.hibernate.SessionFactory)_sessionFactory.getObject());
+        hibernateTransactionManager.setSessionFactory((org.hibernate.SessionFactory)_localSessionFactoryBean.getObject());
         hibernateTransactionManager.afterPropertiesSet();
         _transactionManager = hibernateTransactionManager;
     @}
     private void initializeAccountDataMapper() throws BeanInitializationException, IllegalArgumentException @{
         HibernateAccountDataMapper hibernateAccountDataMapper = new HibernateAccountDataMapper();
-        hibernateAccountDataMapper.setSessionFactory((org.hibernate.SessionFactory)_sessionFactory.getObject());
-        hibernateAccountDataMapper.afterPropertiesSet();
+        hibernateAccountDataMapper.setSessionFactory((SessionFactory)_localSessionFactoryBean.getObject());
         _accountDataMapper = hibernateAccountDataMapper;
+        addTransactionInterceptorToAccountDataMapper();          
+    @}
+    private void addTransactionInterceptorToAccountDataMapper() throws AopConfigException, BeansException @{        
+        NameMatchTransactionAttributeSource transactionAttributeSource = new NameMatchTransactionAttributeSource() ;
+        DefaultTransactionAttribute transactionAttribute = new DefaultTransactionAttribute();
+        transactionAttribute.setIsolationLevel(transactionAttribute.ISOLATION_DEFAULT);
+        transactionAttribute.setPropagationBehavior(transactionAttribute.PROPAGATION_REQUIRED);
+        transactionAttributeSource.addTransactionalMethod("*", transactionAttribute);
+        TransactionInterceptor transactionInterceptor = new TransactionInterceptor();
+        transactionInterceptor.setTransactionManager(_transactionManager);
+        transactionInterceptor.setTransactionAttributeSource(transactionAttributeSource);
+        transactionInterceptor.afterPropertiesSet();
+        ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
+        proxyFactoryBean.addAdvice(transactionInterceptor);
+        proxyFactoryBean.setTarget(_accountDataMapper);
+        _accountDataMapper = (AccountDataMapper) proxyFactoryBean.getObject();          
+    @}
+    private void initializeATM() @{
+        _atm = new ATMServiceImplementation(this._instance);
+        addSecurityInterceptorToATM();
+        addTransactionInterceptorToATM();
     @}
     private void addSecurityInterceptorToATM() throws AopConfigException @{
         ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
@@ -522,38 +540,61 @@ public class ServerSideServiceLocatorImplementation@{
         _atm = (ATMService) proxyFactoryBean.getObject();
     @}
     private void addTransactionInterceptorToATM() throws AopConfigException @{
-        Properties transactionProperties = new Properties();
-        transactionProperties.setProperty("*", "PROPAGATION_REQUIRED,ISOLATION_READ_COMMITTED,-org.springframework.dao.DataAccessException");
-        TransactionProxyFactoryBean transactionProxyFactoryBean = new TransactionProxyFactoryBean();
-        transactionProxyFactoryBean.setTarget(_atm);
-        transactionProxyFactoryBean.setTransactionManager(_transactionManager);
-        transactionProxyFactoryBean.setTransactionAttributes(transactionProperties);
-        transactionProxyFactoryBean.afterPropertiesSet();
-        _atm = (ATMService) transactionProxyFactoryBean.getObject();
+        NameMatchTransactionAttributeSource transactionAttributeSource = new NameMatchTransactionAttributeSource() ;
+        DefaultTransactionAttribute transactionAttribute = new DefaultTransactionAttribute();
+        transactionAttribute.setIsolationLevel(transactionAttribute.ISOLATION_DEFAULT);
+        transactionAttribute.setPropagationBehavior(transactionAttribute.PROPAGATION_REQUIRED);
+        transactionAttributeSource.addTransactionalMethod("*", transactionAttribute);
+        TransactionInterceptor transactionInterceptor = new TransactionInterceptor();
+        transactionInterceptor.setTransactionManager(_transactionManager);
+        transactionInterceptor.setTransactionAttributeSource(transactionAttributeSource);
+        transactionInterceptor.afterPropertiesSet();
+        ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
+        proxyFactoryBean.addAdvice(transactionInterceptor);
+        proxyFactoryBean.setTarget(_atm);
+        _atm = (ATMService) proxyFactoryBean.getObject();        
     @}
-    public void dropAndCreateSchemas() @{
-        _sessionFactory.dropDatabaseSchema();
-        _sessionFactory.createDatabaseSchema();
+     private void startRMI() throws RemoteException @{
+        _rmiServiceExporter = new RmiServiceExporter();
+        _rmiServiceExporter.setServiceName("ATM");
+        _rmiServiceExporter.setService(_atm);
+        _rmiServiceExporter.setServiceInterface(ATMService.class);
+        _rmiServiceExporter.setRegistryPort(1199);
+        _rmiServiceExporter.prepare();
+        _rmiServiceExporter.afterPropertiesSet();
     @}
-    public PlatformTransactionManager getTransactionManager() @{
+     public void dropAndCreateSchemas() @{
+        _localSessionFactoryBean.dropDatabaseSchema();
+        _localSessionFactoryBean.createDatabaseSchema();
+    @}
+     public PlatformTransactionManager getTransactionManager() @{
         return _transactionManager;
     @}
-    public  AccountDataMapper getAccountDataMapper() @{
+     public  AccountDataMapper getAccountDataMapper() @{
         return _accountDataMapper;
     @}
-    public ATMService getAtmService() @{
+     public ATMService getAtmService() @{
         return _atm;
     @}
-    public synchronized static ServerSideServiceLocator getInstance() @{
+     public synchronized static ServerSideServiceLocator getInstance() @{
         return _instance;
     @}
-    private RmiServiceExporter _rmiServiceExporter;
+     public static void main(String[] args) throws Exception @{
+        _instance.startRMI();
+        while(true) @{
+            Thread.currentThread().sleep(99999);
+        @}
+    @}
+     private RmiServiceExporter _rmiServiceExporter;
     private BasicDataSource _dataSource ;
-    private LocalSessionFactoryBean _sessionFactory;
+    private LocalSessionFactoryBean _localSessionFactoryBean;
     private PlatformTransactionManager _transactionManager  ;
     private AccountDataMapper _accountDataMapper;
     private ATMService _atm;
     private static ServerSideServiceLocatorImplementation _instance = new ServerSideServiceLocatorImplementation();
+    static@{
+        _instance.initializeATM();
+    @}
 @}
 @end smallexample
 
