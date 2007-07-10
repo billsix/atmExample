@@ -311,25 +311,21 @@ public class AuthenticatableIntroductionInterceptor extends DelegatingIntroducti
     @}    
     public Object invoke(MethodInvocation invocation) throws Throwable @{
         Method method = invocation.getMethod();
-        Object[] arguments = invocation.getArguments();
-        if(method.equals(Authenticatable.class.getMethod("authenticate", String.class, String.class)) ) @{
-            authenticate(((String)arguments[0]),((String) arguments[1]));
-            return null;
-        @} else if( isValidUser())@{
-            return invocation.proceed();
+        if(!isValidUser() && !method.equals(Authenticatable.class.getMethod("authenticate", String.class, String.class))) @{
+            throw new IllegalStateException("User is not authenticated");
         @}
-        throw new IllegalStateException("User is not authenticated");
+        return super.invoke(invocation);
     @}    
     private boolean _isAuthenticated = false;
 @}
 @end smallexample
 
-Spring requires that this class is wrapped in an IntroductionAdvisor
+Spring requires that this class is wrapped in an IntroductionAdvisor, specifying the interface that is introduced.
 
 @smallexample
 public class AuthenticatableIntroductionAdvisor extends DefaultIntroductionAdvisor@{
     public AuthenticatableIntroductionAdvisor() @{
-        super(new AuthenticatableIntroductionInterceptor());
+        super(new AuthenticatableIntroductionInterceptor(), Authenticatable.class);
     @}
 @}
 @end smallexample
