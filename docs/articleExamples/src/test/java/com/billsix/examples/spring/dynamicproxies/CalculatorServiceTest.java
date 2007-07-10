@@ -61,7 +61,7 @@ public class CalculatorServiceTest extends TestCase {
     public void testValidAccess() {
         try{
             _calculatorService.authenticate("","");
-            _calculatorService.add(4,5);
+            assertTrue(_calculatorService.add(4,5) == 9);
         } catch(IllegalStateException ise) {
             fail("The user did log in correctly");
         }

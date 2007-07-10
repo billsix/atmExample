@@ -29,7 +29,7 @@ This manual documents the Spring Framework version @value{VERSION}.
 @multitable @columnfractions .50 .50
 @item Published by:              @tab
 @item @tab
-@item Bill Six Press                  @tab Website: www.billsix.com
+@item Bill Six Press                  
 @end multitable
 @sp 2
 Copyright @copyright{} 2007 Bill Six
@@ -54,24 +54,21 @@ The Spring Framework is an excellent library for the Java programming language
 that faciliates flexible, layered enterprise application development.  The Spring Framework
 allows developers to freely create their own domain model, while easily integrating their domain
 model into the Service Layer and Data Access Layer.  Furthermore, the domain model can  be integrated
-with standard JavaEE services such as JTA and asynchronous-JMS, which previously was accomplished only by using 
-Enterprise JavaBeans.
+with standard JavaEE services which previously were accomplished by using Enterprise JavaBeans; 
+such as JTA, and asynchronous JMS subscribers, 
 
 
 While there is already a plethora of documentation regarding Spring, most of it emphasizes the use of an XML-based 
 ApplicationContext for the purpose of Depedency Injection and Aspect Oriented Programming.  Dependency Injection 
-is a form of the Inversion of Control pattern.  While Dependency Injection  may be appealing in certain contexts @footnote{See http://www.martinfowler.com/articles/injection.html }, 
-it is not a prerequisite for implementing Inversion of Control.  Aspect Oriented Programming is primarily used as a technique
+allows a developer to seperate configuration of services from their use.  While Dependency Injection  may be appealing in 
+certain contexts @footnote{See http://www.martinfowler.com/articles/injection.html }, 
+it is not a prerequisite for separating configuration from use.  Aspect Oriented Programming is primarily used as a technique
 for intercepting method calls to the Service Layer and Data Access Layer, allowing a developer to code cross cutting concerns
-such as transaction management, or logging, without forcing the developer to copy the same boilerplate code repeatedly across each class in
-those layers.
+such as transaction management, authentication, or logging, without forcing the developer to copy the same 
+boilerplate code repeatedly across each class in those layers.  I believe that the goals of Dependency Injection and AOP have merit.  
 
-I believe that the goals of Dependency Injection and AOP have merit.  As with any form of Inversion of Control,
-Dependency Injection helps to seperate configuration from application code.  Because the Java language's semantics do not
-allow method interception natively, AOP can be useful by allowing boilerplate code to be coded once and applied across multiple
-classes.  
 
-With that said, Inversion of Control can also be implemented using the Service Locater pattern, and 
+With that said, a Service Locater can be used instead of Dependency Injection, and 
 cross cutting concerns can be addressed in a more intuitive manner by using method interception libraries.  More importantly, the Service Locator
 pattern and method interception are easily implemented in pure Java instead of relying on a Dependency Injection container.
 
@@ -156,7 +153,7 @@ public void testInvalidAccess() @{
 public void testValidAccess() @{
    try@{
         _calculatorService.authenticate("","");
-        _calculatorService.add(4,5);
+        assertTrue(_calculatorService.add(4,5) == 9);
     @} catch(IllegalStateException ise) @{
         fail("The user did log in correctly");
     @}
@@ -254,7 +251,7 @@ public class CalculatorServiceTest extends TestCase @{
     public void testValidAccess() @{
         try@{
             _calculatorService.authenticate("","");
-            _calculatorService.add(4,5);
+            assertTrue(_calculatorService.add(4,5) == 9);
         @} catch(IllegalStateException ise) @{
             fail("The user did log in correctly");
         @}
@@ -275,10 +272,14 @@ rewriting the same logic repeatedly would be to create a Layer Supertype which h
 implementation.  Since all services in the Service Layer sublcass the Layer Supertype, they will all be
 Authenticatable.  
 
-Another alternative is to use Introductions.  Spring, via CGLIB, offers a dynamic proxy alternative that 
-lets the proxy class itself provide the implemention an interface,
+Another alternative is to use Introductions.  Introductions are form of dynamic proxies that 
+lets the proxy class itself provide the implemention of an interface,
 while forwarding all other method calls to the target.  Introductions have an advantage over the Layer Supertype in the sense 
 that you are not forced to artifically create a class inheritence hierarchy.
+
+@node Introduction Example - Spring
+@subsection Introduction Example - Spring
+
 
 The CalculatorService interface no longer needs to extend the Authenticatable interface:
 
@@ -302,7 +303,7 @@ The Authenticatable interface can be implemented by the dynamic proxy itself, as
 
 
 @smallexample
-public class AuthenticatableIntroductionInterceptor extends DelegatingIntroductionInterceptor @{    
+public class AuthenticatableIntroductionInterceptor extends DelegatingIntroductionInterceptor implements Authenticatable@{    
     public void authenticate(String username, String password) @{
         _isAuthenticated = true;
     @}
@@ -350,12 +351,9 @@ The CalculatorServiceTest is modified as follows:
     @}    
     public void testValidAccess() @{
         ((Authenticatable)_calculatorService).authenticate("","");
-        _calculatorService.add(4,5);
+        assertTrue(_calculatorService.add(4,5) == 9);
     @}
 @end smallexample
-
-
-
 
 Introductions are roughly, but not exactly, analogous to mixins in Ruby.  Introductions, like mixins, can 
 be great if you're only using one Introduction
@@ -367,6 +365,73 @@ that is mixed-in will have it's method shadowed because the other proxy that was
 will intercept the method call before it.  
 I do not know of a good solution to this issue in Java, besides ensuring that each Introduction's interfaces
 have distinct method signatures.  
+
+
+
+@node Proxy Example - Smalltalk-80
+@subsection Proxy Example - Smalltalk-80
+
+
+While this may be a relatively new feature for Java, this is easily implemented in a pure message-passing language such
+as Smalltalk.
+
+
+@smallexample
+ ClassTestCase subclass: #AuthenticatableProxyTest
+  instanceVariableNames: 'calculatorService'
+  classVariableNames: ''
+  poolDictionaries: ''
+  category: 'CalculatorService'
+
+ setUp
+  calculatorService := AuthenticatableProxy target: CalculatorService new'
+
+ testInvalidAccess
+  self
+    should: [calculatorService add: 1 and: 2]
+    raise: MessageNotUnderstood
+
+ testValidAccess
+  calculatorService authenticateUsername: '' Password: ''.
+  self assert: ((calculatorService add: 1 and: 2) = 3)
+
+
+
+
+ Object subclass: #CalculatorService
+  instanceVariableNames: ''
+  classVariableNames: ''
+  poolDictionaries: ''
+  category: 'CalculatorService'
+
+ add: first and: second 
+  ^ first + second
+
+
+
+
+
+ ProtoObject subclass: #AuthenticatableProxy
+  instanceVariableNames: 'target isAuthenticated'
+  classVariableNames: ''
+  poolDictionaries: ''
+  category: 'CalculatorService'
+
+ initializeTarget: t 
+  target := t
+
+ authenticateUsername: u Password: p 
+  isAuthenticated := true
+
+ isValidUser
+  ^ isAuthenticated
+
+ doesNotUnderstand: aMessage 
+  self isValidUser not
+    ifTrue: [^ super doesNotUnderstand: aMessage].
+  ^ target perform: aMessage selector withArguments: aMessage arguments
+
+@end smallexample
 
 On a side note, a technique for fine-grained code reuse was developed for the Squeak dialect of 
 Smalltalk-80 that is not implemented using multiple-inheritance or proxies, called Traits.  For more 
@@ -384,7 +449,7 @@ so I prefer a beastly domain model that is persisted using a Data Mapper; as suc
 using Hibernate for my data access needs. 
 
 Another notable thing about data access in Spring is that Spring catches all Exceptions thrown in the Data Access 
-Layer and casts them into a Spring DataAccessException.
+Layer and casts them into a Spring DataAccessExceptions.
 
 
 @node Data Access Layer,  , Data Access 
@@ -466,7 +531,8 @@ public class HibernateAccountDataMapper extends HibernateBaseDataMapper<Account>
 @}
 @end smallexample
 
-These DataMappers need to connect to a datasource.  It can be done using a singelton Service Locator.
+These DataMappers need to connect to a datasource and take place in a transactional context.  
+Instead of using an XML-based ApplicationContext, this can be implemented in a singelton Service Locator.
 
 @smallexample
 public class ServerSideServiceLocatorImplementation implements ServerSideServiceLocator  @{
@@ -599,28 +665,26 @@ public class ServerSideServiceLocatorImplementation implements ServerSideService
 This brings me to my one complaint with Spring's design.  Each of these objects have empty constructors,
 and properties must be set using setter methods.  After all of the required properties are set, afterPropertiesSet()
 must be called.  I would prefer if Spring exposed constructors that took in the required properties, and within the
-constructor, afterPropertiesSet() would be called.
+constructor, afterPropertiesSet() would be called.  This would guarantee that objects are initialized correctly,
+and would cut down on the amount of code needed within the Service Locator.
 
 
       
 @node Transaction Management in the Service Layer,  , Data Access 
 @section Transaction Management in the Service Layer
 
-By default, if Hibernate is running in a managed environment (a JavaEE server such as JBoss, Glassfish, etc), it
-will use JTA as its transaction manager; allowing for Hibernate to participate in distributed transactions.  If
-Hibernate is running outside of a managed environment, it will use the standard JDBC transaction manager.  While 
-this is nice, you may want to use JTA while not being deployed on the application server.
-Spring provides the integration needed to achieve this.
+Spring allows you to develop your code completely independently of a specific transactional context.  Whether
+you are developing code which accesses one database, or whether you are accessing a database and a message queue
+in a JTA distributed transaction; if your transactional context needs to change, all that you need to modify 
+is the configuration in your Service Locator.
 
 Spring defines an interface called the PlatformTransactionManager, for which there are multiple implementations.
 These include the HibernateTransactionManager, JTATransactionManager, and others.  By having the 
 PlatformTransactionManager interface, transaction management code in the Service Layer can be developed 
 irregardless of the underlying transaction management scheme.
 
-Furthermore, if most of the methods in each service in the Service Layer are transactional, and have the same isolation
+On another note, if most of the methods in each service in the Service Layer are transactional, and have the same isolation
 and propogation levels, dynamic proxies can be utilized to eliminate boilerplate transactional code.
-
-The service Lccccccccb
 
 
 @node Remoting
@@ -638,14 +702,11 @@ it allows a developer to fetch a specified subgraph of the persistent object mod
 More likely than not, some of the objects in the fetched subgraph reference objects that were not fetched in
 the database roundtrip.  Hibernate does not model this dangling reference with a null pointer; instead, since Hibernate 
 uses CGLIB's dynamic proxies, the dangling reference is a proxy object to the unfetched object in the database.  Upon
-method calls to that dynamic proxy, the object will be fetched from the database.  This means that if you're in the UI Layer
-and as such the Hibernate Session (Hibernate's Unit Of Work) is closed, an Exception will be thrown.  
-If you're in the Service Tier or below and in
-a transactional context, the proxy will correctly fetched the object from the database.  
+method calls to that dynamic proxy, the proxy attempts to fetch the target object from the database.  This means that if you're outside of the
+Service Layer
+and as such the Hibernate Session (Hibernate's Unit Of Work) is closed, an Exception will be thrown.  Thus, reflection-based
+serialization techniques as employed by Hessian and Burlap fail.
 
-(THIS SHOULD BE A SIDE NOTE)This lazy-loading is not usually an issue in regular development, as the UI tier 
-should know the subgraph of the object 
-model graph it wants to display.  
 
 RMI over HTTP is a good choice if you want to use RMI but you are behind a firewall.
 
@@ -657,14 +718,13 @@ RMI over HTTP is a good choice if you want to use RMI but you are behind a firew
 Martin Fowler has a good article on Dependency Injection.  http://www.martinfowler.com/articles/injection.html
 
 The only thing I can really add to his article is that I've seen a lot of otherwise rational developers do some
-peculiar things because they believe in the dogma of Dependency Injection.  
+peculiar things because they believe so firmly in Dependency Injection.  
 For instance, I briefly worked on a project that used JavaServer Faces (which also 
-supports DI) and Spring.  It was a medium sized project, and as such, there were a non-trival 
-amount of classes in each Layer.  Because they were using DI, every class in each Layer 
-had to have its own private instance variables for each of the classes in the Layer below it.  
+supports DI) and Spring.  Because they were using DI, every class in each Layer 
+had its own private instance variables for each of the classes in the Layer below it.  
 There were about 20 classes in the UI Layer, 30 or so in the
 Service Layer, and 30 in the Data Access Layer.  That made for 30*30+20*30=1500 injections, so it was no surprise
-that their Spring ApplicationContext alone was 6000+ lines.
+that their Spring ApplicationContext alone was 6000+ lines.  It seemed rather unmanagable.
 
 Given that, I'm sure if they had used Layer Supertypes to hold references to the classes in the Layer below,
 with bean inheritance in their ApplicationContext to avoid copying and pasting injections, 
@@ -680,8 +740,21 @@ to be a superior method of achieving the desired result.
 @chapter Conclusion
 @c %MENU% Conclusion
 
+The Spring Framework is an excellent library for the Java programming language
+that faciliates flexible, layered enterprise application development.  
 
-adsfadsfad
+This document, and all sample code can be downloaded from anonymously via subversion.
+
+@smallexample
+svn co https://atmexample.svn.sourceforge.net/svnroot/atmexample
+@end smallexample
+
+In addition to the dynamic proxy examples in this paper, it has a relatively simple
+ATM application: using PostgreSQL, Hibernate, Spring, with a Swing and a JavaServer Faces
+frontend.
+
+
+
 
 @c Local Variables:
 @c ispell-local-pdict: "ispell-dict"

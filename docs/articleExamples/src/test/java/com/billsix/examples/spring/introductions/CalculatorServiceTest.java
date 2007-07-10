@@ -58,7 +58,7 @@ public class CalculatorServiceTest extends TestCase {
     
     public void testValidAccess() {
         ((Authenticatable)_calculatorService).authenticate("","");
-        _calculatorService.add(4,5);
+        assertTrue(_calculatorService.add(4,5) == 9);        
     }
     
     CalculatorService _calculatorService ;
