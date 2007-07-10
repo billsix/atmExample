@@ -23,10 +23,6 @@ package com.billsix.examples.atm.dataacess;
 
 import com.billsix.examples.atm.domain.Account;
 import org.hibernate.Hibernate;
-import org.hibernate.HibernateException;
-import org.hibernate.Query;
-import org.hibernate.Session;
-import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.dao.DataRetrievalFailureException;
 
 /**
@@ -38,15 +34,11 @@ public class HibernateAccountDataMapper extends HibernateBaseDataMapper<Account>
     public HibernateAccountDataMapper() {
     }
     
-    public Account load(final String username) {
-        Account toReturn = (Account) getHibernateTemplate().execute(new HibernateCallback() {
-            public Object doInHibernate(Session session) throws HibernateException {
-                Query query = session.createQuery(
-                        "from Account as account where account._username like :username");
-                query.setParameter("username", username, Hibernate.STRING);
-                return (Account) query.uniqueResult();
-            }
-        });
+    public Account load(final String username) {        
+        Account toReturn = (Account) _sessionFactory.getCurrentSession()
+                .createQuery("from Account as account where account._username like :username")
+                .setParameter("username", username, Hibernate.STRING)
+                .uniqueResult();        
         if(toReturn == null) {
             throw new DataRetrievalFailureException("No user with name " + username + " exists");
         }
@@ -54,7 +46,7 @@ public class HibernateAccountDataMapper extends HibernateBaseDataMapper<Account>
     }
     
     public Account fetchAccountTransactions(final Account account) {
-        getHibernateTemplate().initialize(account.getTransactionHistory());
+        Hibernate.initialize(account.getTransactionHistory());
         return account;
     }
 }

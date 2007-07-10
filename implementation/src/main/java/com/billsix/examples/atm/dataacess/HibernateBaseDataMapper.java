@@ -24,23 +24,24 @@ package com.billsix.examples.atm.dataacess;
 import java.util.List;
 import java.lang.reflect.ParameterizedType;
 import org.hibernate.Criteria;
+import org.hibernate.Hibernate;
+import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Example;
 import org.hibernate.criterion.Criterion;
-import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 
 /**
  *
  * @author Bill Six
  */
-public class HibernateBaseDataMapper<T> extends HibernateDaoSupport implements BaseDataMapper<T>{
+public class HibernateBaseDataMapper<T> implements BaseDataMapper<T>{
     
     public HibernateBaseDataMapper() {
         _persistentClass =  (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
     }
     
     public T load(Long id) {
-        T entity = (T) getHibernateTemplate().load(_persistentClass, id);
-        getHibernateTemplate().initialize(entity);
+        T entity = (T) _sessionFactory.getCurrentSession().load(_persistentClass, id);
+        Hibernate.initialize(entity);
         return entity;
     }
     
@@ -49,7 +50,7 @@ public class HibernateBaseDataMapper<T> extends HibernateDaoSupport implements B
     }
     
     protected List<T> findByExample(T exampleInstance, String[] excludeProperty) {
-        Criteria crit = getSession().createCriteria(_persistentClass);
+        Criteria crit = _sessionFactory.getCurrentSession().createCriteria(_persistentClass);
         Example example =  Example.create(exampleInstance);
         for (String exclude : excludeProperty) {
             example.excludeProperty(exclude);
@@ -59,7 +60,7 @@ public class HibernateBaseDataMapper<T> extends HibernateDaoSupport implements B
     }
     
     protected List<T> findByCriteria(Criterion... criterion) {
-        Criteria crit = getSession().createCriteria(_persistentClass);
+        Criteria crit = _sessionFactory.getCurrentSession().createCriteria(_persistentClass);
         for (Criterion c : criterion) {
             crit.add(c);
         }
@@ -67,21 +68,26 @@ public class HibernateBaseDataMapper<T> extends HibernateDaoSupport implements B
     }
     
     public T saveOrUpdate(T entity) {
-        getHibernateTemplate().saveOrUpdate(entity);
+        _sessionFactory.getCurrentSession().saveOrUpdate(entity);
         return entity;
     }
     
     public void delete(T entity) {
-        getHibernateTemplate().delete(entity);
+        _sessionFactory.getCurrentSession().delete(entity);
     }
     
     public void flush() {
-        getHibernateTemplate().flush();
+        _sessionFactory.getCurrentSession().flush();
     }
     
     public void clear() {
-        getHibernateTemplate().clear();
+        _sessionFactory.getCurrentSession().clear();
     }
-    
+
+    public void setSessionFactory(SessionFactory sessionFactory) {
+        _sessionFactory = sessionFactory;
+    }
+
+    protected SessionFactory _sessionFactory ;
     private Class<T> _persistentClass;
 }

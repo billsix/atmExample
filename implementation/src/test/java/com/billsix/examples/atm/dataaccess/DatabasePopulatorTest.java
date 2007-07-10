@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2007 Bill Six 
+ Copyright (c) 2007 Bill Six
  
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -66,7 +66,7 @@ public class DatabasePopulatorTest extends TestCase {
     
     public void testLoadByUserName() {
         Account account = Fixtures.createAccountWith0TransactionsWith100Dollars();
-        _accountDAO.saveOrUpdate(account);        
+        _accountDAO.saveOrUpdate(account);
         Account bill =  _accountDAO.load("bill");
         assertTrue(bill.getCurrentBalance() == 100.00);
     }

@@ -27,14 +27,18 @@ import com.billsix.examples.atm.dataacess.AccountDataMapper;
 import java.rmi.RemoteException;
 import java.util.Properties;
 import org.apache.commons.dbcp.BasicDataSource ;
+import org.hibernate.SessionFactory;
 import org.springframework.aop.framework.AopConfigException;
 import org.springframework.aop.framework.ProxyFactoryBean;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
 import org.springframework.orm.hibernate3.HibernateTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.interceptor.TransactionProxyFactoryBean;
+import org.springframework.transaction.interceptor.DefaultTransactionAttribute;
+import org.springframework.transaction.interceptor.NameMatchTransactionAttributeSource;
 import org.springframework.remoting.rmi.RmiServiceExporter;
+import org.springframework.transaction.interceptor.TransactionInterceptor;
 
 /**
  *
@@ -63,18 +67,18 @@ public class ServerSideServiceLocatorImplementation implements ServerSideService
     }
     
     private void initializeSessionFactory() throws Exception {
-        _sessionFactory = new LocalSessionFactoryBean();
+        _localSessionFactoryBean = new LocalSessionFactoryBean();
         Properties hibernateProperties = new Properties();
         hibernateProperties.setProperty("hibernate.dialect","org.hibernate.dialect.PostgreSQLDialect");
-        _sessionFactory.setDataSource(_dataSource);
-        _sessionFactory.setMappingResources(new String[]{"com/billsix/examples/atm/DomainObjects.hbm.xml"});
-        _sessionFactory.setHibernateProperties(hibernateProperties);
-        _sessionFactory.afterPropertiesSet();
+        _localSessionFactoryBean.setDataSource(_dataSource);
+        _localSessionFactoryBean.setMappingResources(new String[]{"com/billsix/examples/atm/DomainObjects.hbm.xml"});
+        _localSessionFactoryBean.setHibernateProperties(hibernateProperties);
+        _localSessionFactoryBean.afterPropertiesSet();
     }
     
     private void initializeTransactionManager() {
         HibernateTransactionManager hibernateTransactionManager = new HibernateTransactionManager();
-        hibernateTransactionManager.setSessionFactory((org.hibernate.SessionFactory)_sessionFactory.getObject());
+        hibernateTransactionManager.setSessionFactory((org.hibernate.SessionFactory)_localSessionFactoryBean.getObject());
         hibernateTransactionManager.afterPropertiesSet();
         _transactionManager = hibernateTransactionManager;
     }
@@ -82,9 +86,27 @@ public class ServerSideServiceLocatorImplementation implements ServerSideService
     
     private void initializeAccountDataMapper() throws BeanInitializationException, IllegalArgumentException {
         HibernateAccountDataMapper hibernateAccountDataMapper = new HibernateAccountDataMapper();
-        hibernateAccountDataMapper.setSessionFactory((org.hibernate.SessionFactory)_sessionFactory.getObject());
-        hibernateAccountDataMapper.afterPropertiesSet();
+        hibernateAccountDataMapper.setSessionFactory((SessionFactory)_localSessionFactoryBean.getObject());
         _accountDataMapper = hibernateAccountDataMapper;
+        addTransactionInterceptorToAccountDataMapper();          
+    }
+
+    private void addTransactionInterceptorToAccountDataMapper() throws AopConfigException, BeansException {        
+        NameMatchTransactionAttributeSource transactionAttributeSource = new NameMatchTransactionAttributeSource() ;
+        DefaultTransactionAttribute transactionAttribute = new DefaultTransactionAttribute();
+        transactionAttribute.setIsolationLevel(transactionAttribute.ISOLATION_DEFAULT);
+        transactionAttribute.setPropagationBehavior(transactionAttribute.PROPAGATION_REQUIRED);
+        transactionAttributeSource.addTransactionalMethod("*", transactionAttribute);
+
+        TransactionInterceptor transactionInterceptor = new TransactionInterceptor();
+        transactionInterceptor.setTransactionManager(_transactionManager);
+        transactionInterceptor.setTransactionAttributeSource(transactionAttributeSource);
+        transactionInterceptor.afterPropertiesSet();
+        
+        ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
+        proxyFactoryBean.addAdvice(transactionInterceptor);
+        proxyFactoryBean.setTarget(_accountDataMapper);
+        _accountDataMapper = (AccountDataMapper) proxyFactoryBean.getObject();          
     }
     
     private void initializeATM() {
@@ -101,14 +123,22 @@ public class ServerSideServiceLocatorImplementation implements ServerSideService
     }
     
     private void addTransactionInterceptorToATM() throws AopConfigException {
-        Properties transactionProperties = new Properties();
-        transactionProperties.setProperty("*", "PROPAGATION_REQUIRED,ISOLATION_READ_COMMITTED,-org.springframework.dao.DataAccessException");
-        TransactionProxyFactoryBean transactionProxyFactoryBean = new TransactionProxyFactoryBean();
-        transactionProxyFactoryBean.setTarget(_atm);
-        transactionProxyFactoryBean.setTransactionManager(_transactionManager);
-        transactionProxyFactoryBean.setTransactionAttributes(transactionProperties);
-        transactionProxyFactoryBean.afterPropertiesSet();
-        _atm = (ATMService) transactionProxyFactoryBean.getObject();
+
+        NameMatchTransactionAttributeSource transactionAttributeSource = new NameMatchTransactionAttributeSource() ;
+        DefaultTransactionAttribute transactionAttribute = new DefaultTransactionAttribute();
+        transactionAttribute.setIsolationLevel(transactionAttribute.ISOLATION_DEFAULT);
+        transactionAttribute.setPropagationBehavior(transactionAttribute.PROPAGATION_REQUIRED);
+        transactionAttributeSource.addTransactionalMethod("*", transactionAttribute);
+
+        TransactionInterceptor transactionInterceptor = new TransactionInterceptor();
+        transactionInterceptor.setTransactionManager(_transactionManager);
+        transactionInterceptor.setTransactionAttributeSource(transactionAttributeSource);
+        transactionInterceptor.afterPropertiesSet();
+        
+        ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
+        proxyFactoryBean.addAdvice(transactionInterceptor);
+        proxyFactoryBean.setTarget(_atm);
+        _atm = (ATMService) proxyFactoryBean.getObject();        
     }
     
     private void startRMI() throws RemoteException {
@@ -122,8 +152,8 @@ public class ServerSideServiceLocatorImplementation implements ServerSideService
     }
     
     public void dropAndCreateSchemas() {
-        _sessionFactory.dropDatabaseSchema();
-        _sessionFactory.createDatabaseSchema();
+        _localSessionFactoryBean.dropDatabaseSchema();
+        _localSessionFactoryBean.createDatabaseSchema();
     }
     
     public PlatformTransactionManager getTransactionManager() {
@@ -151,7 +181,7 @@ public class ServerSideServiceLocatorImplementation implements ServerSideService
     
     private RmiServiceExporter _rmiServiceExporter;
     private BasicDataSource _dataSource ;
-    private LocalSessionFactoryBean _sessionFactory;
+    private LocalSessionFactoryBean _localSessionFactoryBean;
     private PlatformTransactionManager _transactionManager  ;
     private AccountDataMapper _accountDataMapper;
     private ATMService _atm;
