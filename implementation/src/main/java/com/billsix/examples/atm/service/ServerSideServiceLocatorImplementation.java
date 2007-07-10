@@ -110,7 +110,7 @@ public class ServerSideServiceLocatorImplementation implements ServerSideService
     }
     
     private void initializeATM() {
-        _atm = new ATMServiceImplementation(this._instance);
+        _atmService = new ATMServiceImplementation(this._instance);
         addSecurityInterceptorToATM();
         addTransactionInterceptorToATM();
     }
@@ -118,8 +118,8 @@ public class ServerSideServiceLocatorImplementation implements ServerSideService
     private void addSecurityInterceptorToATM() throws AopConfigException {
         ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
         proxyFactoryBean.addAdvice(new AuthenticationInterceptor());
-        proxyFactoryBean.setTarget(_atm);
-        _atm = (ATMService) proxyFactoryBean.getObject();
+        proxyFactoryBean.setTarget(_atmService);
+        _atmService = (ATMService) proxyFactoryBean.getObject();
     }
     
     private void addTransactionInterceptorToATM() throws AopConfigException {
@@ -137,14 +137,14 @@ public class ServerSideServiceLocatorImplementation implements ServerSideService
         
         ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
         proxyFactoryBean.addAdvice(transactionInterceptor);
-        proxyFactoryBean.setTarget(_atm);
-        _atm = (ATMService) proxyFactoryBean.getObject();        
+        proxyFactoryBean.setTarget(_atmService);
+        _atmService = (ATMService) proxyFactoryBean.getObject();        
     }
     
     private void startRMI() throws RemoteException {
         _rmiServiceExporter = new RmiServiceExporter();
         _rmiServiceExporter.setServiceName("ATM");
-        _rmiServiceExporter.setService(_atm);
+        _rmiServiceExporter.setService(_atmService);
         _rmiServiceExporter.setServiceInterface(ATMService.class);
         _rmiServiceExporter.setRegistryPort(1199);
         _rmiServiceExporter.prepare();
@@ -165,7 +165,7 @@ public class ServerSideServiceLocatorImplementation implements ServerSideService
     }
     
     public ATMService getAtmService() {
-        return _atm;
+        return _atmService;
     }
     
     public synchronized static ServerSideServiceLocator getInstance() {
@@ -184,7 +184,7 @@ public class ServerSideServiceLocatorImplementation implements ServerSideService
     private LocalSessionFactoryBean _localSessionFactoryBean;
     private PlatformTransactionManager _transactionManager  ;
     private AccountDataMapper _accountDataMapper;
-    private ATMService _atm;
+    private ATMService _atmService;
     private static ServerSideServiceLocatorImplementation _instance = new ServerSideServiceLocatorImplementation();
     static{
         _instance.initializeATM();
