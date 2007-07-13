@@ -357,14 +357,14 @@ The CalculatorServiceTest is modified as follows:
 
 Introductions are roughly, but not exactly, analogous to mixins in Ruby.  Introductions, like mixins, can 
 be great if you're only using one Introduction
-to proxy a class.  However, a complication can come about once multiple Introductions are mixed 
+to proxy a class.  However, it gets more complicated once multiple Introductions are mixed 
 in when they have one or more identical method signatures in their interfaces.
 This is because Introductions are dynamic proxies which are mixed-in in a linear order.  
-If two Introductions have non-unique method signatures, the first Introduction
+If multiple Introductions have non-unique method signatures, the first Introduction
 that is mixed-in will have it's method shadowed because the other proxy that was mixed-in afterwards 
 will intercept the method call before it.  
-I do not know of a good solution to this issue in Java, besides ensuring that each Introduction's interfaces
-have distinct method signatures.  
+I do not know of a good solution to this issue in Java.  If you decide to use Introductions in your
+Service Layer, ensure that each Introduction's interfaces have distinct method signatures.  
 
 
 
@@ -455,7 +455,8 @@ Layer and casts them into a Spring DataAccessExceptions.
 @node Data Access Layer,  , Data Access 
 @section Data Access Layer
 
-The following is a Layer Supertype for Hibernate based DataMappers
+The following is a Layer Supertype for Hibernate based DataMappers which uses Java 5's generics
+so that subclasses can inherit each method without needing type-casts.
 
 @smallexample
 public class HibernateBaseDataMapper<T> implements BaseDataMapper<T>@{
@@ -507,7 +508,7 @@ public class HibernateBaseDataMapper<T> implements BaseDataMapper<T>@{
 @}
 @end smallexample
 
-Concrete subclasses can take advantage of Java 5's Generics to inherit the base functionality, while adding
+Concrete subclasses can inherit the base functionality, while adding
 its own functionality.
 
 @smallexample
@@ -532,132 +533,105 @@ public class HibernateAccountDataMapper extends HibernateBaseDataMapper<Account>
 @end smallexample
 
 These DataMappers need to connect to a datasource and take place in a transactional context.  
-Instead of using an XML-based ApplicationContext, this can be implemented in a singelton Service Locator.
+Instead of using an XML-based ApplicationContext, this can be implemented in pure Java
+by using a Service Locator.
 
+
+Hibernate needs a data source to connect to:
 @smallexample
-public class ServerSideServiceLocatorImplementation implements ServerSideServiceLocator  @{
-    private ServerSideServiceLocatorImplementation() @{
-        try@{
-            initializeDataSource();
-            initializeSessionFactory();
-            initializeTransactionManager();
-            initializeAccountDataMapper();
-        @} catch(Exception e) @{
-            e.printStackTrace();
-            System.exit(1);
-        @}
-    @}
-    private void initializeDataSource() @{
-        _dataSource = new BasicDataSource();
-        _dataSource.setDriverClassName("org.postgresql.Driver");
-        _dataSource.setUrl("jdbc:postgresql://localhost/hibernatetest");
-        _dataSource.setUsername("wsix");
-        _dataSource.setPassword("password");
-    @}
-    private void initializeSessionFactory() throws Exception @{
-        _localSessionFactoryBean = new LocalSessionFactoryBean();
-        Properties hibernateProperties = new Properties();
-        hibernateProperties.setProperty("hibernate.dialect","org.hibernate.dialect.PostgreSQLDialect");
-        _localSessionFactoryBean.setDataSource(_dataSource);
-        _localSessionFactoryBean.setMappingResources(new String[]@{"com/billsix/examples/atm/DomainObjects.hbm.xml"@});
-        _localSessionFactoryBean.setHibernateProperties(hibernateProperties);
-        _localSessionFactoryBean.afterPropertiesSet();
-    @}
-    private void initializeTransactionManager() @{
-        HibernateTransactionManager hibernateTransactionManager = new HibernateTransactionManager();
-        hibernateTransactionManager.setSessionFactory((org.hibernate.SessionFactory)_localSessionFactoryBean.getObject());
-        hibernateTransactionManager.afterPropertiesSet();
-        _transactionManager = hibernateTransactionManager;
-    @}
-    private void initializeAccountDataMapper() throws BeanInitializationException, IllegalArgumentException @{
-        HibernateAccountDataMapper hibernateAccountDataMapper = new HibernateAccountDataMapper();
-        hibernateAccountDataMapper.setSessionFactory((SessionFactory)_localSessionFactoryBean.getObject());
-        _accountDataMapper = hibernateAccountDataMapper;
-        addTransactionInterceptorToAccountDataMapper();          
-    @}
-    private void addTransactionInterceptorToAccountDataMapper() throws AopConfigException, BeansException @{        
-        NameMatchTransactionAttributeSource transactionAttributeSource = new NameMatchTransactionAttributeSource() ;
-        DefaultTransactionAttribute transactionAttribute = new DefaultTransactionAttribute();
-        transactionAttribute.setIsolationLevel(transactionAttribute.ISOLATION_DEFAULT);
-        transactionAttribute.setPropagationBehavior(transactionAttribute.PROPAGATION_REQUIRED);
-        transactionAttributeSource.addTransactionalMethod("*", transactionAttribute);
-        TransactionInterceptor transactionInterceptor = new TransactionInterceptor();
-        transactionInterceptor.setTransactionManager(_transactionManager);
-        transactionInterceptor.setTransactionAttributeSource(transactionAttributeSource);
-        transactionInterceptor.afterPropertiesSet();
-        ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
-        proxyFactoryBean.addAdvice(transactionInterceptor);
-        proxyFactoryBean.setTarget(_accountDataMapper);
-        _accountDataMapper = (AccountDataMapper) proxyFactoryBean.getObject();          
-    @}
-    private void initializeATM() @{
-        _atm = new ATMServiceImplementation(this._instance);
-        addSecurityInterceptorToATM();
-        addTransactionInterceptorToATM();
-    @}
-    private void addSecurityInterceptorToATM() throws AopConfigException @{
-        ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
-        proxyFactoryBean.addAdvice(new AuthenticationInterceptor());
-        proxyFactoryBean.setTarget(_atm);
-        _atm = (ATMService) proxyFactoryBean.getObject();
-    @}
-    private void addTransactionInterceptorToATM() throws AopConfigException @{
-        NameMatchTransactionAttributeSource transactionAttributeSource = new NameMatchTransactionAttributeSource() ;
-        DefaultTransactionAttribute transactionAttribute = new DefaultTransactionAttribute();
-        transactionAttribute.setIsolationLevel(transactionAttribute.ISOLATION_DEFAULT);
-        transactionAttribute.setPropagationBehavior(transactionAttribute.PROPAGATION_REQUIRED);
-        transactionAttributeSource.addTransactionalMethod("*", transactionAttribute);
-        TransactionInterceptor transactionInterceptor = new TransactionInterceptor();
-        transactionInterceptor.setTransactionManager(_transactionManager);
-        transactionInterceptor.setTransactionAttributeSource(transactionAttributeSource);
-        transactionInterceptor.afterPropertiesSet();
-        ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
-        proxyFactoryBean.addAdvice(transactionInterceptor);
-        proxyFactoryBean.setTarget(_atm);
-        _atm = (ATMService) proxyFactoryBean.getObject();        
-    @}
-     private void startRMI() throws RemoteException @{
-        _rmiServiceExporter = new RmiServiceExporter();
-        _rmiServiceExporter.setServiceName("ATM");
-        _rmiServiceExporter.setService(_atm);
-        _rmiServiceExporter.setServiceInterface(ATMService.class);
-        _rmiServiceExporter.setRegistryPort(1199);
-        _rmiServiceExporter.prepare();
-        _rmiServiceExporter.afterPropertiesSet();
-    @}
-     public void dropAndCreateSchemas() @{
-        _localSessionFactoryBean.dropDatabaseSchema();
-        _localSessionFactoryBean.createDatabaseSchema();
-    @}
-     public PlatformTransactionManager getTransactionManager() @{
-        return _transactionManager;
-    @}
-     public  AccountDataMapper getAccountDataMapper() @{
-        return _accountDataMapper;
-    @}
-     public ATMService getAtmService() @{
-        return _atm;
-    @}
-     public synchronized static ServerSideServiceLocator getInstance() @{
-        return _instance;
-    @}
-     public static void main(String[] args) throws Exception @{
-        _instance.startRMI();
-        while(true) @{
-            Thread.currentThread().sleep(99999);
-        @}
-    @}
-     private RmiServiceExporter _rmiServiceExporter;
-    private BasicDataSource _dataSource ;
-    private LocalSessionFactoryBean _localSessionFactoryBean;
-    private PlatformTransactionManager _transactionManager  ;
-    private AccountDataMapper _accountDataMapper;
-    private ATMService _atm;
-    private static ServerSideServiceLocatorImplementation _instance = new ServerSideServiceLocatorImplementation();
-    static@{
-        _instance.initializeATM();
-    @}
+private BasicDataSource _dataSource ;
+private void initializeDataSource() @{
+  _dataSource = new BasicDataSource();
+  _dataSource.setDriverClassName("org.postgresql.Driver");
+  _dataSource.setUrl("jdbc:postgresql://localhost/hibernatetest");
+  _dataSource.setUsername("wsix");
+  _dataSource.setPassword("password");
 @}
+@end smallexample
+
+
+
+
+Spring uses a LocalSessionFactoryBean to create a Hibernate SessionFactory.
+@smallexample
+private LocalSessionFactoryBean _localSessionFactoryBean;
+private void initializeSessionFactory() throws Exception @{
+  _localSessionFactoryBean = new LocalSessionFactoryBean();
+  Properties hibernateProperties = new Properties();
+  hibernateProperties.setProperty(
+       "hibernate.dialect","org.hibernate.dialect.PostgreSQLDialect");
+  _localSessionFactoryBean.setDataSource(_dataSource);
+  _localSessionFactoryBean.setMappingResources(
+       new String[]@{"com/billsix/examples/atm/DomainObjects.hbm.xml"@});
+  _localSessionFactoryBean.setHibernateProperties(hibernateProperties);
+  _localSessionFactoryBean.afterPropertiesSet();
+@}
+public void dropAndCreateSchemas() @{
+  _localSessionFactoryBean.dropDatabaseSchema();
+  _localSessionFactoryBean.createDatabaseSchema();
+@}
+@end smallexample
+
+
+Spring offers the PlatformTransactionManager interface, for which there is an implementation
+for Hibernate.
+@smallexample
+private PlatformTransactionManager _transactionManager  ;
+private void initializeTransactionManager() @{
+  HibernateTransactionManager hibernateTransactionManager = 
+                               new HibernateTransactionManager();
+  hibernateTransactionManager.setSessionFactory(
+     (org.hibernate.SessionFactory)_localSessionFactoryBean.getObject());
+  hibernateTransactionManager.afterPropertiesSet();
+  _transactionManager = hibernateTransactionManager;
+@}
+public PlatformTransactionManager getTransactionManager() @{
+  return _transactionManager;
+@}
+@end smallexample
+
+
+
+Here we create the HibernateAccountDataMapper.  Spring is able to catch and rethrow HibernateExceptions
+as Spring's DataAccessExceptions because the SessionFactory that is set on the HibernateAccountDataMapper
+is a dynamic proxy of Hibernate's SessionFactory.
+@smallexample
+private AccountDataMapper _accountDataMapper;
+private void initializeAccountDataMapper() throws BeanInitializationException, IllegalArgumentException @{
+  HibernateAccountDataMapper hibernateAccountDataMapper = 
+                              new HibernateAccountDataMapper();
+  hibernateAccountDataMapper.setSessionFactory(
+                (SessionFactory)_localSessionFactoryBean.getObject());
+  _accountDataMapper = hibernateAccountDataMapper;
+  addTransactionInterceptorToAccountDataMapper();          
+@}
+public  AccountDataMapper getAccountDataMapper() @{
+  return _accountDataMapper;
+@}
+@end smallexample
+
+
+
+Here we add a TransactionInterceptor to set the isolation and propagation levels of the 
+data access object.
+@smallexample
+private void addTransactionInterceptorToAccountDataMapper() throws AopConfigException, BeansException @{        
+  NameMatchTransactionAttributeSource transactionAttributeSource = new NameMatchTransactionAttributeSource() ;
+  DefaultTransactionAttribute transactionAttribute = new DefaultTransactionAttribute();
+  transactionAttribute.setIsolationLevel(transactionAttribute.ISOLATION_DEFAULT);
+  transactionAttribute.setPropagationBehavior(transactionAttribute.PROPAGATION_REQUIRED);
+  transactionAttributeSource.addTransactionalMethod("*", transactionAttribute);
+  TransactionInterceptor transactionInterceptor = new TransactionInterceptor();
+  transactionInterceptor.setTransactionManager(_transactionManager);
+  transactionInterceptor.setTransactionAttributeSource(transactionAttributeSource);
+  transactionInterceptor.afterPropertiesSet();
+  ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
+  proxyFactoryBean.addAdvice(transactionInterceptor);
+  proxyFactoryBean.setTarget(_accountDataMapper);
+  _accountDataMapper = (AccountDataMapper) proxyFactoryBean.getObject();          
+@}
+
+
 @end smallexample
 
 
