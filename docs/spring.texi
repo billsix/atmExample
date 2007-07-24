@@ -51,14 +51,14 @@ Foundation.
 @chapter Introduction
 @c %MENU% Purpose of the Spring Framework
 The Spring Framework is an excellent library for the Java programming language
-that faciliates flexible, layered enterprise application development.  The Spring Framework
+that promotes flexible, layered enterprise application development.  The Spring Framework
 allows developers to freely create their own domain model, while easily integrating their domain
-model into the Service Layer and Data Access Layer.  Furthermore, the domain model can  be integrated
-with standard JavaEE services which previously were accomplished by using Enterprise JavaBeans; 
+model into the Service Layer and Data Access Layer.  Furthermore, Spring facilitates integration of the domain model 
+with standard JavaEE services which were previously accomplished by using Enterprise JavaBeans; 
 such as JTA, and asynchronous JMS subscribers, 
 
 
-While there is already a plethora of documentation regarding Spring, most of it emphasizes the use of an XML-based 
+While a plethora of documentation regarding Spring exists in books and on the web, most of it emphasizes the use of an XML-based 
 ApplicationContext for the purpose of Depedency Injection and Aspect Oriented Programming.  Dependency Injection 
 allows a developer to seperate configuration of services from their use.  While Dependency Injection  may be appealing in 
 certain contexts @footnote{See http://www.martinfowler.com/articles/injection.html }, 
@@ -68,7 +68,7 @@ such as transaction management, authentication, or logging, without forcing the 
 boilerplate code repeatedly across each class in those layers.  The goals of Dependency Injection and AOP have merit.  
 
 
-With that said, a Service Locater can be used instead of Dependency Injection, and 
+With that said, the Service Locater pattern can be used instead of Dependency Injection, and 
 cross cutting concerns can be addressed in a more intuitive manner by using method interception libraries.  More importantly, the Service Locator
 pattern and method interception are easily implemented in pure Java instead of relying on a Dependency Injection container.
 
@@ -443,7 +443,7 @@ using Hibernate for my data access needs.
 
 Spring doesn't try to reinvent the wheel when it comes to Data Access frameworks; Spring opts instead just to integrate
 with many popular data access frameworks.  Spring's main contribution to
-the Data Access Layer is that it casts all Exceptions that are thrown and casts them into Spring's own DataAccessExceptions.  This
+the Data Access Layer is that it catches all Exceptions that are thrown and casts them into Spring's own DataAccessExceptions.  This
 allows exception handling code in your Service Layer to remain data-access technology agnostic.
 
 
@@ -626,7 +626,7 @@ These include the HibernateTransactionManager, JTATransactionManager, and others
 PlatformTransactionManager interface, transaction management code in the Service Layer can be developed 
 irregardless of the underlying transaction management scheme.
 
-On another note, if most of the methods in each service in the Service Layer are transactional, and have the same isolation
+On another note, if most of the methods in each service in the Service Layer are transactional and have the same isolation
 and propogation levels, dynamic proxies can be utilized to eliminate boilerplate transactional code.
 
 
