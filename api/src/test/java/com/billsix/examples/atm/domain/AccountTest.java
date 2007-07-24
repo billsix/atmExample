@@ -20,8 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 package com.billsix.examples.atm.domain;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -46,11 +45,21 @@ public class AccountTest extends TestCase {
     public void testDeposit() {
         _account.deposit(50.00);
         assertTrue(_account.getCurrentBalance() == 150.0);
+        Set<AccountTransaction> transactions = _account.getTransactionHistory(); 
+        assertTrue(transactions.size()==1);
+        AccountTransaction transaction = transactions.iterator().next(); 
+        assertTrue(transaction.getBalanceAfterTransaction() == 150.0);
+        assertTrue(transaction.getBalanceBeforeTransaction() == 100.0);
     }
     
     public void testWithdraw() {
         _account.withdraw(50.00);
         assertTrue(_account.getCurrentBalance() == 50.0);
+        Set<AccountTransaction> transactions = _account.getTransactionHistory(); 
+        assertTrue(transactions.size()==1);
+        AccountTransaction transaction = transactions.iterator().next(); 
+        assertTrue(transaction.getBalanceAfterTransaction() == 50.0);
+        assertTrue(transaction.getBalanceBeforeTransaction() == 100.0);
     }
     
     public void testPasswordIsValid() {
