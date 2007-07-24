@@ -19,33 +19,27 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
-package com.billsix.examples.atm.util;
-
+package com.billsix.examples.atm.dataacess;
 import com.billsix.examples.atm.domain.Account;
+import com.billsix.examples.atm.service.ServerSideServiceLocatorImplementation;
 
 /**
- *  Responsiblity - Create instances of the domain model object graph
  *
- * @author Bill Six
+ * @author Bill Six <billsix@billsix.com>
  */
-public class Fixtures {
-
-    /**
-     * @return An Account no AccountTransactions
-     */
-    public static Account createAccountWith0TransactionsWith100Dollars() {
-        return new Account("bill", "password", 100.00);
+public class DatabasePopulator {
+    
+    public static void main(String[] args) {
+        try{
+            ServerSideServiceLocatorImplementation.getInstance().dropAndCreateSchemas();
+            _accountDAO = ServerSideServiceLocatorImplementation.getInstance().getAccountDataMapper();
+            Account account = new Account("bill", "password", 100.00);
+            _accountDAO.saveOrUpdate(account);
+            Account bill =  _accountDAO.load("bill");
+        } catch(Throwable re) {
+            re.printStackTrace();
+        }
     }
     
-    /**
-     * @return An Account which has one AccountTransaction, which brings the
-     * new balance to $200.
-     */
-    public static Account createAccountWith1DepositWith200Balance() {
-        Account account = new Account("bill", "password", 100.00);
-        account.deposit(100.0);
-        return account ;
-    }
-    
-    
+    private static AccountDataMapper _accountDAO;
 }
