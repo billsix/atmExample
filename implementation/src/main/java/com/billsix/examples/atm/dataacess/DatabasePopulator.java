@@ -25,7 +25,7 @@ import com.billsix.examples.atm.service.ServerSideServiceLocatorImplementation;
 
 /**
  *
- * @author Bill Six <billsix@billsix.com>
+ * @author Bill Six 
  */
 public class DatabasePopulator {
     
