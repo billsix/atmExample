@@ -1,5 +1,5 @@
 <!--
- Copyright (c) 2007 Bill Six 
+ Copyright (c) 2007 Bill Six
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,28 +21,58 @@ THE SOFTWARE.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.billsix.examples.atm</groupId>
+    <artifactId>ATM-webClient</artifactId>
+    <packaging>war</packaging>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>ATM Example - Web Client</name>
+    <url>http://www.billsix.com</url>
+    
+    <build>
+        <finalName>ATM-webClient</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <dependencies>
+        
+         <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>2.4</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>myfaces</groupId>
+            <artifactId>myfaces-all</artifactId>
+            <version>1.1.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.facelets</groupId>
+            <artifactId>jsf-facelets</artifactId>
+            <version>1.1.11</version>
+        </dependency> 
 
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>com.billsix.examples.atm</groupId>
-  <artifactId>ATM-build</artifactId>
-  <packaging>pom</packaging>
-  <version>0.0.1-SNAPSHOT</version>
-  <name>Build Project</name>
-  <url>http://www.billsix.com</url>
 
-  <modules>
-    <module>api</module>
-    <module>implementation</module>
-    <module>richClient</module>
-    <module>webClient</module>
-  </modules>
+        <dependency>
+            <groupId>com.billsix.examples.atm</groupId>
+            <artifactId>ATM-api</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
 
-  <build>
-    <defaultGoal>install</defaultGoal>
-  </build>
-
-
-
-
+        <dependency>
+            <groupId>com.billsix.examples.atm</groupId>
+            <artifactId>ATM-implementation</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 </project>
-
