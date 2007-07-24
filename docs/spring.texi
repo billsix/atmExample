@@ -65,7 +65,7 @@ certain contexts @footnote{See http://www.martinfowler.com/articles/injection.ht
 it is not a prerequisite for separating configuration from use.  Aspect Oriented Programming is primarily used as a technique
 for intercepting method calls to the Service Layer and Data Access Layer, allowing a developer to code cross cutting concerns
 such as transaction management, authentication, or logging, without forcing the developer to copy the same 
-boilerplate code repeatedly across each class in those layers.  I believe that the goals of Dependency Injection and AOP have merit.  
+boilerplate code repeatedly across each class in those layers.  The goals of Dependency Injection and AOP have merit.  
 
 
 With that said, a Service Locater can be used instead of Dependency Injection, and 
@@ -180,7 +180,7 @@ public interface CalculatorService extends Authenticatable @{
 
 
 
-The implementation of CalculatorService could be implemented by making the add 
+The implementation of CalculatorService could be implemented by making the add() 
 method check to make sure the user has an authenticated account.  This would mean that
 any additional methods added to the CalculatorService would need to do the same thing at the beginning
 of each method.  This is the exact 
@@ -269,7 +269,7 @@ While the dynamic proxy solution for the Authenticatable interface would work, a
 which implement the Authenticatable interface would be forced to implement the same logic.  
 One solution to avoid
 rewriting the same logic repeatedly would be to create a Layer Supertype which has the Authenticatable 
-implementation.  Since all services in the Service Layer sublcass the Layer Supertype, they will all be
+implementation.  Since all services in the Service Layer subclass the Layer Supertype, they will all be
 Authenticatable.  
 
 Another alternative is to use Introductions.  Introductions are form of dynamic proxies that 
@@ -395,9 +395,6 @@ as Smalltalk.
   calculatorService authenticateUsername: '' Password: ''.
   self assert: ((calculatorService add: 1 and: 2) = 3)
 
-
-
-
  Object subclass: #CalculatorService
   instanceVariableNames: ''
   classVariableNames: ''
@@ -406,10 +403,6 @@ as Smalltalk.
 
  add: first and: second 
   ^ first + second
-
-
-
-
 
  ProtoObject subclass: #AuthenticatableProxy
   instanceVariableNames: 'target isAuthenticated'
@@ -438,8 +431,8 @@ Smalltalk-80 that is not implemented using multiple-inheritance or proxies, call
 information about Traits, the reader should consult Stephane Ducasse's, et. al.,  paper called 
 ``Traits: A mechanism for fine-grained reuse''. 
 
-@node Data Access 
-@chapter Data Access 
+@node Data Access Layer 
+@chapter Data Access Layer
 @c %MENU% Data Access 
 
 Spring integrates with many different data access technologies, from full fledged object-relational mappers like
@@ -448,12 +441,14 @@ The reader should consult PoEAA to see the different types of data access strate
 so I prefer a beastly domain model that is persisted using a Data Mapper; as such I find myself frequently
 using Hibernate for my data access needs. 
 
-Another notable thing about data access in Spring is that Spring catches all Exceptions thrown in the Data Access 
-Layer and casts them into a Spring DataAccessExceptions.
+Spring doesn't try to reinvent the wheel when it comes to Data Access frameworks; Spring opts instead just to integrate
+with many popular data access frameworks.  Spring's main contribution to
+the Data Access Layer is that it casts all Exceptions that are thrown and casts them into Spring's own DataAccessExceptions.  This
+allows exception handling code in your Service Layer to remain data-access technology agnostic.
 
 
-@node Data Access Layer,  , Data Access 
-@section Data Access Layer
+@node Data Mappers,  , Data Access Layer 
+@section Data Mappers
 
 The following is a Layer Supertype for Hibernate based DataMappers which uses Java 5's generics
 so that subclasses can inherit each method without needing type-casts.
@@ -532,6 +527,11 @@ public class HibernateAccountDataMapper extends HibernateBaseDataMapper<Account>
 @}
 @end smallexample
 
+
+@node Configuration,  , Data Access Layer 
+@section Configuration
+
+
 These DataMappers need to connect to a datasource and take place in a transactional context.  
 Instead of using an XML-based ApplicationContext, this can be implemented in pure Java
 by using a Service Locator.
@@ -573,24 +573,6 @@ public void dropAndCreateSchemas() @{
 @end smallexample
 
 
-Spring offers the PlatformTransactionManager interface, for which there is an implementation
-for Hibernate.
-@smallexample
-private PlatformTransactionManager _transactionManager  ;
-private void initializeTransactionManager() @{
-  HibernateTransactionManager hibernateTransactionManager = 
-                               new HibernateTransactionManager();
-  hibernateTransactionManager.setSessionFactory(
-     (org.hibernate.SessionFactory)_localSessionFactoryBean.getObject());
-  hibernateTransactionManager.afterPropertiesSet();
-  _transactionManager = hibernateTransactionManager;
-@}
-public PlatformTransactionManager getTransactionManager() @{
-  return _transactionManager;
-@}
-@end smallexample
-
-
 
 Here we create the HibernateAccountDataMapper.  Spring is able to catch and rethrow HibernateExceptions
 as Spring's DataAccessExceptions because the SessionFactory that is set on the HibernateAccountDataMapper
@@ -612,29 +594,6 @@ public  AccountDataMapper getAccountDataMapper() @{
 
 
 
-Here we add a TransactionInterceptor to set the isolation and propagation levels of the 
-data access object.
-@smallexample
-private void addTransactionInterceptorToAccountDataMapper() throws AopConfigException, BeansException @{        
-  NameMatchTransactionAttributeSource transactionAttributeSource = new NameMatchTransactionAttributeSource() ;
-  DefaultTransactionAttribute transactionAttribute = new DefaultTransactionAttribute();
-  transactionAttribute.setIsolationLevel(transactionAttribute.ISOLATION_DEFAULT);
-  transactionAttribute.setPropagationBehavior(transactionAttribute.PROPAGATION_REQUIRED);
-  transactionAttributeSource.addTransactionalMethod("*", transactionAttribute);
-  TransactionInterceptor transactionInterceptor = new TransactionInterceptor();
-  transactionInterceptor.setTransactionManager(_transactionManager);
-  transactionInterceptor.setTransactionAttributeSource(transactionAttributeSource);
-  transactionInterceptor.afterPropertiesSet();
-  ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
-  proxyFactoryBean.addAdvice(transactionInterceptor);
-  proxyFactoryBean.setTarget(_accountDataMapper);
-  _accountDataMapper = (AccountDataMapper) proxyFactoryBean.getObject();          
-@}
-
-
-@end smallexample
-
-
 
 This brings me to my one complaint with Spring's design.  Each of these objects have empty constructors,
 and properties must be set using setter methods.  After all of the required properties are set, afterPropertiesSet()
@@ -644,10 +603,20 @@ and would cut down on the amount of code needed within the Service Locator.
 
 
       
-@node Transaction Management in the Service Layer,  , Data Access 
-@section Transaction Management in the Service Layer
 
-Spring allows you to develop your code completely independently of a specific transactional context.  Whether
+@node Service Layer
+@chapter Service Layer
+@c %MENU% Service Layer
+
+The Service Layer is where Spring's main strengths lie.  Dynamic Proxies and Introductions are most useful at this layer,
+where there is normally a lot of boilerplate code in transaction management, authentication and authorization, and logging.
+
+
+
+@node Transaction Management  , Service Layer
+@section Transaction Management
+
+Spring allows you to develop your Service Layer code completely independently of a specific transaction technology.  Whether
 you are developing code which accesses one database, or whether you are accessing a database and a message queue
 in a JTA distributed transaction; if your transactional context needs to change, all that you need to modify 
 is the configuration in your Service Locator.
@@ -661,6 +630,52 @@ On another note, if most of the methods in each service in the Service Layer are
 and propogation levels, dynamic proxies can be utilized to eliminate boilerplate transactional code.
 
 
+@node Configuration,  , Service Layer
+@section Configuration
+
+Again, instead of using an XML-based ApplicationContext, the following is added to the Service Locator.
+
+@smallexample
+private PlatformTransactionManager _transactionManager  ;
+private void initializeTransactionManager() @{
+  HibernateTransactionManager hibernateTransactionManager = 
+                               new HibernateTransactionManager();
+  hibernateTransactionManager.setSessionFactory(
+     (org.hibernate.SessionFactory)_localSessionFactoryBean.getObject());
+  hibernateTransactionManager.afterPropertiesSet();
+  _transactionManager = hibernateTransactionManager;
+@}
+public PlatformTransactionManager getTransactionManager() @{
+  return _transactionManager;
+@}
+@end smallexample
+
+
+
+Here we add a TransactionInterceptor to force all methods in the ATMService class to
+perform in transactions, at the database's default isolation level.
+
+@smallexample
+private void addTransactionInterceptorToATM() throws AopConfigException @{
+    NameMatchTransactionAttributeSource transactionAttributeSource = new NameMatchTransactionAttributeSource() ;
+    DefaultTransactionAttribute transactionAttribute = new DefaultTransactionAttribute();
+    transactionAttribute.setIsolationLevel(transactionAttribute.ISOLATION_DEFAULT);
+    transactionAttribute.setPropagationBehavior(transactionAttribute.PROPAGATION_REQUIRED);
+    transactionAttributeSource.addTransactionalMethod("*", transactionAttribute);
+    TransactionInterceptor transactionInterceptor = new TransactionInterceptor();
+    transactionInterceptor.setTransactionManager(_transactionManager);
+    transactionInterceptor.setTransactionAttributeSource(transactionAttributeSource);
+    transactionInterceptor.afterPropertiesSet();        
+    ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
+    proxyFactoryBean.addAdvice(transactionInterceptor);
+    proxyFactoryBean.setTarget(_atmService);
+    _atmService = (ATMService) proxyFactoryBean.getObject();        
+@}
+@end smallexample
+
+
+
+
 @node Remoting
 @chapter Remoting
 @c %MENU% Remoting
@@ -672,8 +687,8 @@ Hessian and Burlap that use reflection-based serialization instead of native Jav
 fail when the domain model is persisted using Hibernate, or possibly any other bytecode-enhanced dynamic proxies.  
 
 One of the best features of Hibernate is that
-it allows a developer to fetch a specified subgraph of the persistent object model graph (thus, solving the n+1 select problem). 
-More likely than not, some of the objects in the fetched subgraph reference objects that were not fetched in
+it allows a developer to fetch a specified subgraph of the persistent Domain Model object graph (thus, solving the n+1 select problem). 
+If the object graph is reasonably complex, it's common for some of the objects in the fetched subgraph to reference objects that were not fetched in
 the database roundtrip.  Hibernate does not model this dangling reference with a null pointer; instead, since Hibernate 
 uses CGLIB's dynamic proxies, the dangling reference is a proxy object to the unfetched object in the database.  Upon
 method calls to that dynamic proxy, the proxy attempts to fetch the target object from the database.  This means that if you're outside of the
@@ -715,7 +730,7 @@ to be a superior method of achieving the desired result.
 @c %MENU% Conclusion
 
 The Spring Framework is an excellent library for the Java programming language
-that faciliates flexible, layered enterprise application development.  
+whose main strengths occur in the Service Layer of enterprise application development.
 
 This document, and all sample code can be downloaded from anonymously via subversion.
 
