@@ -23,6 +23,7 @@ package com.billsix.examples.atm.dataacess;
 
 import com.billsix.examples.atm.domain.Account;
 import org.hibernate.Hibernate;
+import org.hibernate.SessionFactory;
 import org.springframework.dao.DataRetrievalFailureException;
 
 /**
@@ -31,7 +32,8 @@ import org.springframework.dao.DataRetrievalFailureException;
  */
 public class HibernateAccountDataMapper extends HibernateBaseDataMapper<Account> implements AccountDataMapper{
     
-    public HibernateAccountDataMapper() {
+    public HibernateAccountDataMapper(SessionFactory sessionFactory) {
+        super(sessionFactory);
     }
     
     public Account load(final String username) {        

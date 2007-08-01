@@ -48,6 +48,7 @@ public class ATMServiceImplementation extends BaseServiceImplementation implemen
     }
     
     public Double getBalance() {
+        getServerServiceLocator().getAccountDataMapper().saveOrUpdate(_account);
         return _account.getCurrentBalance();
     }
     

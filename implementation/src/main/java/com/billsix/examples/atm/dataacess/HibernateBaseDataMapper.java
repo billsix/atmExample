@@ -35,8 +35,9 @@ import org.hibernate.criterion.Criterion;
  */
 public class HibernateBaseDataMapper<T> implements BaseDataMapper<T>{
     
-    public HibernateBaseDataMapper() {
+    public HibernateBaseDataMapper(SessionFactory sessionFactory) {
         _persistentClass =  (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+        _sessionFactory = sessionFactory;
     }
     
     public T load(Long id) {

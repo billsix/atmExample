@@ -76,18 +76,13 @@ public class ServerSideServiceLocatorImplementation implements ServerSideService
         _localSessionFactoryBean.afterPropertiesSet();
     }
     
-    private void initializeTransactionManager() {
-        HibernateTransactionManager hibernateTransactionManager = new HibernateTransactionManager();
-        hibernateTransactionManager.setSessionFactory((org.hibernate.SessionFactory)_localSessionFactoryBean.getObject());
-        hibernateTransactionManager.afterPropertiesSet();
-        _transactionManager = hibernateTransactionManager;
+    private void initializeTransactionManager() {        
+        _transactionManager = new HibernateTransactionManager((org.hibernate.SessionFactory)_localSessionFactoryBean.getObject());
     }
     
     
     private void initializeAccountDataMapper() throws BeanInitializationException, IllegalArgumentException {
-        HibernateAccountDataMapper hibernateAccountDataMapper = new HibernateAccountDataMapper();
-        hibernateAccountDataMapper.setSessionFactory((SessionFactory)_localSessionFactoryBean.getObject());
-        _accountDataMapper = hibernateAccountDataMapper;
+        _accountDataMapper = new HibernateAccountDataMapper((SessionFactory)_localSessionFactoryBean.getObject());
         addTransactionInterceptorToAccountDataMapper();          
     }
 
@@ -98,9 +93,7 @@ public class ServerSideServiceLocatorImplementation implements ServerSideService
         transactionAttribute.setPropagationBehavior(transactionAttribute.PROPAGATION_REQUIRED);
         transactionAttributeSource.addTransactionalMethod("*", transactionAttribute);
 
-        TransactionInterceptor transactionInterceptor = new TransactionInterceptor();
-        transactionInterceptor.setTransactionManager(_transactionManager);
-        transactionInterceptor.setTransactionAttributeSource(transactionAttributeSource);
+        TransactionInterceptor transactionInterceptor = new TransactionInterceptor(_transactionManager,transactionAttributeSource);
         transactionInterceptor.afterPropertiesSet();
         
         ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
@@ -130,9 +123,7 @@ public class ServerSideServiceLocatorImplementation implements ServerSideService
         transactionAttribute.setPropagationBehavior(transactionAttribute.PROPAGATION_REQUIRED);
         transactionAttributeSource.addTransactionalMethod("*", transactionAttribute);
 
-        TransactionInterceptor transactionInterceptor = new TransactionInterceptor();
-        transactionInterceptor.setTransactionManager(_transactionManager);
-        transactionInterceptor.setTransactionAttributeSource(transactionAttributeSource);
+        TransactionInterceptor transactionInterceptor = new TransactionInterceptor(_transactionManager,transactionAttributeSource);
         transactionInterceptor.afterPropertiesSet();
         
         ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
@@ -147,7 +138,6 @@ public class ServerSideServiceLocatorImplementation implements ServerSideService
         _rmiServiceExporter.setService(_atmService);
         _rmiServiceExporter.setServiceInterface(ATMService.class);
         _rmiServiceExporter.setRegistryPort(1199);
-        _rmiServiceExporter.prepare();
         _rmiServiceExporter.afterPropertiesSet();
     }
     
