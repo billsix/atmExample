@@ -21,7 +21,9 @@ THE SOFTWARE.
  */
 package com.billsix.examples.atm.service;
 
+import com.billsix.examples.atm.dataacess.AccountDataMapper;
 import com.billsix.examples.atm.domain.Account;
+import com.billsix.examples.atm.registry.RegistryImplementation;
 import org.springframework.dao.DataAccessException;
 
 /**
@@ -30,13 +32,13 @@ import org.springframework.dao.DataAccessException;
  */
 public class ATMServiceImplementation extends BaseServiceImplementation implements ATMService{
     
-    public ATMServiceImplementation(ServerSideServiceLocator serverServiceLocator) {
-        super(serverServiceLocator);
+    public ATMServiceImplementation(RegistryImplementation registry) {
+        super(registry);
     }
     
     public boolean authenticate(String username, String password) {
         try{
-            Account account = getServerServiceLocator().getAccountDataMapper().load(username);
+            Account account = getRegistry().getAccountDataMapper().load(username);
             if(account.passwordIsValid(password)) {
                 this.account = account;
                 return true;
@@ -48,29 +50,32 @@ public class ATMServiceImplementation extends BaseServiceImplementation implemen
     }
     
     public Double getBalance() {
-        getServerServiceLocator().getAccountDataMapper().saveOrUpdate(this.account);
+        getRegistry().getAccountDataMapper().saveOrUpdate(this.account);
         return this.account.getCurrentBalance();
     }
     
     public void deposit(Double amountToDeposit) {
-        getServerServiceLocator().getAccountDataMapper().saveOrUpdate(this.account);
+        getRegistry().getAccountDataMapper().saveOrUpdate(this.account);
         this.account.deposit(amountToDeposit);
     }
     
     public void withDraw(Double amountToWithdraw) {
-        getServerServiceLocator().getAccountDataMapper().saveOrUpdate(this.account);
+        getRegistry().getAccountDataMapper().saveOrUpdate(this.account);
         this.account.withdraw(amountToWithdraw);
     }
     
     public Account fetchAccountTransactions() {
-        getServerServiceLocator().getAccountDataMapper().saveOrUpdate(this.account);
-        return getServerServiceLocator().getAccountDataMapper().fetchAccountTransactions(this.account);
+        getRegistry().getAccountDataMapper().saveOrUpdate(this.account);
+        return getRegistry().getAccountDataMapper().fetchAccountTransactions(this.account);
     }
     
     
     public Account getAuthenticatedAccount() {
         return this.account;
     }
+    
+
+    
     
     private Account account;
 }

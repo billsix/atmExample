@@ -21,6 +21,8 @@ THE SOFTWARE.
  */
 package com.billsix.examples.atm.service;
 
+import com.billsix.examples.atm.registry.RegistryImplementation;
+
 /**
  *  Acts as a Layer Supertype for all Service objects
  *
@@ -31,13 +33,13 @@ package com.billsix.examples.atm.service;
  */
 public class BaseServiceImplementation implements BaseService{
     
-    public BaseServiceImplementation(ServerSideServiceLocator serverServiceLocator) {
-        this.serverServiceLocator = serverServiceLocator;
+    public BaseServiceImplementation(RegistryImplementation registry) {
+        this.registry = registry;
     }
     
-    public ServerSideServiceLocator getServerServiceLocator() {
-        return this.serverServiceLocator;
+    public RegistryImplementation getRegistry() {
+        return this.registry;
     }
     
-    private ServerSideServiceLocator serverServiceLocator;
+    private RegistryImplementation registry;
 }

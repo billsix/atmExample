@@ -21,20 +21,23 @@ THE SOFTWARE.
  */
 package com.billsix.examples.atm.service;
 
-import com.billsix.examples.atm.dataacess.AccountDataMapper;
-import org.springframework.transaction.PlatformTransactionManager;
+import com.billsix.examples.atm.registry.Registry;
+import org.springframework.remoting.rmi.RmiProxyFactoryBean;
 
-/**
- *  Responsiblity - Additionally provide an implementation of the AccountDataMapper
- *     and PlatformTransactionManagerinterface
- *     to the service, domain, and data access tiers.
- *
- *
- * @author Bill Six
- */
-
-public interface ServerSideServiceLocator extends ClientSideServiceLocator {
-    public void dropAndCreateSchemas();
-    public AccountDataMapper getAccountDataMapper();
-    public PlatformTransactionManager getTransactionManager();
+public class Main {
+    
+    public Main() {
+        RmiProxyFactoryBean proxyFactoryBean = new RmiProxyFactoryBean();
+        proxyFactoryBean.setServiceUrl("rmi://localhost:1199/ATM");
+        proxyFactoryBean.setServiceInterface(ATMService.class);
+        proxyFactoryBean.afterPropertiesSet();
+        atmService = (ATMService) proxyFactoryBean.getObject();
+    }
+    
+    public ATMService getATMService()
+    {
+        return atmService;
+    }
+    
+    private ATMService atmService;
 }

@@ -21,7 +21,7 @@ THE SOFTWARE.
  */
 package com.billsix.examples.atm.service;
 
-import com.billsix.examples.atm.service.ServerSideServiceLocator;
+import com.billsix.examples.atm.registry.Registry;
 
 /**
  *  Responsiblity - Base Service Layer interface which contains references
@@ -31,5 +31,5 @@ import com.billsix.examples.atm.service.ServerSideServiceLocator;
  */
 
 public interface BaseService {
-    public ServerSideServiceLocator getServerServiceLocator();
+    public Registry getRegistry();
 }

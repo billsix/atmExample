@@ -23,7 +23,7 @@ package com.billsix.examples.atm.webclient;
 
 import com.billsix.examples.atm.domain.AccountTransaction;
 import com.billsix.examples.atm.service.ATMService;
-import com.billsix.examples.atm.service.ServerSideServiceLocatorImplementation;
+import com.billsix.examples.atm.service.Main;
 import java.util.ArrayList;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
@@ -127,7 +127,7 @@ public class ATMServiceBackingBean {
         return selectedTransaction;
     }
     
-    private ATMService atmService = ServerSideServiceLocatorImplementation.getInstance().getAtmService();
+    private ATMService atmService = new Main().getRegistry().getAtmService();
     private String username;
     private String password;
     private String withdrawal;

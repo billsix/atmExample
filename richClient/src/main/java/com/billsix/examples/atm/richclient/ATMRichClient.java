@@ -25,7 +25,7 @@ import com.billsix.examples.atm.domain.Account;
 import com.billsix.examples.atm.domain.AccountTransaction;
 import com.billsix.examples.atm.service.ATMService;
 import com.billsix.examples.atm.service.ClientSideServiceLocator;
-import com.billsix.examples.atm.service.ClientSideServiceLocatorImplementation;
+import com.billsix.examples.atm.service.Main;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import javax.swing.JOptionPane;
@@ -42,8 +42,8 @@ import javax.swing.table.TableModel;
 public class ATMRichClient extends javax.swing.JFrame {
     
     /** Creates new form ATM */
-    public ATMRichClient(ClientSideServiceLocator clientServiceLocator) {
-        atmService = clientServiceLocator.getAtmService();
+    public ATMRichClient(ATMService atmService) {
+        this.atmService = atmService;
         initComponents();
     }
     
@@ -406,7 +406,7 @@ public class ATMRichClient extends javax.swing.JFrame {
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                atmRichClient = new ATMRichClient(ClientSideServiceLocatorImplementation.getInstance());
+                atmRichClient = new ATMRichClient(new Main().getATMService());
                 atmRichClient.setVisible(true);
             }
         });

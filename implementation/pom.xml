@@ -48,7 +48,7 @@ THE SOFTWARE.
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>com.billsix.examples.atm.service.ServerSideServiceLocatorImplementation</mainClass>
+                            <mainClass>com.billsix.examples.atm.service.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

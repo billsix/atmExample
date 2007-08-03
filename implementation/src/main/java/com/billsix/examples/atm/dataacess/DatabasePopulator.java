@@ -21,7 +21,7 @@ THE SOFTWARE.
  */
 package com.billsix.examples.atm.dataacess;
 import com.billsix.examples.atm.domain.Account;
-import com.billsix.examples.atm.service.ServerSideServiceLocatorImplementation;
+import com.billsix.examples.atm.service.Main;
 
 /**
  *
@@ -31,8 +31,10 @@ public class DatabasePopulator {
     
     public static void main(String[] args) {
         try{
-            ServerSideServiceLocatorImplementation.getInstance().dropAndCreateSchemas();
-            accountDAO = ServerSideServiceLocatorImplementation.getInstance().getAccountDataMapper();
+            Main main = new Main();
+            main.getRegistry().getLocalSessionFactoryBean().dropDatabaseSchema();
+            main.getRegistry().getLocalSessionFactoryBean().createDatabaseSchema();
+            accountDAO = main.getRegistry().getAccountDataMapper();
             Account account = new Account("bill", "password", 100.00);
             accountDAO.saveOrUpdate(account);
             Account bill =  accountDAO.load("bill");
