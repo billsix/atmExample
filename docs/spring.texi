@@ -1,4 +1,5 @@
-\input texinfo_times.tex
+set-foreg       
+                       \input texinfo_times.tex
 @setfilename spring.info
 @settitle Introduction to the Spring Framework
 @paragraphindent 1
@@ -59,8 +60,8 @@ Furthermore, Spring's transaction management also includes support for the deliv
 of JMS messages.
 
 The Spring Framework's main strength is that it provides interfaces as an abstraction over existing libraries 
-with similar functionality.  Specifically, these services are transaction management, dynamic proxy creation, and
-data access technologies.
+with similar functionality.  Specifically, these services are transaction management, dynamic proxy creation, integration
+with a wide variety of data access technologies, and remoting.
 
 While a plethora of documentation regarding Spring exists in books and on the web, most of it emphasizes the use of an XML-based 
 ApplicationContext for the purpose of Depedency Injection and Aspect Oriented Programming.  While these may or may not have
@@ -230,172 +231,70 @@ you would just need to call factory.setProxyTargetClass(true); before calling fa
 @chapter Data Access Layer
 @c %MENU% Data Access 
 
-Unlike the previous section on dynamic proxies, the methods in which people solve persistence greatly 
-varies@footnote{See Table Data Gateway, Row Data Gateway, and Data Mapper in PoEAA}.
+Unlike the previous section on dynamic proxies, where different libraries solved the same problem using different techniques,
+the problems that different data access technologies try to solve varies greatly@footnote{See Table Data Gateway, Row Data Gateway, and Data Mapper in PoEAA}.
 There exist full fledged object-relational mappers like Hibernate and the Java Persistence API, to lighter weight solutions 
 like iBatis or JDBC.  With all the variation, it would not be feasable to define a set of interfaces
 which define common data access behavior across them all.
 
 However, what is possible is to define a data access technology agnostic set of DataAccessExceptions to simplify the commit/rollback 
-transactional logic in the Service Layer.  Furthermore, given
-dynamic proxies, you could integrate with each of the aforementioned technologies and put a dynamic proxy in front of them.
-This proxy catches all of the Exceptions thrown in the Data Access Tier and recasts them as the Spring DataAccessExceptions. 
+transactional logic in the Service Layer.  Furthermore, using
+dynamic proxies, you could integrate with each of the aforementioned technologies, putting a dynamic proxy in front of them.
+This proxy catches all of the Exceptions thrown in the Data Access Layer and recasts them as the Spring DataAccessExceptions. 
 
-
-
-@node Data Mappers,  , Data Access Layer 
-@section Data Mappers
-
-The following is a Layer Supertype for Hibernate based DataMappers which uses Java 5's generics
-so that subclasses can inherit each method without needing type-casts.
-
-@smallexample
-public class HibernateBaseDataMapper<T> implements BaseDataMapper<T>@{
-    public HibernateBaseDataMapper() @{
-        _persistentClass =  (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-    @}
-    public T load(Long id) @{
-        T entity = (T) _sessionFactory.getCurrentSession().load(_persistentClass, id);
-        Hibernate.initialize(entity);
-        return entity;
-    @}
-    public List<T> findAll() @{
-        return findByCriteria();
-    @}
-    protected List<T> findByExample(T exampleInstance, String[] excludeProperty) @{
-        Criteria crit = _sessionFactory.getCurrentSession().createCriteria(_persistentClass);
-        Example example =  Example.create(exampleInstance);
-        for (String exclude : excludeProperty) @{
-            example.excludeProperty(exclude);
-        @}
-        crit.add(example);
-        return crit.list();
-    @}
-    protected List<T> findByCriteria(Criterion... criterion) @{
-        Criteria crit = _sessionFactory.getCurrentSession().createCriteria(_persistentClass);
-        for (Criterion c : criterion) @{
-            crit.add(c);
-        @}
-        return crit.list();
-    @}
-    public T saveOrUpdate(T entity) @{
-        _sessionFactory.getCurrentSession().saveOrUpdate(entity);
-        return entity;
-    @}
-    public void delete(T entity) @{
-        _sessionFactory.getCurrentSession().delete(entity);
-    @}
-    public void flush() @{
-        _sessionFactory.getCurrentSession().flush();
-    @}
-    public void clear() @{
-        _sessionFactory.getCurrentSession().clear();
-    @}
-    public void setSessionFactory(SessionFactory sessionFactory) @{
-        _sessionFactory = sessionFactory;
-    @}
-    protected SessionFactory _sessionFactory ;
-    private Class<T> _persistentClass;
-@}
-@end smallexample
-
-Concrete subclasses can inherit the base functionality, while adding
-its own functionality.
-
-@smallexample
-public class HibernateAccountDataMapper extends HibernateBaseDataMapper<Account> implements AccountDataMapper@{
-    public HibernateAccountDataMapper() @{
-    @}
-    public Account load(final String username) @{        
-        Account toReturn = (Account) _sessionFactory.getCurrentSession()
-                .createQuery("from Account as account where account._username like :username")
-                .setParameter("username", username, Hibernate.STRING)
-                .uniqueResult();        
-        if(toReturn == null) @{
-            throw new DataRetrievalFailureException("No user with name " + username + " exists");
-        @}
-        return toReturn;
-    @}
-    public Account fetchAccountTransactions(final Account account) @{
-        Hibernate.initialize(account.getTransactionHistory());
-        return account;
-    @}
-@}
-@end smallexample
-
-
-@node Configuration,  , Data Access Layer 
+@node Hibernate Configuration,  , Data Access Layer 
 @section Configuration
 
 
-These DataMappers need to connect to a datasource and take place in a transactional context.  
-Instead of using an XML-based ApplicationContext, this can be implemented in pure Java
-by using a Service Locator.
+This section shows how to use Spring to instantiate a Hibernate Data Mapper.
 
 
-Hibernate needs a data source to connect to:
+First, Hibernate needs a data source to connect to, so here I use Apache Common's data base connection pool's
+BasicDataSource.  Next, I create a Spring LocalSessionFactoryBean, which is the Exception-catching 
+dynamic proxy in front of Hibernate's SessionFactory.  We can then use that SessionFactory to
+create the a custom DataMapper.  
+
 @smallexample
 private BasicDataSource _dataSource ;
 private void initializeDataSource() @{
-  _dataSource = new BasicDataSource();
-  _dataSource.setDriverClassName("org.postgresql.Driver");
-  _dataSource.setUrl("jdbc:postgresql://localhost/hibernatetest");
-  _dataSource.setUsername("wsix");
-  _dataSource.setPassword("password");
+  dataSource = new BasicDataSource();
+  dataSource.setDriverClassName("org.postgresql.Driver");
+  dataSource.setUrl("jdbc:postgresql://localhost/hibernatetest");
+  dataSource.setUsername("wsix");
+  dataSource.setPassword("password");
 @}
-@end smallexample
-
-
-
-
-Spring uses a LocalSessionFactoryBean to create a Hibernate SessionFactory.
-@smallexample
 private LocalSessionFactoryBean _localSessionFactoryBean;
 private void initializeSessionFactory() throws Exception @{
-  _localSessionFactoryBean = new LocalSessionFactoryBean();
+  localSessionFactoryBean = new LocalSessionFactoryBean();
   Properties hibernateProperties = new Properties();
   hibernateProperties.setProperty(
        "hibernate.dialect","org.hibernate.dialect.PostgreSQLDialect");
-  _localSessionFactoryBean.setDataSource(_dataSource);
-  _localSessionFactoryBean.setMappingResources(
-       new String[]@{"com/billsix/examples/atm/DomainObjects.hbm.xml"@});
-  _localSessionFactoryBean.setHibernateProperties(hibernateProperties);
-  _localSessionFactoryBean.afterPropertiesSet();
+  localSessionFactoryBean.setDataSource(dataSource);
+  localSessionFactoryBean.setMappingResources(
+      new String[]@{"com/billsix/examples/atm/DomainObjects.hbm.xml"@});
+  localSessionFactoryBean.setHibernateProperties(hibernateProperties);
+  localSessionFactoryBean.afterPropertiesSet();
 @}
-public void dropAndCreateSchemas() @{
-  _localSessionFactoryBean.dropDatabaseSchema();
-  _localSessionFactoryBean.createDatabaseSchema();
-@}
-@end smallexample
-
-
-
-Here we create the HibernateAccountDataMapper.  Spring is able to catch and rethrow HibernateExceptions
-as Spring's DataAccessExceptions because the SessionFactory that is set on the HibernateAccountDataMapper
-is a dynamic proxy of Hibernate's SessionFactory.
-@smallexample
 private AccountDataMapper _accountDataMapper;
-private void initializeAccountDataMapper() throws BeanInitializationException, IllegalArgumentException @{
-  HibernateAccountDataMapper hibernateAccountDataMapper = 
-                              new HibernateAccountDataMapper();
-  hibernateAccountDataMapper.setSessionFactory(
-                (SessionFactory)_localSessionFactoryBean.getObject());
-  _accountDataMapper = hibernateAccountDataMapper;
-  addTransactionInterceptorToAccountDataMapper();          
-@}
-public  AccountDataMapper getAccountDataMapper() @{
-  return _accountDataMapper;
+private void initializeAccountDataMapper() 
+        throws BeanInitializationException, 
+        IllegalArgumentException @{
+  HibernateAccountDataMapper accountDataMapper;
+  accountDataMapper = new HibernateAccountDataMapper(
+                           (SessionFactory)registry.
+                           getLocalSessionFactoryBean().
+                           getObject());
 @}
 @end smallexample
 
 
 
-
-This brings me to my one complaint with Spring's design.  Each of these objects have empty constructors,
-and properties must be set using setter methods.  After all of the required properties are set, afterPropertiesSet()
-must be called.  I would prefer if Spring exposed constructors that took in the required properties, and within the
-constructor, afterPropertiesSet() would be called.  This would guarantee that objects are initialized correctly,
-and would cut down on the amount of code needed within the Service Locator.
+The one, minor complaint I have against Spring's design is that each of these objects have empty constructors,
+requiring that necessary collaborators are set using setter methods.  After all of the required collaborators are set, 
+afterPropertiesSet() must be called.  I prefer creating valid objects at construction time, so I my humble opinion
+Spring should expos constructors that take in the required collaborators, afterPropertiesSet() would be called
+at the end of the constructor.  This would guarantee that objects are initialized correctly,
+and would cut down on the amount of code needed to instantiate Spring's objects.
 
 
       
@@ -404,70 +303,62 @@ and would cut down on the amount of code needed within the Service Locator.
 @chapter Service Layer
 @c %MENU% Service Layer
 
-The Service Layer is where Spring's main strengths lie.  Dynamic Proxies and Introductions are most useful at this layer,
-where there is normally a lot of boilerplate code in transaction management, authentication and authorization, and logging.
+
+The Service Layer is a thin layer on top of a Domain Model which provides transactional logic, authentication and authorization,
+and possible logging logic.  Since much of this logic is very similar, quite a bit of boilerplate code can amass.
+This redundant logic can be addressed using a dynamic proxy.
 
 
 
 @node Transaction Management  , Service Layer
 @section Transaction Management
 
-Spring allows you to develop your Service Layer code completely independently of a specific transaction technology.  Whether
-you are developing code which accesses one database, or whether you are accessing a database and a message queue
-in a JTA distributed transaction; if your transactional context needs to change, all that you need to modify 
-is the configuration in your Service Locator.
-
-Spring defines an interface called the PlatformTransactionManager, for which there are multiple implementations.
+Spring defines an interface called the PlatformTransactionManager, for which there are multiple implementations; 
+allowing you to develop your Service Layer code completely independently of a specific transaction technology.
 These include the HibernateTransactionManager, JTATransactionManager, and others.  By having the 
 PlatformTransactionManager interface, transaction management code in the Service Layer can be developed 
-irregardless of the underlying transaction management scheme.
-
-On another note, if most of the methods in each service in the Service Layer are transactional and have the same isolation
-and propogation levels, dynamic proxies can be utilized to eliminate boilerplate transactional code.
+irregardless of the underlying transaction management scheme.  Since the Data Access Layer provides the Service Layer
+with Spring's DataAccessExceptions, commit/rollback logic is relatively straightforward.
 
 
 @node Configuration,  , Service Layer
 @section Configuration
 
-Again, instead of using an XML-based ApplicationContext, the following is added to the Service Locator.
+
+This section shows how to use Spring to instantiate a HibernateTransactionManager.  The HibernateTransactionManager
+only needs a copy of the Hiberate SessionFactory.  After creating the HibernateTransactionManager, I need to 
+add a dynamic proxy in front of the Service I want to execute in a transactional context.  I specify that 
+all of the Service's methods should have a ``default'' isolation level, and a ``required'' propagation levell
+
 
 @smallexample
 private PlatformTransactionManager _transactionManager  ;
 private void initializeTransactionManager() @{
-  HibernateTransactionManager hibernateTransactionManager = 
-                               new HibernateTransactionManager();
-  hibernateTransactionManager.setSessionFactory(
-     (org.hibernate.SessionFactory)_localSessionFactoryBean.getObject());
-  hibernateTransactionManager.afterPropertiesSet();
-  _transactionManager = hibernateTransactionManager;
+  transactionManager = new HibernateTransactionManager(
+                         (org.hibernate.SessionFactory)
+                           registry.getLocalSessionFactoryBean()
+                           .getObject());
 @}
-public PlatformTransactionManager getTransactionManager() @{
-  return _transactionManager;
-@}
-@end smallexample
-
-
-
-Here we add a TransactionInterceptor to force all methods in the ATMService class to
-perform in transactions, at the database's default isolation level.
-
-@smallexample
 private void addTransactionInterceptorToATM() throws AopConfigException @{
     NameMatchTransactionAttributeSource transactionAttributeSource = new NameMatchTransactionAttributeSource() ;
     DefaultTransactionAttribute transactionAttribute = new DefaultTransactionAttribute();
+
     transactionAttribute.setIsolationLevel(transactionAttribute.ISOLATION_DEFAULT);
     transactionAttribute.setPropagationBehavior(transactionAttribute.PROPAGATION_REQUIRED);
     transactionAttributeSource.addTransactionalMethod("*", transactionAttribute);
+
     TransactionInterceptor transactionInterceptor = new TransactionInterceptor();
-    transactionInterceptor.setTransactionManager(_transactionManager);
+    transactionInterceptor.setTransactionManager(transactionManager);
     transactionInterceptor.setTransactionAttributeSource(transactionAttributeSource);
     transactionInterceptor.afterPropertiesSet();        
+
     ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
     proxyFactoryBean.addAdvice(transactionInterceptor);
-    proxyFactoryBean.setTarget(_atmService);
-    _atmService = (ATMService) proxyFactoryBean.getObject();        
+    proxyFactoryBean.setTarget(atmService);
+    atmService = (ATMService) proxyFactoryBean.getObject();        
 @}
 @end smallexample
+
 
 
 
@@ -477,23 +368,53 @@ private void addTransactionInterceptorToATM() throws AopConfigException @{
 @c %MENU% Remoting
 
 
-Spring integrates with many different remoting technologies, such as RMI, Hessian, Burlap, and Spring's own
-RMI over HTTP.  For the most part, these technologies are pretty interchangable.  However, remoting schemes such as
-Hessian and Burlap that use reflection-based serialization instead of native Java serialization
+Spring defines interfaces called RemoteExporter and RemoteAccessor, for creating and accessing
+remoting technologies.  Spring integrates with many different remoting technologies, such as RMI, Hessian, Burlap, and Spring's own
+RMI over HTTP@footnote{RMI over HTTP is a good choice if you want to use RMI but you are behind a firewall}.  
+For the most part, choosing a different remoting technology is as easy as
+changing the RemoteExporter and RemoteAccessor that you instantiate.  However, remoting schemes such as
+Hessian and Burlap which use reflection-based serialization instead of native Java serialization
 fail when the domain model is persisted using Hibernate, or possibly any other bytecode-enhanced dynamic proxies.  
 
 One of the best features of Hibernate is that
-it allows a developer to fetch a specified subgraph of the persistent Domain Model object graph (thus, solving the n+1 select problem). 
-If the object graph is reasonably complex, it's common for some of the objects in the fetched subgraph to reference objects that were not fetched in
-the database roundtrip.  Hibernate does not model this dangling reference with a null pointer; instead, since Hibernate 
-uses CGLIB's dynamic proxies, the dangling reference is a proxy object to the unfetched object in the database.  Upon
-method calls to that dynamic proxy, the proxy attempts to fetch the target object from the database.  This means that if you're outside of the
-Service Layer
-and as such the Hibernate Session (Hibernate's Unit Of Work) is closed, an Exception will be thrown.  Thus, reflection-based
+it allows a developer to fetch a specified subgraph of the persistent Domain Model object graph 
+(thus, solving the n+1 select problem).  If the object graph is reasonably complex, it's common for some 
+of the objects in the fetched subgraph to reference objects that were not fetched in
+the database roundtrip.  Hibernate does not model this dangling reference with a null pointer; 
+instead, since Hibernate uses CGLIB's dynamic proxies, the dangling reference is a proxy object 
+to the unfetched object in the database.  Upon method calls to that dynamic proxy, the proxy 
+attempts to fetch the target object from the database.  This means that if you're above the
+Service Layer and as such the Hibernate Session (Hibernate's Unit Of Work) is closed, 
+an Exception will be thrown.  Thus, reflection-based
 serialization techniques as employed by Hessian and Burlap fail.
 
 
-RMI over HTTP is a good choice if you want to use RMI but you are behind a firewall.
+
+
+@node Rmi Configuration,  , Remoting 
+@section Remoting
+
+
+This section shows how to use Spring to use the RmiServiceExporter to export a Service
+using RMI and a RmiProxyFactoryBean to connect to that service..
+
+@smallexample
+private void exportRMI() throws RemoteException {
+    RmiServiceExporter rmiServiceExporter = new RmiServiceExporter();
+    rmiServiceExporter.setServiceName("ATM");
+    rmiServiceExporter.setService(registry.getAtmService());
+    rmiServiceExporter.setServiceInterface(ATMService.class);
+    rmiServiceExporter.setRegistryPort(1199);
+    rmiServiceExporter.afterPropertiesSet();
+}
+public void consumeRMI() {
+    RmiProxyFactoryBean proxyFactoryBean = new RmiProxyFactoryBean();
+    proxyFactoryBean.setServiceUrl("rmi://localhost:1199/ATM");
+    proxyFactoryBean.setServiceInterface(ATMService.class);
+    proxyFactoryBean.afterPropertiesSet();
+    atmService = (ATMService) proxyFactoryBean.getObject();
+}
+@end smallexample
 
 
 
@@ -503,7 +424,12 @@ RMI over HTTP is a good choice if you want to use RMI but you are behind a firew
 @c %MENU% Conclusion
 
 The Spring Framework is an excellent library for the Java programming language
-whose main strengths occur in the Service Layer of enterprise application development.
+because it defines common abstractions for competing technologies, and integrates
+them together well.  With that said, it's my opinion that while Spring is very useful, 
+the majority of the hard work is not actually implemented by Spring; instead, 
+it is already taken care of through Data Mappers such as Hibernate
+and JPA.
+
 
 This document, and all sample code can be downloaded from anonymously via subversion.
 
