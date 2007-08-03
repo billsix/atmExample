@@ -53,24 +53,25 @@ Foundation.
 
 While Hibernate is an excellent object-relational mapping tool which supplanted EJB 2.1's EntityBeans 
 as the persistance mechanism of choice for many Java developers, Hibernate does not offer a unified
-interface for transaction management in the Service Layer.  The Spring Framework offers a unified interface
-for transaction managment, allowing integration of your code to a local transaction or a JTA transaction.
-Furthermore, Spring's transaction management also including support for sending and asynchronous receiving
+interface for transaction management in the Service Layer.  The Spring Framework does however, 
+allowing integration of custom code to a local transaction or a JTA transaction.
+Furthermore, Spring's transaction management also includes support for the delivery and asynchronous consumption
 of JMS messages.
 
 The Spring Framework's main strength is that it provides interfaces as an abstraction over existing libraries 
-with similar functionality.  Specifically, these services are dynamic proxy creation, transaction management, and
+with similar functionality.  Specifically, these services are transaction management, dynamic proxy creation, and
 data access technologies.
 
 While a plethora of documentation regarding Spring exists in books and on the web, most of it emphasizes the use of an XML-based 
 ApplicationContext for the purpose of Depedency Injection and Aspect Oriented Programming.  While these may or may not have
-it's merits, I will focus instead on the abstraction Spring provides over existing JavaEE technologies.
+their merits, I choose to focus instead on the abstractions Spring provides over existing JavaEE technologies.
 
+I wrote this paper because it's the paper I would have liked to have read when I first picked up Spring after college.
 
 @node Getting Started,  , Introduction
 @section Getting Started
 
-This manual is written with the assumption that you are at least
+This paper is written with the assumption that you are at least
 somewhat familiar with the Java programming language and basic
 programming concepts.  Additionally, it is assumed that you have read Martin Fowler's 
 @emph{Patterns of Enterprise Application Architecture} (Addison-Wesley Professional, November 5, 2002), @uref{http://www.martinfowler.com/books.html#eaa}
@@ -80,7 +81,7 @@ programming concepts.  Additionally, it is assumed that you have read Martin Fow
 @chapter Method Interception 
 @c %MENU% Method Interception
 
-Before getting Spring's integration with Data Access technologies and transaction management, it's important to understand what
+Before getting Spring's integration with data access technologies and transaction management, it's important to understand what
 method interception is and how to use dynamic proxies.  Modern Java frameworks make heavy use of dynamic proxies: Spring uses
 them to simplify transaction management in the Service Layer, and Hibernate uses them to lazily load a subgraph of the persistant
 object graph.
@@ -89,24 +90,30 @@ object graph.
 @section Dynamic Proxies
 
 Dynamic, message-passing object oriented languages such as Smalltalk-80, Objective C, Ruby, and Groovy  
-allow an object to inspect messages which it receives.  If the object receiving the message 
-does not have a method which corresponds to the message, the object can decide what to
-do with the message.  This feature allows a developer to create proxy objects which forward these ``unknown'' messages
-to another object which should understand them..
+allow an object to inspect messages which it receives should it not have a method which correspond to the message's 
+selector@footnote{The method signature and in Java terminology}.  
+The object can then decide to execute whatever actions it sees fit based on the selector and arguments
+of the message.  This feature allows a developer to create proxy objects which forward these unknown messages
+to another ``target'' object.
 
-Java does not allow any arbitrary object to inspect and redirect MethodInvocations in the same manner, as that would 
-violate the type safety of the class.  However, in order to get around this limitation, 
- JDK 1.4 introduced the notion of dynamic proxies.  A dynamic proxy is a Java class 
+The statically-typed nature of Java mandates that an object cannot receive a message, or MethodInvocation in Spring's vernacular, 
+for which it does not have a corresponding Method.  As such, a purely statically-typed system cannot allow
+for arbitrary proxy objects.  In order to get around this limitation, 
+ in JDK 1.3 Sun introduced the notion of dynamic proxies@footnote{I'm not quite sure
+why the name ``dynamic'' proxy is used instead of just ``proxy''.  I'm guessing it's because you can statically 
+type a proxy class which implements a ``dynamic'' set of interfaces}, which under the hood is
+implemented using reflection.  A dynamic proxy is a Java class 
 which, at runtime, can be configured as a proxy to any number of Java interfaces: thus allowing safe type-casting of the proxy object 
-to a target interface.  Around the same time, an open source project called CGLIB appeared,
+to a set of target interfaces.  Around the same time, an open source project called CGLIB appeared,
 allowing similar proxying behavior via byte-code enhancement instead of reflection.  
-The additional benefit of CGLIB is that it allows a developer
-to dynamically proxy Java classes as well as interfaces.  
+At the time, performance issues aside, the additional benefit of CGLIB is that it removed the restriction
+that a dynamic proxy can only proxy instances of interfaces, thus providing the ability to proxy an instance of a class.
 
 Dynamic Proxies can be very useful in the Service Layer of an enterprise application.  The Service Layer is usually a thin
 layer over a Domain Model which deals with transaction logic.  Each method in the Service Layer is likely to have similar
-isolation and propagation levels, and as such, the Service Layer contains redundant code.  A proxy object can be placed
-in front of the Service Layer, allowing the concise expression of the transactional logic. 
+isolation and propagation levels, and as such, the Service Layer can contain redundant code.  To alleviate the
+boilerplate code, a proxy object can be placed in front of the Service Layer object, allowing the concise expression 
+of the transactional logic. 
 
 
 
@@ -116,7 +123,7 @@ in front of the Service Layer, allowing the concise expression of the transactio
 @subsection Proxy Example - Smalltalk-80
 
 The following example shows how proxy objects are implemented in Smalltalk.  Since the proxy object intercepts the method call
-to the target object, the proxy object performs logic before and after the actual method call is performed.
+to the target object, the proxy object can perform logic before and after the actual method call is forwarded to the target.
 
 @smallexample
  ProtoObject subclass: #CustomProxyClass
@@ -215,7 +222,7 @@ public class CalculatorServiceTest extends TestCase @{
 
 Spring's main contribution to dynamic proxies is that it allows you to
 code your dynamic proxy using the AOPAlliance's interfaces, and the determination of the actual implementation
-technology is defered until instantiation by the ProxyFactoryBean.  In the example above, the ProxyFactoryBean 
+technology is defered until instance creation of the proxy by the ProxyFactoryBean.  In the example above, the ProxyFactoryBean 
 defaults to using the JDK's dynamic proxy mechanism.  To use the CGLIB implementation,
 you would just need to call factory.setProxyTargetClass(true); before calling factory.getObject().
 
@@ -223,16 +230,17 @@ you would just need to call factory.setProxyTargetClass(true); before calling fa
 @chapter Data Access Layer
 @c %MENU% Data Access 
 
-Spring integrates with many different data access technologies, from full fledged object-relational mappers like
-Hibernate and the Java Persistence API, to lighter weight solutions like iBatis or JDBC.  
-The reader should consult PoEAA to see the different types of data access strategies.  I'm an object bigot,
-so I prefer a beastly domain model that is persisted using a Data Mapper; as such I find myself frequently
-using Hibernate for my data access needs. 
+Unlike the previous section on dynamic proxies, the methods in which people solve persistence greatly 
+varies@footnote{See Table Data Gateway, Row Data Gateway, and Data Mapper in PoEAA}.
+There exist full fledged object-relational mappers like Hibernate and the Java Persistence API, to lighter weight solutions 
+like iBatis or JDBC.  With all the variation, it would not be feasable to define a set of interfaces
+which define common data access behavior across them all.
 
-Spring doesn't try to reinvent the wheel when it comes to Data Access frameworks; Spring opts instead just to integrate
-with many popular data access frameworks.  Spring's main contribution to
-the Data Access Layer is that it catches all Exceptions that are thrown and casts them into Spring's own DataAccessExceptions.  This
-allows exception handling code in your Service Layer to remain data-access technology agnostic.
+However, what is possible is to define a data access technology agnostic set of DataAccessExceptions to simplify the commit/rollback 
+transactional logic in the Service Layer.  Furthermore, given
+dynamic proxies, you could integrate with each of the aforementioned technologies and put a dynamic proxy in front of them.
+This proxy catches all of the Exceptions thrown in the Data Access Tier and recasts them as the Spring DataAccessExceptions. 
+
 
 
 @node Data Mappers,  , Data Access Layer 
