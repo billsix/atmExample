@@ -86,24 +86,42 @@ programming concepts.  Additionally, it is assumed that you have read Martin Fow
 @c %MENU% Method Interception
 
 Before getting Spring's integration with Data Access technologies and transaction management, it's important to understand what
-method interception is and how to use dynamic proxies.  If the reader wants to get up and running quickly with Spring, 
-he should only read the first section.  The second section is on another form of dynamic proxies, called Introductions.
+method interception is and how to use dynamic proxies.  Modern Java frameworks make heavy use of dynamic proxies: Spring uses
+them to simplify transaction management in the Service Layer, and Hibernate uses them to lazily load a subgraph of the persistant
+object graph.
 
 @node Dynamic Proxies,  , Method Interception 
 @section Dynamic Proxies
 
-Dynamic languages such as Smalltalk-80, Objective C, and relative new-comer Ruby, are object-oriented, message-passing 
-languages which allow an object to inspect messages that are passed to it.  If the object receiving the message 
+Dynamic, message-passing object oriented languages such as Smalltalk-80, Objective C, Ruby, and Groovy  
+allow an object to inspect messages which it receives.  If the object receiving the message 
 does not have a method which corresponds to the message, the object can decide what to
-do with the message.  This feature allows a developer to create proxy objects which forward these messages
-to another object.
+do with the message.  This feature allows a developer to create proxy objects which forward these ``unknown'' messages
+to another object which should understand them..
+
+Java does not allow any arbitrary object to inspect and redirect MethodInvocations in the same manner, as that would 
+violate the type safety of the class.  However, in order to get around this limitation, 
+ JDK 1.4 introduced the notion of dynamic proxies.  A dynamic proxy is a Java class 
+which, at runtime, can be configured as a proxy to any number of Java interfaces: thus allowing safe type-casting of the proxy object 
+to a target interface.  Around the same time, an open source project called CGLIB appeared,
+allowing similar proxying behavior via byte-code enhancement instead of reflection.  
+The additional benefit of CGLIB is that it allows a developer
+to dynamically proxy Java classes as well as interfaces.  
+
+Dynamic Proxies can be very useful in the Service Layer of an enterprise application.  The Service Layer is usually a thin
+layer over a Domain Model which deals with transaction logic.  Each method in the Service Layer is likely to have similar
+isolation and propagation levels, and as such, the Service Layer contains redundant code.  A proxy object can be placed
+in front of the Service Layer, allowing the concise expression of the transactional logic. 
+
+
+
+
 
 @node Proxy Example - Smalltalk-80
 @subsection Proxy Example - Smalltalk-80
 
-The following Smalltalk class prints out ``forwaring the message'' before the message is passed onto the
-proxy's target.
-
+The following example shows how proxy objects are implemented in Smalltalk.  Since the proxy object intercepts the method call
+to the target object, the proxy object performs logic before and after the actual method call is performed.
 
 @smallexample
  ProtoObject subclass: #CustomProxyClass
@@ -112,324 +130,99 @@ proxy's target.
    poolDictionaries: ''
    category: 'Examples'
   
- initializeTarget: t 
+  initializeTarget: t 
    target := t
 
- doesNotUnderstand: aMessage 
-   Transcript show: 'forwaring the message'; cr.
-   ^ target perform: aMessage selector withArguments: aMessage arguments
+  doesNotUnderstand: aMessage 
+   | toReturn |
+   Transcript show: 'Here I would open a transaction'; cr.
+   toReturn := target perform: aMessage selector withArguments: aMessage arguments.
+   Transcript show: 'Here commit the transaction unless I caught an unrecoverable exception!';cr.
+   ^ toReturn .
+	
+ Object subclass: #CalculatorService
+   instanceVariableNames: ''
+   classVariableNames: ''
+   poolDictionaries: ''
+   category: 'CalculatorService'
+
+  add: first and: second
+   ^ first + second .
+
+ ClassTestCase subclass: #CustomProxyClassTest
+   instanceVariableNames: 'calculatorService'
+   classVariableNames: ''
+   poolDictionaries: ''
+   category: 'CalculatorService'
+
+  setUp
+   calculatorService := CustomProxyClass target: (CalculatorService new).
+
+  testCalculatorService
+   self assert: ( (calculatorService add: 1 and: 2) = 3)
 
 @end smallexample
+
+
+
 
 
 @node Dynamic Proxy Example - Spring
 @subsection Dynamic Proxy Example - Spring
 
-Java does not allow the the inspection and redirection of MethodInvocations in the same manner, as that would 
-violate the type safety of the class.  However, in order to get around this limitation, 
- JDK 1.4 introduced the notion of dynamic proxies.  A dynamic proxy is a Java class 
-which, at runtime, can be configured as a proxy to any number of Java interfaces: thus allowing safe type-casting of the proxy object 
-to a target interface.  Around the same time, an open source project called CGLIB was created,
-allowing similar proxying behavior via byte-code enhancement.  The additional benefit of CGLIB is that it allows a developer
-to dynamically proxy Java classes as well as interfaces.
-
-
-Assume that you are working on a Calculator Service which adds two numbers together.  
-Assume that the user must log in to the system before
-accessing the Calculator Service.  There are two acceptance test cases for this story.  In the first, a user is
-denied access to a Calculator Service before the user provides it with a valid username/password pair.  In the second,
-a user supplies a correct username/password pair to the Calculator Service, after which he is able to add the 
-two numbers.
+The following shows the same example implemented using the Java's dynamic proxies, initialized
+through Spring.
 
 @smallexample
-public void testInvalidAccess() @{
-    try@{
-       _calculatorService.add(4,5);
-        fail("The user did not log in yet");
-    @} catch(IllegalStateException ise) @{
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
+public class TransactionInterceptor implements MethodInterceptor @{
+    public Object invoke(MethodInvocation invocation) throws Throwable @{
+        System.out.println("Here I would open a transaction");
+        Object toReturn = invocation.proceed();
+        System.out.println("Here commit the transaction unless I caught an unrecoverable exception!");
+        return toReturn;
     @}
 @}
-
-public void testValidAccess() @{
-   try@{
-        _calculatorService.authenticate("","");
-        assertTrue(_calculatorService.add(4,5) == 9);
-    @} catch(IllegalStateException ise) @{
-        fail("The user did log in correctly");
-    @}
-@}
-@end smallexample
-
-
-The first step in implementing this story is by creating an Authenticatable interface
-with the following methods:
-@smallexample
-public interface Authenticatable @{    
-    public void authenticate(String username, String password);
-    public boolean isValidUser();
-@}
-@end smallexample
-
-The second step is to create a Calculator Service
- 
-@smallexample
-public interface CalculatorService extends Authenticatable @{    
+public interface CalculatorService @{    
     public Integer add(Integer first, Integer second);
 @}
-@end smallexample
-
-
-
-The implementation of CalculatorService could be implemented by making the add() 
-method check to make sure the user has an authenticated account.  This would mean that
-any additional methods added to the CalculatorService would need to do the same thing at the beginning
-of each method.  This is the exact 
-situation where dynamic proxies are useful.  You could create a 
-dynamic proxy which inspects incoming MethodInvocations, initially only forwarding an  ``authenticate''  method call
-to the target, while throwing an InvalidStateException on any other method call.  Once the user 
-is authenticated, the proxy will then happily forward along all MethodInvocations and return their results.
-
-@smallexample
-public class AuthenticationInterceptor implements MethodInterceptor
-@{
-    public Object invoke(MethodInvocation invocation) throws Throwable
-    @{
-        Method method = invocation.getMethod();
-        Authenticatable authenticatable = (Authenticatable) invocation.getThis();
-        if(method.equals(Authenticatable.class.getMethod("authenticate", String.class, String.class)) ) @{
-            return invocation.proceed();
-        @} else if( authenticatable.isValidUser())@{
-            return invocation.proceed();
-        @}
-        throw new IllegalStateException("User is not authenticated");    
-    @}
-@}
-@end smallexample
-
-This allows the CalculatorService to be implemented as follows
-
-@smallexample
 public class CalculatorServiceImplementation implements CalculatorService @{    
-    public void authenticate(String username, String password) @{
-        _isAuthenticated = true;
-    @}
-    public boolean isValidUser() @{
-        return _isAuthenticated;
-    @}    
     public Integer add(Integer first, Integer second) @{
         return first + second;
     @}
-    private boolean _isAuthenticated = false;
 @}
-@end smallexample
+import org.springframework.aop.framework.ProxyFactoryBean;
 
-Finally, the unit test will need to create dynamic proxy before the unit tests are executed
-
-@smallexample
 public class CalculatorServiceTest extends TestCase @{
     public CalculatorServiceTest( String testName ) @{
         super( testName );
-    @}    
+    @}
     public static Test suite() @{
         return new TestSuite( CalculatorServiceTest.class );
-    @}    
+    @}
     public void setUp() throws Exception@{
         CalculatorServiceImplementation target = new CalculatorServiceImplementation();
         ProxyFactoryBean factory = new ProxyFactoryBean();
-        factory.addAdvice(new AuthenticationInterceptor());
+        factory.addAdvice(new TransactionInterceptor());
         factory.setTarget(target);
         factory.setProxyInterfaces(new Class[]@{CalculatorService.class@});
-        _calculatorService = (CalculatorService) factory.getObject();
-    @}    
-    public void testInvalidAccess() @{
-        try@{
-            _calculatorService.add(4,5);
-            fail("The user did not log in yet");
-        @} catch(IllegalStateException ise) @{
-        @}
+        calculatorService = (CalculatorService) factory.getObject();
     @}
     public void testValidAccess() @{
-        try@{
-            _calculatorService.authenticate("","");
-            assertTrue(_calculatorService.add(4,5) == 9);
-        @} catch(IllegalStateException ise) @{
-            fail("The user did log in correctly");
-        @}
-    @}    
-    CalculatorService _calculatorService ;
-@}
-@end smallexample
-
-
-
-@node Introductions,  , Method Interception 
-@section Introductions
-
-While the dynamic proxy solution for the Authenticatable interface would work, any other services
-which implement the Authenticatable interface would be forced to implement the same logic.  
-One solution to avoid
-rewriting the same logic repeatedly would be to create a Layer Supertype which has the Authenticatable 
-implementation.  Since all services in the Service Layer subclass the Layer Supertype, they will all be
-Authenticatable.  
-
-Another alternative is to use Introductions.  Introductions are form of dynamic proxies that 
-lets the proxy class itself provide the implemention of an interface,
-while forwarding all other method calls to the target.  Introductions have an advantage over the Layer Supertype in the sense 
-that you are not forced to artifically create a class inheritence hierarchy.
-
-@node Introduction Example - Spring
-@subsection Introduction Example - Spring
-
-
-The CalculatorService interface no longer needs to extend the Authenticatable interface:
-
-@smallexample
- public interface CalculatorService @{    
-    public Integer add(Integer first, Integer second);
- @}
-@end smallexample
-
-The CalculatorServiceImplementation only needs the methods necessary for the CalculatorService interface.
-
-@smallexample
-public class CalculatorServiceImplementation implements CalculatorService@{    
-    public Integer add(Integer first, Integer second) @{
-        return first + second;
+        assertTrue(calculatorService.add(4,5) == 9);
     @}
+    CalculatorService calculatorService ;
 @}
-@end smallexample
-
-The Authenticatable interface can be implemented by the dynamic proxy itself, as follows
-
-
-@smallexample
-public class AuthenticatableIntroductionInterceptor extends DelegatingIntroductionInterceptor implements Authenticatable@{    
-    public void authenticate(String username, String password) @{
-        _isAuthenticated = true;
-    @}
-    public boolean isValidUser() @{
-        return _isAuthenticated;
-    @}    
-    public Object invoke(MethodInvocation invocation) throws Throwable @{
-        Method method = invocation.getMethod();
-        if(!isValidUser() && !method.equals(Authenticatable.class.getMethod("authenticate", String.class, String.class))) @{
-            throw new IllegalStateException("User is not authenticated");
-        @}
-        return super.invoke(invocation);
-    @}    
-    private boolean _isAuthenticated = false;
-@}
-@end smallexample
-
-Spring requires that this class is wrapped in an IntroductionAdvisor, specifying the interface that is introduced.
-
-@smallexample
-public class AuthenticatableIntroductionAdvisor extends DefaultIntroductionAdvisor@{
-    public AuthenticatableIntroductionAdvisor() @{
-        super(new AuthenticatableIntroductionInterceptor(), Authenticatable.class);
-    @}
-@}
-@end smallexample
-
-
-The CalculatorServiceTest is modified as follows:
-@smallexample
-    public void setUp() throws Exception@{
-        CalculatorServiceImplementation target = new CalculatorServiceImplementation();
-        ProxyFactoryBean factory = new ProxyFactoryBean();
-        factory.addAdvisor(new AuthenticatableIntroductionAdvisor());
-        factory.setTarget(target);
-        factory.setProxyInterfaces(new Class[]{CalculatorService.class, Authenticatable.class});
-        _calculatorService = (CalculatorService) factory.getObject();
-    @}    
-    public void testInvalidAccess() @{
-        try@{
-            _calculatorService.add(4,5);
-            fail("The user did not log in yet");
-        @} catch(IllegalStateException ise) @{
-        @}
-    @}    
-    public void testValidAccess() @{
-        ((Authenticatable)_calculatorService).authenticate("","");
-        assertTrue(_calculatorService.add(4,5) == 9);
-    @}
-@end smallexample
-
-Introductions are roughly, but not exactly, analogous to mixins in Ruby.  Introductions, like mixins, can 
-be great if you're only using one Introduction
-to proxy a class.  However, it gets more complicated once multiple Introductions are mixed 
-in when they have one or more identical method signatures in their interfaces.
-This is because Introductions are dynamic proxies which are mixed-in in a linear order.  
-If multiple Introductions have non-unique method signatures, the first Introduction
-that is mixed-in will have it's method shadowed because the other proxy that was mixed-in afterwards 
-will intercept the method call before it.  
-I do not know of a good solution to this issue in Java.  If you decide to use Introductions in your
-Service Layer, ensure that each Introduction's interfaces have distinct method signatures.  
-
-
-
-@node Proxy Example - Smalltalk-80
-@subsection Proxy Example - Smalltalk-80
-
-
-While this may be a relatively new feature for Java, this is easily implemented in a pure message-passing language such
-as Smalltalk.
-
-
-@smallexample
- ClassTestCase subclass: #AuthenticatableProxyTest
-  instanceVariableNames: 'calculatorService'
-  classVariableNames: ''
-  poolDictionaries: ''
-  category: 'CalculatorService'
-
- setUp
-  calculatorService := AuthenticatableProxy target: CalculatorService new'
-
- testInvalidAccess
-  self
-    should: [calculatorService add: 1 and: 2]
-    raise: MessageNotUnderstood
-
- testValidAccess
-  calculatorService authenticateUsername: '' Password: ''.
-  self assert: ((calculatorService add: 1 and: 2) = 3)
-
- Object subclass: #CalculatorService
-  instanceVariableNames: ''
-  classVariableNames: ''
-  poolDictionaries: ''
-  category: 'CalculatorService'
-
- add: first and: second 
-  ^ first + second
-
- ProtoObject subclass: #AuthenticatableProxy
-  instanceVariableNames: 'target isAuthenticated'
-  classVariableNames: ''
-  poolDictionaries: ''
-  category: 'CalculatorService'
-
- initializeTarget: t 
-  target := t
-
- authenticateUsername: u Password: p 
-  isAuthenticated := true
-
- isValidUser
-  ^ isAuthenticated
-
- doesNotUnderstand: aMessage 
-  self isValidUser not
-    ifTrue: [^ super doesNotUnderstand: aMessage].
-  ^ target perform: aMessage selector withArguments: aMessage arguments
 
 @end smallexample
 
-On a side note, a technique for fine-grained code reuse was developed for the Squeak dialect of 
-Smalltalk-80 that is not implemented using multiple-inheritance or proxies, called Traits.  For more 
-information about Traits, the reader should consult Stephane Ducasse's, et. al.,  paper called 
-``Traits: A mechanism for fine-grained reuse''. 
+
+Spring's main contribution to dynamic proxies is that it allows you to
+code your dynamic proxy using the AOPAlliance's interfaces, and the determination of the actual implementation
+technology is defered until instantiation by the ProxyFactoryBean.  In the example above, the ProxyFactoryBean 
+defaults to using the JDK's dynamic proxy mechanism.  To use the CGLIB implementation,
+you would just need to call factory.setProxyTargetClass(true); before calling factory.getObject().
 
 @node Data Access Layer 
 @chapter Data Access Layer
