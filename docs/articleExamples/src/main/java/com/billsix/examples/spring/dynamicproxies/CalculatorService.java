@@ -26,6 +26,6 @@ package com.billsix.examples.spring.dynamicproxies;
  *
  * @author Bill Six
  */
-public interface CalculatorService extends Authenticatable {    
+public interface CalculatorService {    
     public Integer add(Integer first, Integer second);
 }

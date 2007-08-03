@@ -26,18 +26,8 @@ package com.billsix.examples.spring.dynamicproxies;
  *
  * @author Bill Six
  */
-public class CalculatorServiceImplementation implements CalculatorService {
-    
-    public void authenticate(String username, String password) {
-        _isAuthenticated = true;
-    }
-    public boolean isValidUser() {
-        return _isAuthenticated;
-    }
-    
+public class CalculatorServiceImplementation implements CalculatorService {    
     public Integer add(Integer first, Integer second) {
         return first + second;
     }
-
-    private boolean _isAuthenticated = false;
 }

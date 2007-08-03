@@ -26,20 +26,16 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
 /**
- *  Responsiblity - Intercepts all method invocations on any Service to ensure
- *    the user is authenticated.
+ *  Responsiblity - Intercepts all method invocations on any Service to start
+ *      and stop transactions.
  *
  * @author Bill Six
  */
-public class AuthenticationInterceptor implements MethodInterceptor {
+public class TransactionInterceptor implements MethodInterceptor {
     public Object invoke(MethodInvocation invocation) throws Throwable {
-        Method method = invocation.getMethod();
-        Authenticatable authenticatable = (Authenticatable) invocation.getThis();
-        if(method.equals(Authenticatable.class.getMethod("authenticate", String.class, String.class)) ) {
-            return invocation.proceed();
-        } else if( authenticatable.isValidUser()){
-            return invocation.proceed();
-        }
-        throw new IllegalStateException("User is not authenticated");    
+        System.out.println("Here I would open a transaction");
+        Object toReturn = invocation.proceed();
+        System.out.println("Here commit the transaction unless I caught an unrecoverable exception!");
+        return toReturn;
     }
 }

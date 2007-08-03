@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
 package com.billsix.examples.spring;
-import com.billsix.examples.spring.dynamicproxies.AuthenticationInterceptor;
+import com.billsix.examples.spring.dynamicproxies.TransactionInterceptor;
 import com.billsix.examples.spring.dynamicproxies.CalculatorService;
 import com.billsix.examples.spring.dynamicproxies.CalculatorServiceImplementation;
 import junit.framework.Test;
@@ -28,10 +28,6 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import org.springframework.aop.framework.ProxyFactoryBean;
 
-/**
- *
- * @author Bill Six
- */
 public class CalculatorServiceTest extends TestCase {
     public CalculatorServiceTest( String testName ) {
         super( testName );
@@ -44,28 +40,15 @@ public class CalculatorServiceTest extends TestCase {
     public void setUp() throws Exception{
         CalculatorServiceImplementation target = new CalculatorServiceImplementation();
         ProxyFactoryBean factory = new ProxyFactoryBean();
-        factory.addAdvice(new AuthenticationInterceptor());
+        factory.addAdvice(new TransactionInterceptor());
         factory.setTarget(target);
         factory.setProxyInterfaces(new Class[]{CalculatorService.class});
-        _calculatorService = (CalculatorService) factory.getObject();
+        calculatorService = (CalculatorService) factory.getObject();
     }
     
-    public void testInvalidAccess() {
-        try{
-            _calculatorService.add(4,5);
-            fail("The user did not log in yet");
-        } catch(IllegalStateException ise) {
-        }
-    }
-
     public void testValidAccess() {
-        try{
-            _calculatorService.authenticate("","");
-            assertTrue(_calculatorService.add(4,5) == 9);
-        } catch(IllegalStateException ise) {
-            fail("The user did log in correctly");
-        }
+        assertTrue(calculatorService.add(4,5) == 9);
     }
     
-    CalculatorService _calculatorService ;
+    CalculatorService calculatorService ;
 }
