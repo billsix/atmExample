@@ -36,12 +36,12 @@ import org.hibernate.criterion.Criterion;
 public class HibernateBaseDataMapper<T> implements BaseDataMapper<T>{
     
     public HibernateBaseDataMapper(SessionFactory sessionFactory) {
-        _persistentClass =  (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-        _sessionFactory = sessionFactory;
+        persistentClass =  (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+        this.sessionFactory = sessionFactory;
     }
     
     public T load(Long id) {
-        T entity = (T) _sessionFactory.getCurrentSession().load(_persistentClass, id);
+        T entity = (T) this.sessionFactory.getCurrentSession().load(persistentClass, id);
         Hibernate.initialize(entity);
         return entity;
     }
@@ -51,7 +51,7 @@ public class HibernateBaseDataMapper<T> implements BaseDataMapper<T>{
     }
     
     protected List<T> findByExample(T exampleInstance, String[] excludeProperty) {
-        Criteria crit = _sessionFactory.getCurrentSession().createCriteria(_persistentClass);
+        Criteria crit = this.sessionFactory.getCurrentSession().createCriteria(persistentClass);
         Example example =  Example.create(exampleInstance);
         for (String exclude : excludeProperty) {
             example.excludeProperty(exclude);
@@ -61,7 +61,7 @@ public class HibernateBaseDataMapper<T> implements BaseDataMapper<T>{
     }
     
     protected List<T> findByCriteria(Criterion... criterion) {
-        Criteria crit = _sessionFactory.getCurrentSession().createCriteria(_persistentClass);
+        Criteria crit = this.sessionFactory.getCurrentSession().createCriteria(persistentClass);
         for (Criterion c : criterion) {
             crit.add(c);
         }
@@ -69,26 +69,26 @@ public class HibernateBaseDataMapper<T> implements BaseDataMapper<T>{
     }
     
     public T saveOrUpdate(T entity) {
-        _sessionFactory.getCurrentSession().saveOrUpdate(entity);
+        this.sessionFactory.getCurrentSession().saveOrUpdate(entity);
         return entity;
     }
     
     public void delete(T entity) {
-        _sessionFactory.getCurrentSession().delete(entity);
+        this.sessionFactory.getCurrentSession().delete(entity);
     }
     
     public void flush() {
-        _sessionFactory.getCurrentSession().flush();
+        this.sessionFactory.getCurrentSession().flush();
     }
     
     public void clear() {
-        _sessionFactory.getCurrentSession().clear();
+        this.sessionFactory.getCurrentSession().clear();
     }
 
     public void setSessionFactory(SessionFactory sessionFactory) {
-        _sessionFactory = sessionFactory;
+        this.sessionFactory = sessionFactory;
     }
 
-    protected SessionFactory _sessionFactory ;
-    private Class<T> _persistentClass;
+    protected SessionFactory sessionFactory ;
+    private Class<T> persistentClass;
 }

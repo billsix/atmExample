@@ -39,9 +39,9 @@ public class BaseDomainObject implements Serializable{
     }
     
     public Long getId() {
-        return _id;
+        return id;
     }
     
-    private Long _id;
-    private Long _version;
+    private Long id;
+    private Long version;
 }

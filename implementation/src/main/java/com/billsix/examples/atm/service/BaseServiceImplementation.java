@@ -32,12 +32,12 @@ package com.billsix.examples.atm.service;
 public class BaseServiceImplementation implements BaseService{
     
     public BaseServiceImplementation(ServerSideServiceLocator serverServiceLocator) {
-        _serverServiceLocator = serverServiceLocator;
+        this.serverServiceLocator = serverServiceLocator;
     }
     
     public ServerSideServiceLocator getServerServiceLocator() {
-        return _serverServiceLocator;
+        return this.serverServiceLocator;
     }
     
-    private ServerSideServiceLocator _serverServiceLocator;
+    private ServerSideServiceLocator serverServiceLocator;
 }

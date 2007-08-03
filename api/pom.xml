@@ -86,7 +86,6 @@ THE SOFTWARE.
             <artifactId>spring-remoting</artifactId>
             <version>2.0</version>
         </dependency>   
-
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-dao</artifactId>
@@ -102,17 +101,6 @@ THE SOFTWARE.
                 </exclusion>
             </exclusions>
         </dependency>
-        
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-remoting</artifactId>
-            <version>2.0</version>
-        </dependency>    
-        <dependency>
-            <groupId>org.easymock</groupId>
-            <artifactId>easymock</artifactId>
-            <version>2.2</version>
-        </dependency>    
         <dependency>
             <groupId>commons-dbcp</groupId>
             <artifactId>commons-dbcp</artifactId>

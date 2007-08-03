@@ -37,40 +37,40 @@ public class AccountTransaction extends BaseDomainObject{
     }
     
     protected AccountTransaction(Account account, Double balanceBeforeTransaction,Double balanceAfterTransaction) {
-        _account = account;
-        _balanceBeforeTransaction = balanceBeforeTransaction;
-        _balanceAfterTransaction = balanceAfterTransaction;
-        _date = Calendar.getInstance();
-        _delta = _balanceBeforeTransaction - _balanceAfterTransaction;
+        this.account = account;
+        this.balanceBeforeTransaction = balanceBeforeTransaction;
+        this.balanceAfterTransaction = balanceAfterTransaction;
+        date = Calendar.getInstance();
+        delta = this.balanceBeforeTransaction - this.balanceAfterTransaction;
     }
     
     public boolean equals(Object object) {
         AccountTransaction accountTransaction = (AccountTransaction) object;
-        return _date.equals(accountTransaction._date)
-        && _balanceAfterTransaction.equals(accountTransaction._balanceAfterTransaction)
-        && _balanceBeforeTransaction.equals(accountTransaction._balanceBeforeTransaction);
+        return date.equals(accountTransaction.date)
+        && this.balanceAfterTransaction.equals(accountTransaction.balanceAfterTransaction)
+        && this.balanceBeforeTransaction.equals(accountTransaction.balanceBeforeTransaction);
     }    
         
     public Double getBalanceAfterTransaction() {
-        return _balanceAfterTransaction;
+        return this.balanceAfterTransaction;
     }
     
     
     public Double getBalanceBeforeTransaction() {
-        return _balanceBeforeTransaction;
+        return this.balanceBeforeTransaction;
     }
     
     public Calendar getDate() {
-        return _date;
+        return date;
     }
     
     public Account getAccount() {
-        return _account;
+        return this.account;
     }
 
-    private Account _account;
-    private Double _balanceBeforeTransaction;
-    private Double _balanceAfterTransaction;
-    private Calendar _date;
-    private Double _delta;
+    private Account account;
+    private Double balanceBeforeTransaction;
+    private Double balanceAfterTransaction;
+    private Calendar date;
+    private Double delta;
 }

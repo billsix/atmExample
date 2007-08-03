@@ -43,7 +43,7 @@ public class ATMRichClient extends javax.swing.JFrame {
     
     /** Creates new form ATM */
     public ATMRichClient(ClientSideServiceLocator clientServiceLocator) {
-        _atmService = clientServiceLocator.getAtmService();
+        atmService = clientServiceLocator.getAtmService();
         initComponents();
     }
     
@@ -54,38 +54,38 @@ public class ATMRichClient extends javax.swing.JFrame {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
-        _loginDialog = _loginDialog = new javax.swing.JDialog(_atmRichClient);
+        loginDialog = new javax.swing.JDialog(atmRichClient);
 
         loginTextField = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jButton3 = new javax.swing.JButton();
         passwordTextField = new javax.swing.JPasswordField();
-        _desktopPane = new javax.swing.JDesktopPane();
-        _atmInternalFrame = new javax.swing.JInternalFrame();
-        _tabbedPane = new javax.swing.JTabbedPane();
-        _currentBalancePanel = new javax.swing.JPanel();
-        _currentBalanceLabel = new javax.swing.JLabel();
-        _withdrawPanel = new javax.swing.JPanel();
-        _amountToWithdrawTextField = new javax.swing.JTextField();
-        _amountToWithdrawLabel = new javax.swing.JLabel();
-        _amountToWithdrawButton = new javax.swing.JButton();
-        _depositPanel = new javax.swing.JPanel();
+        desktopPane = new javax.swing.JDesktopPane();
+        atmInternalFrame = new javax.swing.JInternalFrame();
+        tabbedPane = new javax.swing.JTabbedPane();
+        currentBalancePanel = new javax.swing.JPanel();
+        currentBalanceLabel = new javax.swing.JLabel();
+        withdrawPanel = new javax.swing.JPanel();
+        amountToWithdrawTextField = new javax.swing.JTextField();
+        amountToWithdrawLabel = new javax.swing.JLabel();
+        amountToWithdrawButton = new javax.swing.JButton();
+        depositPanel = new javax.swing.JPanel();
         jPanel5 = new javax.swing.JPanel();
         jPanel6 = new javax.swing.JPanel();
         _amountToDepositTextField = new javax.swing.JTextField();
         _amountToDepositLabel = new javax.swing.JLabel();
         _amountToDepositButton = new javax.swing.JButton();
-        _accountHistoryPanel = new javax.swing.JPanel();
-        _scrollPane = new javax.swing.JScrollPane();
-        _transactionHistoryTable = new javax.swing.JTable();
-        _menuBar = new javax.swing.JMenuBar();
-        _menu = new javax.swing.JMenu();
-        _fileMenuItem = new javax.swing.JMenuItem();
-        _exitMenuItem = new javax.swing.JMenuItem();
+        accountHistoryPanel = new javax.swing.JPanel();
+        scrollPane = new javax.swing.JScrollPane();
+        transactionHistoryTable = new javax.swing.JTable();
+        menuBar = new javax.swing.JMenuBar();
+        menu = new javax.swing.JMenu();
+        fileMenuItem = new javax.swing.JMenuItem();
+        exitMenuItem = new javax.swing.JMenuItem();
 
-        _loginDialog.setTitle("Login");
-        _loginDialog.setModal(true);
+        loginDialog.setTitle("Login");
+        loginDialog.setModal(true);
 
         jLabel5.setText("Username:");
 
@@ -98,35 +98,35 @@ public class ATMRichClient extends javax.swing.JFrame {
             }
         });
 
-        javax.swing.GroupLayout _loginDialogLayout = new javax.swing.GroupLayout(_loginDialog.getContentPane());
-        _loginDialog.getContentPane().setLayout(_loginDialogLayout);
-        _loginDialogLayout.setHorizontalGroup(
-            _loginDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_loginDialogLayout.createSequentialGroup()
-                .addGroup(_loginDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(_loginDialogLayout.createSequentialGroup()
+        javax.swing.GroupLayout loginDialogLayout = new javax.swing.GroupLayout(loginDialog.getContentPane());
+        loginDialog.getContentPane().setLayout(loginDialogLayout);
+        loginDialogLayout.setHorizontalGroup(
+            loginDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(loginDialogLayout.createSequentialGroup()
+                .addGroup(loginDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(loginDialogLayout.createSequentialGroup()
                         .addGap(72, 72, 72)
-                        .addGroup(_loginDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(loginDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel5)
                             .addComponent(jLabel6))
                         .addGap(47, 47, 47)
-                        .addGroup(_loginDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addGroup(loginDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(passwordTextField, 0, 0, Short.MAX_VALUE)
                             .addComponent(loginTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 92, Short.MAX_VALUE)))
-                    .addGroup(_loginDialogLayout.createSequentialGroup()
+                    .addGroup(loginDialogLayout.createSequentialGroup()
                         .addGap(130, 130, 130)
                         .addComponent(jButton3)))
                 .addContainerGap(87, Short.MAX_VALUE))
         );
-        _loginDialogLayout.setVerticalGroup(
-            _loginDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_loginDialogLayout.createSequentialGroup()
+        loginDialogLayout.setVerticalGroup(
+            loginDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(loginDialogLayout.createSequentialGroup()
                 .addGap(47, 47, 47)
-                .addGroup(_loginDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(loginDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
                     .addComponent(loginTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(19, 19, 19)
-                .addGroup(_loginDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(loginDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel6)
                     .addComponent(passwordTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 21, Short.MAX_VALUE)
@@ -135,71 +135,71 @@ public class ATMRichClient extends javax.swing.JFrame {
         );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        _atmInternalFrame.setIconifiable(true);
-        _atmInternalFrame.setMaximizable(true);
-        _atmInternalFrame.setResizable(true);
-        _atmInternalFrame.setTitle("ATM");
-        _tabbedPane.addChangeListener(new javax.swing.event.ChangeListener() {
+        atmInternalFrame.setIconifiable(true);
+        atmInternalFrame.setMaximizable(true);
+        atmInternalFrame.setResizable(true);
+        atmInternalFrame.setTitle("ATM");
+        tabbedPane.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                _tabbedPaneStateChanged(evt);
+                tabbedPaneStateChanged(evt);
             }
         });
 
-        _currentBalanceLabel.setText("$");
+        currentBalanceLabel.setText("$");
 
-        javax.swing.GroupLayout _currentBalancePanelLayout = new javax.swing.GroupLayout(_currentBalancePanel);
-        _currentBalancePanel.setLayout(_currentBalancePanelLayout);
-        _currentBalancePanelLayout.setHorizontalGroup(
-            _currentBalancePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_currentBalancePanelLayout.createSequentialGroup()
+        javax.swing.GroupLayout currentBalancePanelLayout = new javax.swing.GroupLayout(currentBalancePanel);
+        currentBalancePanel.setLayout(currentBalancePanelLayout);
+        currentBalancePanelLayout.setHorizontalGroup(
+            currentBalancePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(currentBalancePanelLayout.createSequentialGroup()
                 .addGap(298, 298, 298)
-                .addComponent(_currentBalanceLabel)
-                .addContainerGap(369, Short.MAX_VALUE))
+                .addComponent(currentBalanceLabel)
+                .addContainerGap(375, Short.MAX_VALUE))
         );
-        _currentBalancePanelLayout.setVerticalGroup(
-            _currentBalancePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_currentBalancePanelLayout.createSequentialGroup()
+        currentBalancePanelLayout.setVerticalGroup(
+            currentBalancePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(currentBalancePanelLayout.createSequentialGroup()
                 .addGap(112, 112, 112)
-                .addComponent(_currentBalanceLabel)
-                .addContainerGap(234, Short.MAX_VALUE))
+                .addComponent(currentBalanceLabel)
+                .addContainerGap(243, Short.MAX_VALUE))
         );
-        _tabbedPane.addTab("Current Balance", _currentBalancePanel);
+        tabbedPane.addTab("Current Balance", currentBalancePanel);
 
-        _amountToWithdrawLabel.setText("Amount To Withdraw");
+        amountToWithdrawLabel.setText("Amount To Withdraw");
 
-        _amountToWithdrawButton.setText("Submit");
-        _amountToWithdrawButton.addMouseListener(new java.awt.event.MouseAdapter() {
+        amountToWithdrawButton.setText("Submit");
+        amountToWithdrawButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt) {
-                _amountToWithdrawButtonMousePressed(evt);
+                amountToWithdrawButtonMousePressed(evt);
             }
         });
 
-        javax.swing.GroupLayout _withdrawPanelLayout = new javax.swing.GroupLayout(_withdrawPanel);
-        _withdrawPanel.setLayout(_withdrawPanelLayout);
-        _withdrawPanelLayout.setHorizontalGroup(
-            _withdrawPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_withdrawPanelLayout.createSequentialGroup()
+        javax.swing.GroupLayout withdrawPanelLayout = new javax.swing.GroupLayout(withdrawPanel);
+        withdrawPanel.setLayout(withdrawPanelLayout);
+        withdrawPanelLayout.setHorizontalGroup(
+            withdrawPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(withdrawPanelLayout.createSequentialGroup()
                 .addGap(222, 222, 222)
-                .addGroup(_withdrawPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(_withdrawPanelLayout.createSequentialGroup()
-                        .addComponent(_amountToWithdrawTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(withdrawPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(withdrawPanelLayout.createSequentialGroup()
+                        .addComponent(amountToWithdrawTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_amountToWithdrawButton))
-                    .addComponent(_amountToWithdrawLabel))
-                .addContainerGap(299, Short.MAX_VALUE))
+                        .addComponent(amountToWithdrawButton))
+                    .addComponent(amountToWithdrawLabel))
+                .addContainerGap(314, Short.MAX_VALUE))
         );
-        _withdrawPanelLayout.setVerticalGroup(
-            _withdrawPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_withdrawPanelLayout.createSequentialGroup()
+        withdrawPanelLayout.setVerticalGroup(
+            withdrawPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(withdrawPanelLayout.createSequentialGroup()
                 .addGap(103, 103, 103)
-                .addComponent(_amountToWithdrawLabel)
+                .addComponent(amountToWithdrawLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_withdrawPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_amountToWithdrawTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_amountToWithdrawButton))
-                .addContainerGap(212, Short.MAX_VALUE))
+                .addGroup(withdrawPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(amountToWithdrawTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(amountToWithdrawButton))
+                .addContainerGap(223, Short.MAX_VALUE))
         );
-        _tabbedPane.addTab("Withdraw", _withdrawPanel);
+        tabbedPane.addTab("Withdraw", withdrawPanel);
 
         _amountToDepositLabel.setText("Amount To Deposit");
 
@@ -247,109 +247,109 @@ public class ATMRichClient extends javax.swing.JFrame {
             .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
-        javax.swing.GroupLayout _depositPanelLayout = new javax.swing.GroupLayout(_depositPanel);
-        _depositPanel.setLayout(_depositPanelLayout);
-        _depositPanelLayout.setHorizontalGroup(
-            _depositPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        javax.swing.GroupLayout depositPanelLayout = new javax.swing.GroupLayout(depositPanel);
+        depositPanel.setLayout(depositPanelLayout);
+        depositPanelLayout.setHorizontalGroup(
+            depositPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
-        _depositPanelLayout.setVerticalGroup(
-            _depositPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        depositPanelLayout.setVerticalGroup(
+            depositPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
-        _tabbedPane.addTab("Deposit", _depositPanel);
+        tabbedPane.addTab("Deposit", depositPanel);
 
-        _transactionHistoryTable.setModel(getTableModel());
-        _scrollPane.setViewportView(_transactionHistoryTable);
+        transactionHistoryTable.setModel(getTableModel());
+        scrollPane.setViewportView(transactionHistoryTable);
 
-        javax.swing.GroupLayout _accountHistoryPanelLayout = new javax.swing.GroupLayout(_accountHistoryPanel);
-        _accountHistoryPanel.setLayout(_accountHistoryPanelLayout);
-        _accountHistoryPanelLayout.setHorizontalGroup(
-            _accountHistoryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 675, Short.MAX_VALUE)
+        javax.swing.GroupLayout accountHistoryPanelLayout = new javax.swing.GroupLayout(accountHistoryPanel);
+        accountHistoryPanel.setLayout(accountHistoryPanelLayout);
+        accountHistoryPanelLayout.setHorizontalGroup(
+            accountHistoryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 679, Short.MAX_VALUE)
         );
-        _accountHistoryPanelLayout.setVerticalGroup(
-            _accountHistoryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_accountHistoryPanelLayout.createSequentialGroup()
-                .addComponent(_scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)
+        accountHistoryPanelLayout.setVerticalGroup(
+            accountHistoryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(accountHistoryPanelLayout.createSequentialGroup()
+                .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE)
                 .addContainerGap())
         );
-        _tabbedPane.addTab("Account History", _accountHistoryPanel);
+        tabbedPane.addTab("Account History", accountHistoryPanel);
 
-        _tabbedPane.getAccessibleContext().setAccessibleName("Withdraw");
+        tabbedPane.getAccessibleContext().setAccessibleName("Withdraw");
 
-        javax.swing.GroupLayout _atmInternalFrameLayout = new javax.swing.GroupLayout(_atmInternalFrame.getContentPane());
-        _atmInternalFrame.getContentPane().setLayout(_atmInternalFrameLayout);
-        _atmInternalFrameLayout.setHorizontalGroup(
-            _atmInternalFrameLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 680, Short.MAX_VALUE)
+        javax.swing.GroupLayout atmInternalFrameLayout = new javax.swing.GroupLayout(atmInternalFrame.getContentPane());
+        atmInternalFrame.getContentPane().setLayout(atmInternalFrameLayout);
+        atmInternalFrameLayout.setHorizontalGroup(
+            atmInternalFrameLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 684, Short.MAX_VALUE)
         );
-        _atmInternalFrameLayout.setVerticalGroup(
-            _atmInternalFrameLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_tabbedPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
+        atmInternalFrameLayout.setVerticalGroup(
+            atmInternalFrameLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(tabbedPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 394, Short.MAX_VALUE)
         );
-        _atmInternalFrame.setBounds(100, 50, 690, 420);
-        _desktopPane.add(_atmInternalFrame, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        atmInternalFrame.setBounds(100, 50, 690, 420);
+        desktopPane.add(atmInternalFrame, javax.swing.JLayeredPane.DEFAULT_LAYER);
 
-        _menu.setText("File");
-        _fileMenuItem.setText("Log in");
-        _fileMenuItem.addMouseListener(new java.awt.event.MouseAdapter() {
+        menu.setText("File");
+        fileMenuItem.setText("Log in");
+        fileMenuItem.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt) {
                 loginMenuItemPressed(evt);
             }
         });
 
-        _menu.add(_fileMenuItem);
+        menu.add(fileMenuItem);
 
-        _exitMenuItem.setText("Quit");
-        _exitMenuItem.addMouseListener(new java.awt.event.MouseAdapter() {
+        exitMenuItem.setText("Quit");
+        exitMenuItem.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt) {
                 quitMenuItemPressed(evt);
             }
         });
 
-        _menu.add(_exitMenuItem);
+        menu.add(exitMenuItem);
 
-        _menuBar.add(_menu);
+        menuBar.add(menu);
 
-        setJMenuBar(_menuBar);
+        setJMenuBar(menuBar);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_desktopPane, javax.swing.GroupLayout.DEFAULT_SIZE, 1205, Short.MAX_VALUE)
+            .addComponent(desktopPane, javax.swing.GroupLayout.DEFAULT_SIZE, 1205, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_desktopPane, javax.swing.GroupLayout.DEFAULT_SIZE, 595, Short.MAX_VALUE)
+            .addComponent(desktopPane, javax.swing.GroupLayout.DEFAULT_SIZE, 595, Short.MAX_VALUE)
         );
         pack();
     }// </editor-fold>//GEN-END:initComponents
     
-    private void _amountToWithdrawButtonMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event__amountToWithdrawButtonMousePressed
+    private void amountToWithdrawButtonMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_amountToWithdrawButtonMousePressed
         try{
-            Double amountToWithdraw = Double.parseDouble(_amountToWithdrawTextField.getText());
-            _atmService.withDraw(amountToWithdraw);
-            _tabbedPane.setSelectedIndex(0);
+            Double amountToWithdraw = Double.parseDouble(amountToWithdrawTextField.getText());
+            atmService.withDraw(amountToWithdraw);
+            tabbedPane.setSelectedIndex(0);
             
         } catch(NumberFormatException nfe) {
-            JOptionPane.showMessageDialog(_atmRichClient, "Please enter a decimal") ;
+            JOptionPane.showMessageDialog(atmRichClient, "Please enter a decimal") ;
         }
-    }//GEN-LAST:event__amountToWithdrawButtonMousePressed
+    }//GEN-LAST:event_amountToWithdrawButtonMousePressed
     
     private void _amountToDepositButtonMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event__amountToDepositButtonMousePressed
         try{
             Double amountToDeposit = Double.parseDouble(_amountToDepositTextField.getText());
-            _atmService.deposit(amountToDeposit);
-            _tabbedPane.setSelectedIndex(0);
+            atmService.deposit(amountToDeposit);
+            tabbedPane.setSelectedIndex(0);
         } catch(NumberFormatException nfe) {
-            JOptionPane.showMessageDialog(_atmRichClient, "Please enter a decimal") ;
+            JOptionPane.showMessageDialog(atmRichClient, "Please enter a decimal") ;
         }
     }//GEN-LAST:event__amountToDepositButtonMousePressed
     
-    private void _tabbedPaneStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event__tabbedPaneStateChanged
-        if(_atmInternalFrame.isVisible()) {
+    private void tabbedPaneStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_tabbedPaneStateChanged
+        if(atmInternalFrame.isVisible()) {
             JTabbedPane tabbedPane = (JTabbedPane) evt.getSource();
             if(tabbedPane.getSelectedIndex() == 0) {
                 refreshCurrentBalanceFigure();
@@ -358,23 +358,23 @@ public class ATMRichClient extends javax.swing.JFrame {
                 refreshAccountHistoryTable();
             }
         }
-    }//GEN-LAST:event__tabbedPaneStateChanged
+    }//GEN-LAST:event_tabbedPaneStateChanged
     
     private void refreshCurrentBalanceFigure() {
-        Double currentBalance = _atmService.getBalance();
-        _currentBalanceLabel.setText("$" + currentBalance.toString());
+        Double currentBalance = atmService.getBalance();
+        currentBalanceLabel.setText("$" + currentBalance.toString());
     }
     
     private void refreshAccountHistoryTable() {
-        Account account =  _atmService.fetchAccountTransactions();
-        while(_tableModel.getRowCount() > 0) {
-            _tableModel.removeRow(0);
+        Account account =  atmService.fetchAccountTransactions();
+        while(tableModel.getRowCount() > 0) {
+            tableModel.removeRow(0);
         }
         for(AccountTransaction transaction : account.getTransactionHistory()) {
             String id = transaction.getAccount().getId().toString();
-            _tableModel.addRow(new Object[]{id, _dateFormat.format(transaction.getDate().getTime()),transaction.getBalanceBeforeTransaction(), transaction.getBalanceAfterTransaction()});
+            tableModel.addRow(new Object[]{id, dateFormat.format(transaction.getDate().getTime()),transaction.getBalanceBeforeTransaction(), transaction.getBalanceAfterTransaction()});
         }
-        _transactionHistoryTable.repaint();
+        transactionHistoryTable.repaint();
     }
     
     
@@ -383,17 +383,17 @@ public class ATMRichClient extends javax.swing.JFrame {
     }//GEN-LAST:event_quitMenuItemPressed
     
     private void loginMenuItemPressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_loginMenuItemPressed
-        _loginDialog.pack();
-        _loginDialog.setLocationRelativeTo(_atmRichClient);
-        _loginDialog.setVisible(true);
+        loginDialog.pack();
+        loginDialog.setLocationRelativeTo(atmRichClient);
+        loginDialog.setVisible(true);
     }//GEN-LAST:event_loginMenuItemPressed
     
     private void loginDialogClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_loginDialogClicked
         String username = loginTextField.getText();
         String password = passwordTextField.getText();
-        if(_atmService.authenticate(username, password)) {
-            _loginDialog.setVisible(false);
-            _atmInternalFrame.setVisible(true);
+        if(atmService.authenticate(username, password)) {
+            loginDialog.setVisible(false);
+            atmInternalFrame.setVisible(true);
             refreshCurrentBalanceFigure();
         } else {
             System.out.println("failed to log in");
@@ -406,50 +406,50 @@ public class ATMRichClient extends javax.swing.JFrame {
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                _atmRichClient = new ATMRichClient(ClientSideServiceLocatorImplementation.getInstance());
-                _atmRichClient.setVisible(true);
+                atmRichClient = new ATMRichClient(ClientSideServiceLocatorImplementation.getInstance());
+                atmRichClient.setVisible(true);
             }
         });
         
     }    
     
     public TableModel getTableModel() {
-        return _tableModel;
+        return tableModel;
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel _accountHistoryPanel;
     private javax.swing.JButton _amountToDepositButton;
     private javax.swing.JLabel _amountToDepositLabel;
     private javax.swing.JTextField _amountToDepositTextField;
-    private javax.swing.JButton _amountToWithdrawButton;
-    private javax.swing.JLabel _amountToWithdrawLabel;
-    private javax.swing.JTextField _amountToWithdrawTextField;
-    private javax.swing.JInternalFrame _atmInternalFrame;
-    private javax.swing.JLabel _currentBalanceLabel;
-    private javax.swing.JPanel _currentBalancePanel;
-    private javax.swing.JPanel _depositPanel;
-    private javax.swing.JDesktopPane _desktopPane;
-    private javax.swing.JMenuItem _exitMenuItem;
-    private javax.swing.JMenuItem _fileMenuItem;
-    private javax.swing.JDialog _loginDialog;
-    private javax.swing.JMenu _menu;
-    private javax.swing.JMenuBar _menuBar;
-    private javax.swing.JScrollPane _scrollPane;
-    private javax.swing.JTabbedPane _tabbedPane;
-    private javax.swing.JTable _transactionHistoryTable;
-    private javax.swing.JPanel _withdrawPanel;
+    private javax.swing.JPanel accountHistoryPanel;
+    private javax.swing.JButton amountToWithdrawButton;
+    private javax.swing.JLabel amountToWithdrawLabel;
+    private javax.swing.JTextField amountToWithdrawTextField;
+    private javax.swing.JInternalFrame atmInternalFrame;
+    private javax.swing.JLabel currentBalanceLabel;
+    private javax.swing.JPanel currentBalancePanel;
+    private javax.swing.JPanel depositPanel;
+    private javax.swing.JDesktopPane desktopPane;
+    private javax.swing.JMenuItem exitMenuItem;
+    private javax.swing.JMenuItem fileMenuItem;
     private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
+    private javax.swing.JDialog loginDialog;
     private javax.swing.JTextField loginTextField;
+    private javax.swing.JMenu menu;
+    private javax.swing.JMenuBar menuBar;
     private javax.swing.JPasswordField passwordTextField;
+    private javax.swing.JScrollPane scrollPane;
+    private javax.swing.JTabbedPane tabbedPane;
+    private javax.swing.JTable transactionHistoryTable;
+    private javax.swing.JPanel withdrawPanel;
     // End of variables declaration//GEN-END:variables
     
-    private javax.swing.table.DefaultTableModel _tableModel = new DefaultTableModel(new String[]{"Account Number","Transaction Date","Balance Before Transaction","Balance After Transaction"}, 0);
-    private DateFormat _dateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z");
-    private static ATMRichClient _atmRichClient;
-    private static ATMService _atmService;    
+    private javax.swing.table.DefaultTableModel tableModel = new DefaultTableModel(new String[]{"Account Number","Transaction Date","Balance Before Transaction","Balance After Transaction"}, 0);
+    private DateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z");
+    private static ATMRichClient atmRichClient;
+    private static ATMService atmService;    
 }

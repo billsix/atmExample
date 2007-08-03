@@ -37,8 +37,8 @@ public class HibernateAccountDataMapper extends HibernateBaseDataMapper<Account>
     }
     
     public Account load(final String username) {        
-        Account toReturn = (Account) _sessionFactory.getCurrentSession()
-                .createQuery("from Account as account where account._username like :username")
+        Account toReturn = (Account) this.sessionFactory.getCurrentSession()
+                .createQuery("from Account as account where account.username like :username")
                 .setParameter("username", username, Hibernate.STRING)
                 .uniqueResult();        
         if(toReturn == null) {

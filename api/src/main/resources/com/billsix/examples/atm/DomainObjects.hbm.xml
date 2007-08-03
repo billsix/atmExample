@@ -26,26 +26,26 @@ THE SOFTWARE.
 
 <hibernate-mapping package="com.billsix.examples.atm.domain" default-access="field">    
     <class name="Account">  
-        <id name="_id">
+        <id name="id">
             <generator class="native"/>
         </id>
-        <version name="_version" type="long"/>            
-        <property name="_username"/>
-        <property name="_password"/>
-        <property name="_currentBalance"/>
-        <set name="_transactionHistory" inverse="true" cascade="all">
+        <version name="version" type="long"/>            
+        <property name="username"/>
+        <property name="password"/>
+        <property name="currentBalance"/>
+        <set name="transactionHistory" inverse="true" cascade="all">
             <key column="ACCOUNT_ID"/>
             <one-to-many class="AccountTransaction"/>
         </set>        
     </class>        
     <class name="AccountTransaction" >
-        <id name="_id">
+        <id name="id">
             <generator class="native"/>
         </id>
-        <version name="_version" type="long"/>
-        <property name="_date"/>
-        <property name="_balanceBeforeTransaction"/>
-        <property name="_balanceAfterTransaction"/>
-        <many-to-one name="_account" class="Account" column="ACCOUNT_ID" cascade="all" not-null="true" />
+        <version name="version" type="long"/>
+        <property name="date"/>
+        <property name="balanceBeforeTransaction"/>
+        <property name="balanceAfterTransaction"/>
+        <many-to-one name="account" class="Account" column="ACCOUNT_ID" cascade="all" not-null="true" />
     </class>        
 </hibernate-mapping>

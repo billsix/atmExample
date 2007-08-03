@@ -44,7 +44,7 @@ public class ATMServiceBackingBean {
     
     
     public String login() {
-        if (_atmService.authenticate(_username, _password))
+        if (atmService.authenticate(username, password))
             return "loginSuccess";
         return "loginFailure";
     }
@@ -52,8 +52,8 @@ public class ATMServiceBackingBean {
     public String withdraw() {
         FacesContext context = FacesContext.getCurrentInstance();
         try{
-            Double amountToWithdraw = Double.parseDouble(_withdrawal);
-            _atmService.withDraw(amountToWithdraw);
+            Double amountToWithdraw = Double.parseDouble(withdrawal);
+            atmService.withDraw(amountToWithdraw);
             return "transactionSuccess";
         } catch(NumberFormatException nfe) {
             context.addMessage("withdrawalForm:withdrawalInput", new FacesMessage("Please enter a decimal number"));
@@ -64,8 +64,8 @@ public class ATMServiceBackingBean {
     public String deposit() {
         FacesContext context = FacesContext.getCurrentInstance();
         try{
-            Double amountToDeposit = Double.parseDouble(_deposit);
-            _atmService.deposit(amountToDeposit);
+            Double amountToDeposit = Double.parseDouble(deposit);
+            atmService.deposit(amountToDeposit);
             return "transactionSuccess";
         } catch(NumberFormatException nfe) {
             context.addMessage("depositForm:depositInput", new FacesMessage("Please enter a decimal number"));
@@ -74,65 +74,65 @@ public class ATMServiceBackingBean {
     }
     
     public String viewSingleTransaction() {
-        _selectedTransaction = (AccountTransaction) _transactions.getRowData();
+        selectedTransaction = (AccountTransaction) transactions.getRowData();
         return "viewTransactionDetails";
     }
     
     public DataModel getTransactions() {
-        _transactions = new ListDataModel();
+        transactions = new ListDataModel();
         ArrayList<AccountTransaction> wrappedList = new ArrayList<AccountTransaction>();
-        wrappedList.addAll(_atmService.fetchAccountTransactions().getTransactionHistory());
-        _transactions.setWrappedData(wrappedList);
-        return _transactions;
+        wrappedList.addAll(atmService.fetchAccountTransactions().getTransactionHistory());
+        transactions.setWrappedData(wrappedList);
+        return transactions;
     }
     
     public String getUsername() {
-        return _username;
+        return username;
     }
     
     public void setUsername(String username) {
-        _username = username;
+        username = username;
     }
     
     public String getPassword() {
-        return _password;
+        return password;
     }
     
     public void setPassword(String password) {
-        _password = password;
+        password = password;
     }
     
     public ATMService getAtmService() {
-        return _atmService;
+        return atmService;
     }
     
     
     public String getWithdrawal() {
-        return _withdrawal;
+        return withdrawal;
     }
     
     public void setWithdrawal(String withdrawal) {
-        _withdrawal = withdrawal;
+        withdrawal = withdrawal;
     }
     
     public String getDeposit() {
-        return _deposit;
+        return deposit;
     }
     
     public void setDeposit(String deposit) {
-        _deposit = deposit;
+        deposit = deposit;
     }
     
     public AccountTransaction getSelectedTransaction() {
-        return _selectedTransaction;
+        return selectedTransaction;
     }
     
-    private ATMService _atmService = ServerSideServiceLocatorImplementation.getInstance().getAtmService();
-    private String _username;
-    private String _password;
-    private String _withdrawal;
-    private String _deposit;
-    private DataModel _transactions ;
-    private AccountTransaction _selectedTransaction;
+    private ATMService atmService = ServerSideServiceLocatorImplementation.getInstance().getAtmService();
+    private String username;
+    private String password;
+    private String withdrawal;
+    private String deposit;
+    private DataModel transactions ;
+    private AccountTransaction selectedTransaction;
     
 }

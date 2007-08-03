@@ -34,17 +34,17 @@ public class ClientSideServiceLocatorImplementation implements ClientSideService
         proxyFactoryBean.setServiceUrl("rmi://localhost:1199/ATM");
         proxyFactoryBean.setServiceInterface(ATMService.class);
         proxyFactoryBean.afterPropertiesSet();
-        _atm = (ATMService) proxyFactoryBean.getObject();
+        atmService = (ATMService) proxyFactoryBean.getObject();
     }
     
     public ATMService getAtmService() {
-        return _atm;
+        return atmService;
     }
     
     public static ClientSideServiceLocator getInstance() {
-        return _instance;
+        return instance;
     }
     
-    private static ClientSideServiceLocatorImplementation _instance = new ClientSideServiceLocatorImplementation();
-    private ATMService _atm;
+    private static ClientSideServiceLocatorImplementation instance = new ClientSideServiceLocatorImplementation();
+    private ATMService atmService;
 }

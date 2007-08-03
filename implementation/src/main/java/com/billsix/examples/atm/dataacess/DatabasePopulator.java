@@ -32,14 +32,14 @@ public class DatabasePopulator {
     public static void main(String[] args) {
         try{
             ServerSideServiceLocatorImplementation.getInstance().dropAndCreateSchemas();
-            _accountDAO = ServerSideServiceLocatorImplementation.getInstance().getAccountDataMapper();
+            accountDAO = ServerSideServiceLocatorImplementation.getInstance().getAccountDataMapper();
             Account account = new Account("bill", "password", 100.00);
-            _accountDAO.saveOrUpdate(account);
-            Account bill =  _accountDAO.load("bill");
+            accountDAO.saveOrUpdate(account);
+            Account bill =  accountDAO.load("bill");
         } catch(Throwable re) {
             re.printStackTrace();
         }
     }
     
-    private static AccountDataMapper _accountDAO;
+    private static AccountDataMapper accountDAO;
 }

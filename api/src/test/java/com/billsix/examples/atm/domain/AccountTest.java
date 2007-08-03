@@ -35,17 +35,17 @@ public class AccountTest extends TestCase {
     }
     
     public void setUp() {
-        _account = new Account("bill", "password", 100.00);
+        account = new Account("bill", "password", 100.00);
     }
     
     public void testCurrentBalance() {
-        assertTrue(_account.getCurrentBalance() == 100.0);
+        assertTrue(account.getCurrentBalance() == 100.0);
     }
     
     public void testDeposit() {
-        _account.deposit(50.00);
-        assertTrue(_account.getCurrentBalance() == 150.0);
-        Set<AccountTransaction> transactions = _account.getTransactionHistory(); 
+        account.deposit(50.00);
+        assertTrue(account.getCurrentBalance() == 150.0);
+        Set<AccountTransaction> transactions = account.getTransactionHistory(); 
         assertTrue(transactions.size()==1);
         AccountTransaction transaction = transactions.iterator().next(); 
         assertTrue(transaction.getBalanceAfterTransaction() == 150.0);
@@ -53,9 +53,9 @@ public class AccountTest extends TestCase {
     }
     
     public void testWithdraw() {
-        _account.withdraw(50.00);
-        assertTrue(_account.getCurrentBalance() == 50.0);
-        Set<AccountTransaction> transactions = _account.getTransactionHistory(); 
+        account.withdraw(50.00);
+        assertTrue(account.getCurrentBalance() == 50.0);
+        Set<AccountTransaction> transactions = account.getTransactionHistory(); 
         assertTrue(transactions.size()==1);
         AccountTransaction transaction = transactions.iterator().next(); 
         assertTrue(transaction.getBalanceAfterTransaction() == 50.0);
@@ -63,11 +63,11 @@ public class AccountTest extends TestCase {
     }
     
     public void testPasswordIsValid() {
-        assertTrue(_account.passwordIsValid("password"));
-        assertFalse(_account.passwordIsValid("passw"));
+        assertTrue(account.passwordIsValid("password"));
+        assertFalse(account.passwordIsValid("passw"));
     }
     
-    private Account _account;
+    private Account account;
 }
 
 

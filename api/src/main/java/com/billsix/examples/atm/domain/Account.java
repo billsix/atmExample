@@ -39,40 +39,40 @@ public class Account extends BaseDomainObject{
     }
     
     public Account(String username, String password, Double currentBalance) {
-        _username = username;
-        _password = password;
-        _currentBalance = currentBalance;
-        _transactionHistory = new HashSet<AccountTransaction>();
+        this.username = username;
+        this.password = password;
+        this.currentBalance = currentBalance;
+        transactionHistory = new HashSet<AccountTransaction>();
     }
     
     public void deposit(Double deposit) {
-        Double newBalance = _currentBalance + deposit;
-        AccountTransaction transaction = new AccountTransaction(this, _currentBalance, newBalance );
-        _currentBalance = newBalance;
-        _transactionHistory.add(transaction);
+        Double newBalance = this.currentBalance + deposit;
+        AccountTransaction transaction = new AccountTransaction(this, this.currentBalance, newBalance );
+        this.currentBalance = newBalance;
+        transactionHistory.add(transaction);
     }
     
     public void withdraw(Double withdraw) {
-        Double newBalance = _currentBalance - withdraw;
-        AccountTransaction transaction = new AccountTransaction(this, _currentBalance, newBalance );
-        _currentBalance = newBalance;
-        _transactionHistory.add(transaction);
+        Double newBalance = this.currentBalance - withdraw;
+        AccountTransaction transaction = new AccountTransaction(this, this.currentBalance, newBalance );
+        this.currentBalance = newBalance;
+        transactionHistory.add(transaction);
     }
     
     public Set<AccountTransaction> getTransactionHistory() {
-        return _transactionHistory;
+        return transactionHistory;
     }
     
     public boolean passwordIsValid(String password) {
-        return _password.equals(password);
+        return this.password.equals(password);
     }
     
     public Double getCurrentBalance() {
-        return _currentBalance;
+        return this.currentBalance;
     }
     
-    private String _username;
-    private transient String _password;
-    private Double _currentBalance;
-    private Set<AccountTransaction> _transactionHistory;
+    private String username;
+    private transient String password;
+    private Double currentBalance;
+    private Set<AccountTransaction> transactionHistory;
 }

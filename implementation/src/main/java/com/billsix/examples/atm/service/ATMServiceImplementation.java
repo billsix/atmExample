@@ -38,7 +38,7 @@ public class ATMServiceImplementation extends BaseServiceImplementation implemen
         try{
             Account account = getServerServiceLocator().getAccountDataMapper().load(username);
             if(account.passwordIsValid(password)) {
-                _account = account;
+                this.account = account;
                 return true;
             }
             return false;
@@ -48,29 +48,29 @@ public class ATMServiceImplementation extends BaseServiceImplementation implemen
     }
     
     public Double getBalance() {
-        getServerServiceLocator().getAccountDataMapper().saveOrUpdate(_account);
-        return _account.getCurrentBalance();
+        getServerServiceLocator().getAccountDataMapper().saveOrUpdate(this.account);
+        return this.account.getCurrentBalance();
     }
     
     public void deposit(Double amountToDeposit) {
-        getServerServiceLocator().getAccountDataMapper().saveOrUpdate(_account);
-        _account.deposit(amountToDeposit);
+        getServerServiceLocator().getAccountDataMapper().saveOrUpdate(this.account);
+        this.account.deposit(amountToDeposit);
     }
     
     public void withDraw(Double amountToWithdraw) {
-        getServerServiceLocator().getAccountDataMapper().saveOrUpdate(_account);
-        _account.withdraw(amountToWithdraw);
+        getServerServiceLocator().getAccountDataMapper().saveOrUpdate(this.account);
+        this.account.withdraw(amountToWithdraw);
     }
     
     public Account fetchAccountTransactions() {
-        getServerServiceLocator().getAccountDataMapper().saveOrUpdate(_account);
-        return getServerServiceLocator().getAccountDataMapper().fetchAccountTransactions(_account);
+        getServerServiceLocator().getAccountDataMapper().saveOrUpdate(this.account);
+        return getServerServiceLocator().getAccountDataMapper().fetchAccountTransactions(this.account);
     }
     
     
     public Account getAuthenticatedAccount() {
-        return _account;
+        return this.account;
     }
     
-    private Account _account;
+    private Account account;
 }
