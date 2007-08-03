@@ -50,27 +50,22 @@ Foundation.
 @node Introduction
 @chapter Introduction
 @c %MENU% Purpose of the Spring Framework
-The Spring Framework is an excellent library for the Java programming language
-that promotes flexible, layered enterprise application development.  The Spring Framework
-allows developers to freely create their own domain model, while easily integrating their domain
-model into the Service Layer and Data Access Layer.  Furthermore, Spring facilitates integration of the domain model 
-with standard JavaEE services which were previously accomplished by using Enterprise JavaBeans; 
-such as JTA, and asynchronous JMS subscribers, 
 
+While Hibernate is an excellent object-relational mapping tool which supplanted EJB 2.1's EntityBeans 
+as the persistance mechanism of choice for many Java developers, Hibernate does not offer a unified
+interface for transaction management in the Service Layer.  The Spring Framework offers a unified interface
+for transaction managment, allowing integration of your code to a local transaction or a JTA transaction.
+Furthermore, Spring's transaction management also including support for sending and asynchronous receiving
+of JMS messages.
+
+The Spring Framework's main strength is that it provides interfaces as an abstraction over existing libraries 
+with similar functionality.  Specifically, these services are dynamic proxy creation, transaction management, and
+data access technologies.
 
 While a plethora of documentation regarding Spring exists in books and on the web, most of it emphasizes the use of an XML-based 
-ApplicationContext for the purpose of Depedency Injection and Aspect Oriented Programming.  Dependency Injection 
-allows a developer to seperate configuration of services from their use.  While Dependency Injection  may be appealing in 
-certain contexts @footnote{See http://www.martinfowler.com/articles/injection.html }, 
-it is not a prerequisite for separating configuration from use.  Aspect Oriented Programming is primarily used as a technique
-for intercepting method calls to the Service Layer and Data Access Layer, allowing a developer to code cross cutting concerns
-such as transaction management, authentication, or logging, without forcing the developer to copy the same 
-boilerplate code repeatedly across each class in those layers.  The goals of Dependency Injection and AOP have merit.  
+ApplicationContext for the purpose of Depedency Injection and Aspect Oriented Programming.  While these may or may not have
+it's merits, I will focus instead on the abstraction Spring provides over existing JavaEE technologies.
 
-
-With that said, the Service Locater pattern can be used instead of Dependency Injection, and 
-cross cutting concerns can be addressed in a more intuitive manner by using method interception libraries.  More importantly, the Service Locator
-pattern and method interception are easily implemented in pure Java instead of relying on a Dependency Injection container.
 
 @node Getting Started,  , Introduction
 @section Getting Started
