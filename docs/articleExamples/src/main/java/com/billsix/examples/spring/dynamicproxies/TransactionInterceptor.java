@@ -21,7 +21,6 @@ THE SOFTWARE.
  */
 package com.billsix.examples.spring.dynamicproxies;
 
-import java.lang.reflect.Method;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
