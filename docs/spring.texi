@@ -42,9 +42,6 @@ Foundation.
 @page
 @contents
 @headings off
-@iftex
-@shorttitlepage Introduction to the Spring Framework
-@end iftex
 @headings on
 
 @node Introduction
@@ -52,10 +49,12 @@ Foundation.
 @c %MENU% Purpose of the Spring Framework
 
 While Hibernate is an excellent object-relational mapping tool which supplanted EJB 2.1's EntityBeans 
-as the persistance mechanism of choice for many Java developers, Hibernate does not offer a unified
-interface for transaction management in the Service Layer.  The Spring Framework does however, 
-allowing integration of custom code to a local transaction or a JTA transaction.
-Furthermore, Spring's transaction management also includes support for the delivery and asynchronous consumption
+as the persistence mechanism of choice for many Java developers, Hibernate requires developers
+to use different transactional interfaces in the Service Layer depending on whether the transaction
+is being used in a distributed transaction or not.  While the Spring Framework does not have its
+own object-relational mapper, it does however integrate with Hibernate while offering a unified transactional interface,  
+allowing integration of custom code to a local transaction or a JTA transaction transparently.
+Furthermore, Spring's transaction management includes support for the delivery and asynchronous consumption
 of JMS messages.
 
 The Spring Framework's main strength is that it provides interfaces as an abstraction over existing libraries 
@@ -64,7 +63,7 @@ with a wide variety of data access technologies, and remoting.
 
 While a plethora of documentation regarding Spring exists in books and on the web, most of it emphasizes the use of an XML-based 
 ApplicationContext for the purpose of Depedency Injection and Aspect Oriented Programming.  While these may or may not have
-their merits, I choose to focus instead on the abstractions Spring provides over existing JavaEE technologies.
+their merits, I chose to focus instead on the abstractions Spring provides over existing JavaEE technologies.
 
 I wrote this paper because it's the paper I would have liked to have read when I first picked up Spring after college.
 
@@ -83,7 +82,7 @@ programming concepts.  Additionally, it is assumed that you have read Martin Fow
 
 Before getting Spring's integration with data access technologies and transaction management, it's important to understand what
 method interception is and how to use dynamic proxies.  Modern Java frameworks make heavy use of dynamic proxies: Spring uses
-them to simplify transaction management in the Service Layer, and Hibernate uses them to lazily load a subgraph of the persistant
+them to simplify transaction management in the Service Layer, and Hibernate uses them to lazily load a sub-graph of the persistent
 object graph.
 
 @node Dynamic Proxies,  , Method Interception 
@@ -91,7 +90,7 @@ object graph.
 
 Dynamic, message-passing object oriented languages such as Smalltalk-80, Objective C, Ruby, and Groovy  
 allow an object to inspect messages which it receives should it not have a method which correspond to the message's 
-selector@footnote{The method signature and in Java terminology}.  
+selector@footnote{The method signature and in Java parlance}.  
 The object can then decide to execute whatever actions it sees fit based on the selector and arguments
 of the message.  This feature allows a developer to create proxy objects which forward these unknown messages
 to another ``target'' object.
@@ -103,16 +102,17 @@ for arbitrary proxy objects.  In order to get around this limitation,
 why the name ``dynamic'' proxy is used instead of just ``proxy''.  I'm guessing it's because you can statically 
 type a proxy class which implements a ``dynamic'' set of interfaces}, which under the hood is
 implemented using reflection.  A dynamic proxy is a Java class 
-which, at runtime, can be configured as a proxy to any number of Java interfaces: thus allowing safe type-casting of the proxy object 
+which, at run-time, can be configured as a proxy to any number of Java interfaces: thus allowing safe type-casting of the proxy object 
 to a set of target interfaces.  Around the same time, an open source project called CGLIB appeared,
 allowing similar proxying behavior via byte-code enhancement instead of reflection.  
-At the time, performance issues aside, the additional benefit of CGLIB is that it removed the restriction
+The additional benefit of CGLIB is that it removed the restriction
 that a dynamic proxy can only proxy instances of interfaces, thus providing the ability to proxy an instance of a class.
 
-Dynamic Proxies can be very useful in the Service Layer of an enterprise application.  The Service Layer is usually a thin
-layer over a Domain Model which deals with transaction logic.  Each method in the Service Layer is likely to have similar
+Dynamic proxies are very useful in the Service Layer of an enterprise application, since it is usually a thin
+layer over a Domain Model which deals with application logic such as transactions.  
+Each method in the Service Layer is likely to have similar
 isolation and propagation levels, and as such, the Service Layer can contain redundant code.  To alleviate the
-boilerplate code, a proxy object can be placed in front of the Service Layer object, allowing the concise expression 
+boilerplate code, a proxy object is placed in front of the Service Layer object, allowing the concise expression 
 of the transactional logic. 
 
 
@@ -231,13 +231,10 @@ you would just need to call factory.setProxyTargetClass(true); before calling fa
 @c %MENU% Data Access 
 
 In the previous section on dynamic proxies, both the JDK and CGLIB implementation took in a target object, 
-a list of interfaces
-to implement, and returned a proxy object.  
-Data access technologies solve persistence in a variety of 
-ways @footnote{See Table Data Gateway, Row Data Gateway, and Data Mapper in PoEAA}.
-There exist full fledged object-relational mappers like Hibernate and the Java Persistence API, to lighter weight solutions 
-like iBatis or JDBC.  With all the variation, it would not be feasable to define a set of interfaces
-which define common data access behavior across them all.
+a list of interfaces to implement, and returned a proxy object.  
+Data access technologies, however, solve persistence in a multitude of 
+ways@footnote{See Table Data Gateway, Row Data Gateway, and Data Mapper in PoEAA}, and as such, extracting common
+interface is not feasible.
 
 However, what is possible is to define a data access technology agnostic set of DataAccessExceptions.  These
 can then be used to simplify the commit/rollback 
