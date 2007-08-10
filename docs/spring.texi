@@ -1,5 +1,4 @@
-set-foreg       
-                       \input texinfo_times.tex
+\input texinfo_times.tex
 @setfilename spring.info
 @settitle Introduction to the Spring Framework
 @paragraphindent 1
@@ -231,16 +230,21 @@ you would just need to call factory.setProxyTargetClass(true); before calling fa
 @chapter Data Access Layer
 @c %MENU% Data Access 
 
-Unlike the previous section on dynamic proxies, where different libraries solved the same problem using different techniques,
-the problems that different data access technologies try to solve varies greatly@footnote{See Table Data Gateway, Row Data Gateway, and Data Mapper in PoEAA}.
+In the previous section on dynamic proxies, both the JDK and CGLIB implementation took in a target object, 
+a list of interfaces
+to implement, and returned a proxy object.  
+Data access technologies solve persistence in a variety of 
+ways @footnote{See Table Data Gateway, Row Data Gateway, and Data Mapper in PoEAA}.
 There exist full fledged object-relational mappers like Hibernate and the Java Persistence API, to lighter weight solutions 
 like iBatis or JDBC.  With all the variation, it would not be feasable to define a set of interfaces
 which define common data access behavior across them all.
 
-However, what is possible is to define a data access technology agnostic set of DataAccessExceptions to simplify the commit/rollback 
-transactional logic in the Service Layer.  Furthermore, using
-dynamic proxies, you could integrate with each of the aforementioned technologies, putting a dynamic proxy in front of them.
-This proxy catches all of the Exceptions thrown in the Data Access Layer and recasts them as the Spring DataAccessExceptions. 
+However, what is possible is to define a data access technology agnostic set of DataAccessExceptions.  These
+can then be used to simplify the commit/rollback 
+transactional logic in the Service Layer.  To transparently transform proprietary Exceptions into Spring's
+DataAccessExceptions, a dynamic proxy is put in front of each data access technology to catch and rethrow
+DataAccessExceptions.
+
 
 @node Hibernate Configuration,  , Data Access Layer 
 @section Configuration
