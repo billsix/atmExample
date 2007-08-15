@@ -3,8 +3,8 @@
 @settitle Introduction to the Spring Framework
 @paragraphindent 1
 @tex
-\global\bindingoffset=0.00in
-\global\normaloffset =0.00in
+\global\bindingoffset=0.75in
+\global\normaloffset =0.75in
 @end tex
 @dircategory Spring Framework
 @direntry
@@ -25,13 +25,7 @@
 @page
 @vskip 0pt plus 1filll
 This manual documents the Spring Framework version @value{VERSION}.
-@sp2
-@multitable @columnfractions .50 .50
-@item Published by:              @tab
-@item @tab
-@item Bill Six Press                  
-@end multitable
-@sp 2
+@sp
 Copyright @copyright{} 2007 Bill Six
 @sp 1
 Permission is granted to copy, distribute and/or modify this document
@@ -49,13 +43,12 @@ Foundation.
 @c %MENU% Purpose of the Spring Framework
 
 While Hibernate is an excellent object-relational mapping tool which supplanted EJB 2.1's EntityBeans 
-as the persistence mechanism of choice for many Java developers, Hibernate requires developers
-to use different transactional interfaces in the Service Layer depending on whether the transaction
-is being used in a distributed transaction or not.  While the Spring Framework does not have its
-own object-relational mapper, it does however integrate with Hibernate while offering a unified transactional interface,  
-allowing integration of custom code to a local transaction or a JTA transaction transparently.
-Furthermore, Spring's transaction management includes support for the delivery and asynchronous consumption
-of JMS messages.
+as the persistence mechanism of choice for many Java developers; Hibernate requires developers
+to use different interfaces in the @b{Service Layer} depending on whether the transaction
+is being used in a distributed transaction or not.  The Spring Framework defines an interface
+as an abstraction over different transaction management technologies, and provides an implementation
+that integrates with native Hibernate.  Furthermore, Spring's transaction management includes support 
+for the delivery and asynchronous consumption of JMS messages.
 
 The Spring Framework's main strength is that it provides interfaces as an abstraction over existing libraries 
 with similar functionality.  Specifically, these services are transaction management, dynamic proxy creation, integration
@@ -82,7 +75,7 @@ programming concepts.  Additionally, it is assumed that you have read Martin Fow
 
 Before getting Spring's integration with data access technologies and transaction management, it's important to understand what
 method interception is and how to use dynamic proxies.  Modern Java frameworks make heavy use of dynamic proxies: Spring uses
-them to simplify transaction management in the Service Layer, and Hibernate uses them to lazily load a sub-graph of the persistent
+them to simplify transaction management in the @b{Service Layer}, and Hibernate uses them to lazily load a sub-graph of the persistent
 object graph.
 
 @node Dynamic Proxies,  , Method Interception 
@@ -108,11 +101,11 @@ allowing similar proxying behavior via byte-code enhancement instead of reflecti
 The additional benefit of CGLIB is that it removed the restriction
 that a dynamic proxy can only proxy instances of interfaces, thus providing the ability to proxy an instance of a class.
 
-Dynamic proxies are very useful in the Service Layer of an enterprise application, since it is usually a thin
+Dynamic proxies are very useful in the @b{Service Layer} of an enterprise application, since it is usually a thin
 layer over a Domain Model which deals with application logic such as transactions.  
-Each method in the Service Layer is likely to have similar
-isolation and propagation levels, and as such, the Service Layer can contain redundant code.  To alleviate the
-boilerplate code, a proxy object is placed in front of the Service Layer object, allowing the concise expression 
+Each method in the @b{Service Layer} is likely to have similar
+isolation and propagation levels, and as such, the @b{Service Layer} can contain redundant code.  To alleviate the
+boilerplate code, a proxy object is placed in front of the @b{Service Layer} object, allowing the concise expression 
 of the transactional logic. 
 
 
@@ -238,7 +231,7 @@ interface is not feasible.
 
 However, what is possible is to define a data access technology agnostic set of DataAccessExceptions.  These
 can then be used to simplify the commit/rollback 
-transactional logic in the Service Layer.  To transparently transform proprietary Exceptions into Spring's
+transactional logic in the @b{Service Layer}.  To transparently transform proprietary Exceptions into Spring's
 DataAccessExceptions, Spring uses a dynamic proxy in front of each data access technology to catch and rethrow
 DataAccessExceptions.
 
@@ -305,9 +298,9 @@ and would cut down on the amount of code needed to instantiate Spring's objects.
 @c %MENU% Service Layer
 
 
-The Service Layer is a thin layer on top of a Domain Model which provides application logic
+The @b{Service Layer} is a thin layer on top of a Domain Model which provides application logic
 such as managing transactions, authentication and authorization,
-and logging.  Since much of this logic is very similar, the Service Layer can amass quite a bit of boilerplate code.
+and logging.  Since much of this logic is very similar, the @b{Service Layer} can amass quite a bit of boilerplate code.
 This boilerplate code is minimized by using dynamic proxies.
 
 
@@ -316,10 +309,10 @@ This boilerplate code is minimized by using dynamic proxies.
 @section Transaction Management
 
 Spring defines an interface called the PlatformTransactionManager, for which there are multiple implementations; 
-allowing you to develop your Service Layer code completely independently of a specific transaction technology.
+allowing you to develop your @b{Service Layer} code completely independently of a specific transaction technology.
 These include the HibernateTransactionManager, JTATransactionManager, and others.  By having the 
-PlatformTransactionManager interface, transaction management code in the Service Layer can be developed 
-irregardless of the underlying transaction management scheme.  Since the Data Access Layer provides the Service Layer
+PlatformTransactionManager interface, transaction management code in the @b{Service Layer} can be developed 
+irregardless of the underlying transaction management scheme.  Since the Data Access Layer provides the @b{Service Layer}
 with Spring's DataAccessExceptions, commit/rollback logic is relatively straightforward.
 
 
@@ -388,7 +381,7 @@ the database roundtrip.  Hibernate does not model this dangling reference with a
 instead, since Hibernate uses CGLIB's dynamic proxies, the dangling reference is a proxy object 
 to the unfetched object in the database.  Upon method calls to that dynamic proxy, the proxy 
 attempts to fetch the target object from the database.  This means that if you're above the
-Service Layer and as such the Hibernate Session (Hibernate's Unit Of Work) is closed, 
+@b{Service Layer} and as such the Hibernate Session (Hibernate's Unit Of Work) is closed, 
 an Exception will be thrown.  Thus, reflection-based
 serialization techniques as employed by Hessian and Burlap fail.
 
