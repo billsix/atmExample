@@ -373,13 +373,14 @@ private void addTransactionInterceptorToATM() throws AopConfigException @{
 @c %MENU% Remoting
 
 
-Spring defines interfaces called RemoteExporter and RemoteAccessor, for creating and accessing
-remoting technologies.  Spring integrates with many different remoting technologies, such as 
+Spring defines interfaces called RemoteExporter and RemoteAccessor for creating and accessing
+remoting technologies, and integrates with remoting technologies such as 
 RMI@footnote{Spring enables the use of RMI using a plain Java interface, instead of one that extends Remote}
 , Hessian, Burlap, and Spring's own
 RMI over HTTP@footnote{RMI over HTTP is a good choice if you want to use RMI but you are behind a firewall}.  
-For the most part, choosing a different remoting technology is as easy as
-changing the RemoteExporter and RemoteAccessor that you instantiate.  However, remoting schemes such as
+For the most part, changing to a different remoting technology is as easy as
+changing the implementation of the RemoteExporter and RemoteAccessor that you instantiate.  
+However, remoting schemes such as
 Hessian and Burlap which use reflection-based serialization instead of native Java serialization
 fail when the domain model is persisted using Hibernate, or possibly any other bytecode-enhanced dynamic proxies.  
 
@@ -390,7 +391,7 @@ of the objects in the fetched subgraph to reference objects that were not fetche
 the database roundtrip.  Hibernate does not model this dangling reference with a null pointer; 
 instead, since Hibernate uses CGLIB's dynamic proxies, the dangling reference is a proxy object 
 to the unfetched object in the database.  Upon method calls to that dynamic proxy, the proxy 
-attempts to fetch the target object from the database.  This means that if you're above the
+attempts to fetch the target object from the database.  This means that if you're outside of the
 Service Layer and as such the Hibernate Session (Hibernate's Unit Of Work) is closed, 
 an Exception will be thrown.  Thus, reflection-based
 serialization techniques as employed by Hessian and Burlap fail.
@@ -403,7 +404,7 @@ serialization techniques as employed by Hessian and Burlap fail.
 
 
 This section shows how to use Spring to use the RmiServiceExporter to export a Service
-using RMI and a RmiProxyFactoryBean to connect to that service..
+using RMI and a RmiProxyFactoryBean to connect to that service.
 
 @smallexample
 private void exportRMI() throws RemoteException {
