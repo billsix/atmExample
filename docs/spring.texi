@@ -249,7 +249,7 @@ dynamic proxy in front of Hibernate's SessionFactory.  I can then use that Sessi
 create the a custom DataMapper.  
 
 @smallexample
-private BasicDataSource _dataSource ;
+private BasicDataSource dataSource ;
 private void initializeDataSource() @{
   dataSource = new BasicDataSource();
   dataSource.setDriverClassName("org.postgresql.Driver");
@@ -257,7 +257,7 @@ private void initializeDataSource() @{
   dataSource.setUsername("wsix");
   dataSource.setPassword("password");
 @}
-private LocalSessionFactoryBean _localSessionFactoryBean;
+private LocalSessionFactoryBean localSessionFactoryBean;
 private void initializeSessionFactory() throws Exception @{
   localSessionFactoryBean = new LocalSessionFactoryBean();
   Properties hibernateProperties = new Properties();
@@ -269,7 +269,7 @@ private void initializeSessionFactory() throws Exception @{
   localSessionFactoryBean.setHibernateProperties(hibernateProperties);
   localSessionFactoryBean.afterPropertiesSet();
 @}
-private AccountDataMapper _accountDataMapper;
+private AccountDataMapper accountDataMapper;
 private void initializeAccountDataMapper() 
         throws BeanInitializationException, 
         IllegalArgumentException @{
@@ -301,9 +301,9 @@ while reducing the amount of code needed to instantiate Spring's objects.
 
 
 The Service Layer is a thin layer on top of a Domain Model which provides application logic
-such as managing transactions, authentication and authorization,
+such as management of transactions, authentication and authorization,
 and logging.  Since much of this logic is very similar, the Service Layer can amass quite a bit of boilerplate code.
-This boilerplate code is minimized by using dynamic proxies.
+This boilerplate code is minimized using dynamic proxies.
 
 
 
@@ -314,22 +314,23 @@ Spring defines an interface called the PlatformTransactionManager, for which the
 allowing you to develop your Service Layer code completely independently of a specific transaction technology.
 These include the HibernateTransactionManager, JTATransactionManager, and others.  By having the 
 PlatformTransactionManager interface, transaction management code in the Service Layer can be developed 
-irregardless of the underlying transaction management scheme.  Since the Data Access Layer provides the Service Layer
-with Spring's DataAccessExceptions, commit/rollback logic is relatively straightforward.
+regardless of the underlying transaction management scheme.  Since the Data Access Layer provides the Service Layer
+with Spring's DataAccessExceptions, commit/rollback logic is straightforward.
 
 
 @node Configuration,  , Service Layer
 @section Configuration
 
 
-This section shows how to use Spring to instantiate a HibernateTransactionManager.  The HibernateTransactionManager
-only needs a copy of the Hiberate SessionFactory.  After creating the HibernateTransactionManager, I need to 
+This section shows how to use Spring to instantiate a HibernateTransactionManager.  
+The HibernateTransactionManager only needs a copy of the Hiberate SessionFactory.  
+After creating the HibernateTransactionManager, I need to 
 add a dynamic proxy in front of the Service I want to execute in a transactional context.  I specify that 
-all of the Service's methods should have a ``default'' isolation level, and a ``required'' propagation levell
+all of the Service's methods should have a ``default'' isolation level, and a ``required'' propagation level.
 
 
 @smallexample
-private PlatformTransactionManager _transactionManager  ;
+private PlatformTransactionManager transactionManager  ;
 private void initializeTransactionManager() @{
   transactionManager = new HibernateTransactionManager(
                          (org.hibernate.SessionFactory)
@@ -337,16 +338,23 @@ private void initializeTransactionManager() @{
                            .getObject());
 @}
 private void addTransactionInterceptorToATM() throws AopConfigException @{
-    NameMatchTransactionAttributeSource transactionAttributeSource = new NameMatchTransactionAttributeSource() ;
-    DefaultTransactionAttribute transactionAttribute = new DefaultTransactionAttribute();
+    NameMatchTransactionAttributeSource transactionAttributeSource = 
+                              new NameMatchTransactionAttributeSource() ;
+    DefaultTransactionAttribute transactionAttribute = 
+                              new DefaultTransactionAttribute();
 
-    transactionAttribute.setIsolationLevel(transactionAttribute.ISOLATION_DEFAULT);
-    transactionAttribute.setPropagationBehavior(transactionAttribute.PROPAGATION_REQUIRED);
-    transactionAttributeSource.addTransactionalMethod("*", transactionAttribute);
+    transactionAttribute.setIsolationLevel(
+                          transactionAttribute.ISOLATION_DEFAULT);
+    transactionAttribute.setPropagationBehavior(
+                          transactionAttribute.PROPAGATION_REQUIRED);
+    transactionAttributeSource.addTransactionalMethod("*", 
+                          transactionAttribute);
 
-    TransactionInterceptor transactionInterceptor = new TransactionInterceptor();
+    TransactionInterceptor transactionInterceptor = 
+                           new TransactionInterceptor();
     transactionInterceptor.setTransactionManager(transactionManager);
-    transactionInterceptor.setTransactionAttributeSource(transactionAttributeSource);
+    transactionInterceptor.setTransactionAttributeSource(
+                             transactionAttributeSource);
     transactionInterceptor.afterPropertiesSet();        
 
     ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
