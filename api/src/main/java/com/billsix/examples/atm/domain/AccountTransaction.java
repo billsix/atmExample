@@ -41,7 +41,6 @@ public class AccountTransaction extends BaseDomainObject{
         this.balanceBeforeTransaction = balanceBeforeTransaction;
         this.balanceAfterTransaction = balanceAfterTransaction;
         date = Calendar.getInstance();
-        delta = this.balanceBeforeTransaction - this.balanceAfterTransaction;
     }
     
     public boolean equals(Object object) {
@@ -72,5 +71,4 @@ public class AccountTransaction extends BaseDomainObject{
     private Double balanceBeforeTransaction;
     private Double balanceAfterTransaction;
     private Calendar date;
-    private Double delta;
 }
