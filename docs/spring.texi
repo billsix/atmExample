@@ -1,10 +1,10 @@
-\input texinfo_times.tex
+\input texinfo 
 @setfilename spring.info
 @settitle Introduction to the Spring Framework
 @paragraphindent 1
 @tex
-\global\bindingoffset=0.75in
-\global\normaloffset =0.75in
+\global\bindingoffset=0.00in
+\global\normaloffset =0.00in
 @end tex
 @dircategory Spring Framework
 @direntry
