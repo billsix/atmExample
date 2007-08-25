@@ -38,6 +38,17 @@ Foundation.
 @headings off
 @headings on
 
+@node Executive Summary
+@chapter Executive Summary
+@c %MENU% Executive Summary
+
+Why should your company use the Spring Framework?  You should because the Spring Framework offers 
+a unemcumbered alternative to EJB's Stateless Session Beans and Message Driven Beans.  This alternative allows
+your service layer to integrate with the Java Transaction API seamlessly whether the code is deployed
+in or outside of an application server.
+
+
+
 @node Introduction
 @chapter Introduction
 @c %MENU% Purpose of the Spring Framework
@@ -47,13 +58,13 @@ as the persistence mechanism of choice for many Java developers; Hibernate requi
 to use different interfaces in the Service Layer depending on whether the transaction
 is being used in a distributed transaction or not.  The Spring Framework defines an interface
 as an abstraction over different transaction management technologies, and provides an implementation
-that integrates with native Hibernate.  Furthermore, Spring's transaction management includes support 
+that integrates with Hibernate.  Furthermore, Spring's transaction management includes support 
 for the delivery and asynchronous consumption of JMS messages.
 
 Transaction management is a good demonstration of the abstractions that Spring provides.
 Spring provides interfaces as an abstraction over existing libraries 
 with similar functionality.  Besides transaction management, these services include the creation 
-of dynamic proxies, integration with a wide variety of data access technologies, and making remoting calls.
+of dynamic proxies, integration with a wide variety of data access technologies, and making remote method calls.
 
 While a plethora of documentation regarding Spring exists in books and on the web, most of it emphasizes the use of an XML-based 
 ApplicationContext for the purpose of Depedency Injection and Aspect Oriented Programming.  While these may or may not have
@@ -61,14 +72,11 @@ their merits, I chose to focus instead on the abstractions Spring provides over 
 
 I wrote this paper because it's the paper I would have liked to have read when I first picked up Spring after college.
 
-@node Getting Started,  , Introduction
-@section Getting Started
+@node Background,  , Introduction
+@section Background
 
-This paper is written with the assumption that you are at least
-somewhat familiar with the Java programming language and basic
-programming concepts.  Additionally, it is assumed that you have read Martin Fowler's 
-@emph{Patterns of Enterprise Application Architecture} (Addison-Wesley Professional, November 5, 2002), @uref{http://www.martinfowler.com/books.html#eaa}
-, and Christian Bauer's and Gavin King's @emph{Hibernate in Action} (Manning Publications, August 1, 2004), @uref{http://www.manning.com/bauer/}
+
+
 
 @node The Proxy Pattern 
 @chapter The Proxy Pattern 
