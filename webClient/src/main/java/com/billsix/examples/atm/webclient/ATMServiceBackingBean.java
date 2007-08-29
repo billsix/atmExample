@@ -53,7 +53,7 @@ public class ATMServiceBackingBean {
         FacesContext context = FacesContext.getCurrentInstance();
         try{
             Double amountToWithdraw = Double.parseDouble(withdrawal);
-            atmService.withDraw(amountToWithdraw);
+            atmService.withdraw(amountToWithdraw);
             return "transactionSuccess";
         } catch(NumberFormatException nfe) {
             context.addMessage("withdrawalForm:withdrawalInput", new FacesMessage("Please enter a decimal number"));

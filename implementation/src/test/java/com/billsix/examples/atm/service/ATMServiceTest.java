@@ -80,7 +80,7 @@ public class ATMServiceTest extends TestCase {
             fail("Invalid user should not be able to log in");
         }
         try{
-            atmService.withDraw(100.0);
+            atmService.withdraw(100.0);
             fail("Invalid user should not be able to use the ATM Service");
         } catch(IllegalStateException ise) {
         }
@@ -98,7 +98,7 @@ public class ATMServiceTest extends TestCase {
         if( !atmService.authenticate("bill","password")) {
             fail("Valid user should be able to log in");
         }
-        atmService.withDraw(50.0);
+        atmService.withdraw(50.0);
         assertTrue(atmService.getBalance() == 50.0);
     }
     
@@ -114,7 +114,7 @@ public class ATMServiceTest extends TestCase {
         if( !atmService.authenticate("bill","password")) {
             fail("Valid user should be able to log in");
         }
-        atmService.withDraw(50.0);
+        atmService.withdraw(50.0);
         atmService.deposit(25.0);
         Account account = atmService.fetchFundTransferHistory();
         for(FundTransfer fundTransfer : account.getFundTransferHistory()) {

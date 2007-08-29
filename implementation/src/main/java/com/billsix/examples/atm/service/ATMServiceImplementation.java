@@ -61,7 +61,7 @@ public class ATMServiceImplementation implements ATMService{
         this.account.deposit(amountToDeposit);
     }
     
-    public void withDraw(Double amountToWithdraw) {
+    public void withdraw(Double amountToWithdraw) {
         sessionFactory.getCurrentSession().saveOrUpdate(this.account);
         this.account.withdraw(amountToWithdraw);
     }

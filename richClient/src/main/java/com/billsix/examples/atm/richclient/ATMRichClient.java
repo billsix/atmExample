@@ -329,7 +329,7 @@ public class ATMRichClient extends javax.swing.JFrame {
     private void amountToWithdrawButtonMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_amountToWithdrawButtonMousePressed
         try{
             Double amountToWithdraw = Double.parseDouble(amountToWithdrawTextField.getText());
-            atmService.withDraw(amountToWithdraw);
+            atmService.withdraw(amountToWithdraw);
             tabbedPane.setSelectedIndex(0);
             
         } catch(NumberFormatException nfe) {

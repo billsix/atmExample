@@ -29,6 +29,6 @@ import com.billsix.examples.atm.domain.Account;
 public interface ATMService extends Authenticatable{    
     public Double getBalance();    
     public void deposit(Double amountToDeposit);    
-    public void withDraw(Double amountToWithdraw);    
+    public void withdraw(Double amountToWithdraw);    
     public Account fetchFundTransferHistory();
 }
