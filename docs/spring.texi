@@ -42,10 +42,10 @@ Foundation.
 @chapter Executive Summary
 @c %MENU% Executive Summary
 
-Why should your company use the Spring Framework?  You should because the Spring Framework offers 
-a unemcumbered alternative to EJB's Stateless Session Beans and Message Driven Beans.  This alternative allows
-your service layer to integrate with the Java Transaction API seamlessly whether the code is deployed
-in or outside of an application server.
+Why should your company use Spring Framework?  You should because the Spring Framework offers 
+a unemcumbered alternative to EJB's Stateful, Stateless Session Beans, and Message Driven Beans.  
+This alternative allows your service layer to integrate with the Java Transaction API seamlessly 
+whether the code is deployed in or outside of an application server.
 
 
 
