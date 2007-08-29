@@ -50,15 +50,15 @@ public class Account extends BaseDomainObject{
         fundTransferHistory = new HashSet<FundTransfer>();
     }
     
-    public void deposit(Double deposit) {
-        Double newBalance = this.balance + deposit;
+    public void deposit(Double amountToDeposit) {
+        Double newBalance = this.balance + amountToDeposit;
         FundTransfer fundTransfer = new FundTransfer(this, this.balance, newBalance );
         this.balance = newBalance;
         fundTransferHistory.add(fundTransfer);
     }
     
-    public void withdraw(Double withdraw) {
-        Double newBalance = this.balance - withdraw;
+    public void withdraw(Double amountToWithdraw) {
+        Double newBalance = this.balance - amountToWithdraw;
         FundTransfer fundTransfer = new FundTransfer(this, this.balance, newBalance );
         this.balance = newBalance;
         fundTransferHistory.add(fundTransfer);

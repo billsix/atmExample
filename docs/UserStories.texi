@@ -48,6 +48,10 @@ Foundation.
 Account - An account is the base unit in which a person can transfer funds.
 @item
 Fund Transfer - Any action which involves increasing or decreasing the current balance of an account.
+@item
+Deposit - A fund transfer which adds money to the account.
+@item
+Withdraw - A fund transfer which removes money from the account.
 @end itemize
 
 
