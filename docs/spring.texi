@@ -248,44 +248,35 @@ the DataAccessExceptions.
 @section Configuration
 
 
-This section shows how to use Spring to instantiate a Hibernate Data Mapper.
+This section shows how to use Hibernate using Spring
 
 
 First, Hibernate needs a data source to connect to, so I use Apache Common's data base connection pool's
 BasicDataSource.  Next, I create a Spring LocalSessionFactoryBean, which is the Exception-catching 
-dynamic proxy in front of Hibernate's SessionFactory.  I can then use that SessionFactory to
-create the a custom DataMapper.  
+dynamic proxy in front of Hibernate's SessionFactory.  
 
 @smallexample
-private BasicDataSource dataSource ;
-private void initializeDataSource() @{
-  dataSource = new BasicDataSource();
+
+private LocalSessionFactoryBean localSessionFactoryBean;
+private void initializeLocalSessionFactoryBean() throws Exception@{
+  AnnotationSessionFactoryBean annotationSessionFactoryBean = 
+                               new AnnotationSessionFactoryBean();
+  BasicDataSource dataSource = new BasicDataSource();
   dataSource.setDriverClassName("org.postgresql.Driver");
   dataSource.setUrl("jdbc:postgresql://localhost/hibernatetest");
   dataSource.setUsername("wsix");
   dataSource.setPassword("password");
-@}
-private LocalSessionFactoryBean localSessionFactoryBean;
-private void initializeSessionFactory() throws Exception @{
-  localSessionFactoryBean = new LocalSessionFactoryBean();
   Properties hibernateProperties = new Properties();
   hibernateProperties.setProperty(
-       "hibernate.dialect","org.hibernate.dialect.PostgreSQLDialect");
-  localSessionFactoryBean.setDataSource(dataSource);
-  localSessionFactoryBean.setMappingResources(
-      new String[]@{"com/billsix/examples/atm/DomainObjects.hbm.xml"@});
-  localSessionFactoryBean.setHibernateProperties(hibernateProperties);
-  localSessionFactoryBean.afterPropertiesSet();
-@}
-private AccountDataMapper accountDataMapper;
-private void initializeAccountDataMapper() 
-        throws BeanInitializationException, 
-        IllegalArgumentException @{
-  HibernateAccountDataMapper accountDataMapper;
-  accountDataMapper = new HibernateAccountDataMapper(
-                           (SessionFactory)registry.
-                           getLocalSessionFactoryBean().
-                           getObject());
+        "hibernate.dialect","org.hibernate.dialect.PostgreSQLDialect");
+  annotationSessionFactoryBean.setDataSource(dataSource);
+  annotationSessionFactoryBean.setAnnotatedClasses(
+      new Class[]{com.billsix.examples.atm.domain.Account.class,
+       com.billsix.examples.atm.domain.FundTransfer.class});
+  annotationSessionFactoryBean.setHibernateProperties(
+                                hibernateProperties);
+  annotationSessionFactoryBean.afterPropertiesSet();
+  localSessionFactoryBean = annotationSessionFactoryBean;
 @}
 @end smallexample
 
@@ -334,42 +325,23 @@ This section shows how to use Spring to instantiate a HibernateTransactionManage
 The HibernateTransactionManager only needs a copy of the Hiberate SessionFactory.  
 After creating the HibernateTransactionManager, I need to 
 add a dynamic proxy in front of the Service I want to execute in a transactional context.  I specify that 
-all of the Service's methods should have a ``default'' isolation level, and a ``required'' propagation level.
+the TransactionInterceptor should use the annotations of the Service Layer class to determine
+the isolation and propagation levels.
 
 
 @smallexample
-private PlatformTransactionManager transactionManager  ;
-private void initializeTransactionManager() @{
-  transactionManager = new HibernateTransactionManager(
-                         (org.hibernate.SessionFactory)
-                           registry.getLocalSessionFactoryBean()
-                           .getObject());
-@}
-private void addTransactionInterceptorToATM() throws AopConfigException @{
-    NameMatchTransactionAttributeSource transactionAttributeSource = 
-                              new NameMatchTransactionAttributeSource() ;
-    DefaultTransactionAttribute transactionAttribute = 
-                              new DefaultTransactionAttribute();
-
-    transactionAttribute.setIsolationLevel(
-                          transactionAttribute.ISOLATION_DEFAULT);
-    transactionAttribute.setPropagationBehavior(
-                          transactionAttribute.PROPAGATION_REQUIRED);
-    transactionAttributeSource.addTransactionalMethod("*", 
-                          transactionAttribute);
-
-    TransactionInterceptor transactionInterceptor = 
-                           new TransactionInterceptor();
-    transactionInterceptor.setTransactionManager(transactionManager);
-    transactionInterceptor.setTransactionAttributeSource(
-                             transactionAttributeSource);
-    transactionInterceptor.afterPropertiesSet();        
-
-    ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
-    proxyFactoryBean.addAdvice(transactionInterceptor);
-    proxyFactoryBean.setTarget(atmService);
-    atmService = (ATMService) proxyFactoryBean.getObject();        
-@}
+private void addTransactionInterceptor() throws AopConfigException, BeansException {
+  hibernateTransactionManager = new HibernateTransactionManager(
+           (SessionFactory) localSessionFactoryBean.getObject());
+  TransactionInterceptor transactionInterceptor = 
+           new TransactionInterceptor(hibernateTransactionManager,
+                        new AnnotationTransactionAttributeSource());
+  transactionInterceptor.afterPropertiesSet();
+  ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
+  proxyFactoryBean.addAdvice(transactionInterceptor);
+  proxyFactoryBean.setTarget(atmService);
+  atmService = (ATMService) proxyFactoryBean.getObject();
+}
 @end smallexample
 
 
