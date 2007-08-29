@@ -25,11 +25,6 @@ import java.util.Set;
 import java.util.HashSet;
 
 /**
- *  Responsiblity - Coordinates all of the objects necessary for an account; the
- *  username, password, current balance, and the transaction history.  This object is
- *  also responsible for withdrawals and deposits.
- *
- *
  * @author Bill Six
  */
 public class Account extends BaseDomainObject{

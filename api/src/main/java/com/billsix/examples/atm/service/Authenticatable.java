@@ -24,9 +24,6 @@ package com.billsix.examples.atm.service;
 import com.billsix.examples.atm.domain.Account;
 
 /**
- *  Responsiblity - Service Layer interface which provides methods used for
- *      logging in.
- *
  * @author Bill Six
  */
 public interface Authenticatable {    

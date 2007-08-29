@@ -158,12 +158,12 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="tabbedPane" alignment="0" pref="684" max="32767" attributes="0"/>
+                  <Component id="tabbedPane" alignment="0" pref="680" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="tabbedPane" alignment="1" pref="394" max="32767" attributes="0"/>
+                  <Component id="tabbedPane" alignment="1" pref="388" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
           </Layout>
@@ -193,7 +193,7 @@
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="-2" pref="298" max="-2" attributes="0"/>
                               <Component id="currentBalanceLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="375" max="32767" attributes="0"/>
+                              <EmptySpace pref="369" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -202,7 +202,7 @@
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="-2" pref="112" max="-2" attributes="0"/>
                               <Component id="currentBalanceLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="243" max="32767" attributes="0"/>
+                              <EmptySpace pref="234" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -237,7 +237,7 @@
                                   </Group>
                                   <Component id="amountToWithdrawLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="314" max="32767" attributes="0"/>
+                              <EmptySpace pref="299" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -251,7 +251,7 @@
                                   <Component id="amountToWithdrawTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="amountToWithdrawButton" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="223" max="32767" attributes="0"/>
+                              <EmptySpace pref="212" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -379,13 +379,13 @@
                   <Layout>
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="scrollPane" alignment="0" pref="679" max="32767" attributes="0"/>
+                          <Component id="scrollPane" alignment="0" pref="675" max="32767" attributes="0"/>
                       </Group>
                     </DimensionLayout>
                     <DimensionLayout dim="1">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="scrollPane" pref="358" max="32767" attributes="0"/>
+                              <Component id="scrollPane" pref="349" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>

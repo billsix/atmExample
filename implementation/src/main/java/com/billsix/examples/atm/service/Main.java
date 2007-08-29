@@ -21,10 +21,6 @@ THE SOFTWARE.
  */
 package com.billsix.examples.atm.service;
 
-import com.billsix.examples.atm.dataacess.HibernateAccountDataMapper;
-import com.billsix.examples.atm.dataacess.AccountDataMapper;
-import com.billsix.examples.atm.registry.RegistryImplementation;
-
 import java.rmi.RemoteException;
 import java.util.Properties;
 import org.apache.commons.dbcp.BasicDataSource ;
@@ -34,7 +30,6 @@ import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.beans.BeansException;
 import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
 import org.springframework.orm.hibernate3.HibernateTransactionManager;
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.interceptor.DefaultTransactionAttribute;
 import org.springframework.transaction.interceptor.NameMatchTransactionAttributeSource;
 import org.springframework.remoting.rmi.RmiServiceExporter;
@@ -48,75 +43,16 @@ public class Main {
     
     public Main() {
         try{
-            registry =  RegistryImplementation.getInstance();
             initializeLocalSessionFactoryBean();
-            initializeTransactionManager();
-            initializeAccountDataMapper();
+            hibernateTransactionManager = new HibernateTransactionManager((SessionFactory) localSessionFactoryBean.getObject());
             initializeATMService();
-        
-            
         } catch(Exception e) {
             e.printStackTrace();
             System.exit(1);
         }
     }
-
-    private void initializeATMService() throws AopConfigException, BeansException {
-        ATMService atmService = new ATMServiceImplementation(registry);
-        atmService = addAuthenticationInterceptor(atmService);
-        registry.setAtmService(addTransactionInterceptor(atmService));
-    }
-
-    private ATMService addTransactionInterceptor(final ATMService atmService) throws AopConfigException, BeansException {
-
-        NameMatchTransactionAttributeSource transactionAttributeSource = new NameMatchTransactionAttributeSource() ;
-        DefaultTransactionAttribute transactionAttribute = new DefaultTransactionAttribute();
-        transactionAttribute.setIsolationLevel(transactionAttribute.ISOLATION_DEFAULT);
-        transactionAttribute.setPropagationBehavior(transactionAttribute.PROPAGATION_REQUIRED);
-        transactionAttributeSource.addTransactionalMethod("*", transactionAttribute);
-        
-        TransactionInterceptor transactionInterceptor = new TransactionInterceptor(registry.getTransactionManager(),transactionAttributeSource);
-        transactionInterceptor.afterPropertiesSet();
-        
-        ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
-        proxyFactoryBean.addAdvice(transactionInterceptor);
-        proxyFactoryBean.setTarget(atmService);
-        return (ATMService) proxyFactoryBean.getObject();
-    }
-
-    private ATMService addAuthenticationInterceptor(ATMService atmService) throws AopConfigException, BeansException {
-        ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
-        proxyFactoryBean.addAdvice(new AuthenticationInterceptor());
-        proxyFactoryBean.setTarget(atmService);
-        atmService = (ATMService) proxyFactoryBean.getObject();
-        return atmService;
-    }
-
-    private void initializeAccountDataMapper() throws AopConfigException, BeansException {
-        HibernateAccountDataMapper accountDataMapper;
-        accountDataMapper = new HibernateAccountDataMapper((SessionFactory)registry.getLocalSessionFactoryBean().getObject());
-        
-        NameMatchTransactionAttributeSource transactionAttributeSource = new NameMatchTransactionAttributeSource() ;
-        DefaultTransactionAttribute transactionAttribute = new DefaultTransactionAttribute();
-        transactionAttribute.setIsolationLevel(transactionAttribute.ISOLATION_DEFAULT);
-        transactionAttribute.setPropagationBehavior(transactionAttribute.PROPAGATION_REQUIRED);
-        transactionAttributeSource.addTransactionalMethod("*", transactionAttribute);
-        
-        TransactionInterceptor transactionInterceptor = new TransactionInterceptor(registry.getTransactionManager(),transactionAttributeSource);
-        transactionInterceptor.afterPropertiesSet();
-        
-        ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
-        proxyFactoryBean.addAdvice(transactionInterceptor);
-        proxyFactoryBean.setTarget(accountDataMapper);
-        registry.setAccountDataMapper((AccountDataMapper) proxyFactoryBean.getObject());
-    }
-
-    private void initializeTransactionManager() {
-        registry.setTransactionManager(new HibernateTransactionManager((org.hibernate.SessionFactory)registry.getLocalSessionFactoryBean().getObject()));
-    }
-
+    
     private void initializeLocalSessionFactoryBean() throws Exception {
-        LocalSessionFactoryBean localSessionFactoryBean;
         BasicDataSource dataSource = new BasicDataSource();
         dataSource.setDriverClassName("org.postgresql.Driver");
         dataSource.setUrl("jdbc:postgresql://localhost/hibernatetest");
@@ -129,24 +65,48 @@ public class Main {
         localSessionFactoryBean.setMappingResources(new String[]{"com/billsix/examples/atm/DomainObjects.hbm.xml"});
         localSessionFactoryBean.setHibernateProperties(hibernateProperties);
         localSessionFactoryBean.afterPropertiesSet();
-        registry.setLocalSessionFactoryBean(localSessionFactoryBean);
     }
+    
+    
+    private void initializeATMService() throws AopConfigException, BeansException {
+        atmService = new ATMServiceImplementation((SessionFactory)localSessionFactoryBean.getObject());
+        atmService = addAuthenticationInterceptor(atmService);
+        addTransactionInterceptor();
+    }
+    
+    private void addTransactionInterceptor() throws AopConfigException, BeansException {
+        
+        NameMatchTransactionAttributeSource transactionAttributeSource = new NameMatchTransactionAttributeSource() ;
+        DefaultTransactionAttribute transactionAttribute = new DefaultTransactionAttribute();
+        transactionAttribute.setIsolationLevel(transactionAttribute.ISOLATION_DEFAULT);
+        transactionAttribute.setPropagationBehavior(transactionAttribute.PROPAGATION_REQUIRED);
+        transactionAttributeSource.addTransactionalMethod("*", transactionAttribute);
+        
+        TransactionInterceptor transactionInterceptor = new TransactionInterceptor(hibernateTransactionManager,transactionAttributeSource);
+        transactionInterceptor.afterPropertiesSet();
+        
+        ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
+        proxyFactoryBean.addAdvice(transactionInterceptor);
+        proxyFactoryBean.setTarget(atmService);
+        atmService = (ATMService) proxyFactoryBean.getObject();
+    }
+    
+    private ATMService addAuthenticationInterceptor(ATMService atmService) throws AopConfigException, BeansException {
+        ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
+        proxyFactoryBean.addAdvice(new AuthenticationInterceptor());
+        proxyFactoryBean.setTarget(atmService);
+        atmService = (ATMService) proxyFactoryBean.getObject();
+        return atmService;
+    }
+    
     
     private void startRMI() throws RemoteException {
         RmiServiceExporter rmiServiceExporter = new RmiServiceExporter();
         rmiServiceExporter.setServiceName("ATM");
-        rmiServiceExporter.setService(registry.getAtmService());
+        rmiServiceExporter.setService(atmService);
         rmiServiceExporter.setServiceInterface(ATMService.class);
         rmiServiceExporter.setRegistryPort(1199);
         rmiServiceExporter.afterPropertiesSet();
-    }
-
-    public RegistryImplementation getRegistry() {
-        return registry;
-    }
-
-    public void setRegistry(RegistryImplementation registry) {
-        this.registry = registry;
     }
     
     
@@ -157,7 +117,20 @@ public class Main {
             Thread.currentThread().sleep(99999);
         }
     }
+
+    public ATMService getAtmService() {
+        return atmService;
+    }
+
+    public HibernateTransactionManager getHibernateTransactionManager() {
+        return hibernateTransactionManager;
+    }    
     
-    private RegistryImplementation registry;
+    public LocalSessionFactoryBean getLocalSessionFactoryBean() {
+        return localSessionFactoryBean;
+    }
+    private ATMService atmService;
+    private HibernateTransactionManager hibernateTransactionManager ;
+    private LocalSessionFactoryBean localSessionFactoryBean;
 
 }

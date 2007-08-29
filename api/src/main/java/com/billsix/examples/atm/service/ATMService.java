@@ -24,28 +24,11 @@ package com.billsix.examples.atm.service;
 import com.billsix.examples.atm.domain.Account;
 
 /**
- *  Responsiblity - Provide the Service Layer interface to the ATM Domain Model.
- *
- *
  * @author Bill Six
  */
-public interface ATMService extends Authenticatable, BaseService{
-    
-    public Double getBalance();
-    
-    /**
-     * Deposit money into the account
-     *
-     * @param amountToDeposit The amount of money to deposit
-     */
-    public void deposit(Double amountToDeposit);
-    
-    /**
-     * Withdraw money from the account
-     *
-     * @param amountToWithdraw  The amount of money to withdraw
-     */
-    public void withDraw(Double amountToWithdraw);
-    
+public interface ATMService extends Authenticatable{    
+    public Double getBalance();    
+    public void deposit(Double amountToDeposit);    
+    public void withDraw(Double amountToWithdraw);    
     public Account fetchAccountTransactions();
 }

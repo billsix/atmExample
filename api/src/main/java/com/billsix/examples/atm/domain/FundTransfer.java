@@ -24,9 +24,6 @@ package com.billsix.examples.atm.domain;
 import java.util.Calendar;
 
 /**
- *  Responsiblity - Reference all of the Value objects associated with
- *   a transaction of this ATM account
- *
  * @author Bill Six
  */
 

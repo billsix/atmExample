@@ -127,7 +127,7 @@ public class ATMServiceBackingBean {
         return selectedTransaction;
     }
     
-    private ATMService atmService = new Main().getRegistry().getAtmService();
+    private ATMService atmService = new Main().getAtmService();
     private String username;
     private String password;
     private String withdrawal;

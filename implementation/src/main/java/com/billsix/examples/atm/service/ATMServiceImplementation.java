@@ -21,61 +21,61 @@ THE SOFTWARE.
  */
 package com.billsix.examples.atm.service;
 
-import com.billsix.examples.atm.dataacess.AccountDataMapper;
 import com.billsix.examples.atm.domain.Account;
-import com.billsix.examples.atm.registry.RegistryImplementation;
-import org.springframework.dao.DataAccessException;
+import org.hibernate.Hibernate;
+import org.hibernate.SessionFactory;
 
 /**
  *
  * @author Bill Six
  */
-public class ATMServiceImplementation extends BaseServiceImplementation implements ATMService{
+public class ATMServiceImplementation implements ATMService{
     
-    public ATMServiceImplementation(RegistryImplementation registry) {
-        super(registry);
+    public ATMServiceImplementation(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
     }
     
     public boolean authenticate(String username, String password) {
-        try{
-            Account account = getRegistry().getAccountDataMapper().load(username);
-            if(account.passwordIsValid(password)) {
-                this.account = account;
-                return true;
-            }
-            return false;
-        } catch(DataAccessException dae) {
+        Account account = (Account) sessionFactory.getCurrentSession()
+        .createQuery("from Account as account where account.username like :username")
+        .setParameter("username", username, Hibernate.STRING)
+        .uniqueResult();
+        if(account == null) {
             return false;
         }
+        
+        if(account.passwordIsValid(password)) {
+            this.account = account;
+            return true;
+        }
+        return false;
     }
     
     public Double getBalance() {
-        getRegistry().getAccountDataMapper().saveOrUpdate(this.account);
+        sessionFactory.getCurrentSession().saveOrUpdate(this.account);
         return this.account.getCurrentBalance();
     }
     
     public void deposit(Double amountToDeposit) {
-        getRegistry().getAccountDataMapper().saveOrUpdate(this.account);
+        sessionFactory.getCurrentSession().saveOrUpdate(this.account);
         this.account.deposit(amountToDeposit);
     }
     
     public void withDraw(Double amountToWithdraw) {
-        getRegistry().getAccountDataMapper().saveOrUpdate(this.account);
+        sessionFactory.getCurrentSession().saveOrUpdate(this.account);
         this.account.withdraw(amountToWithdraw);
     }
     
     public Account fetchAccountTransactions() {
-        getRegistry().getAccountDataMapper().saveOrUpdate(this.account);
-        return getRegistry().getAccountDataMapper().fetchAccountTransactions(this.account);
+        sessionFactory.getCurrentSession().saveOrUpdate(this.account);
+        Hibernate.initialize(account.getTransactionHistory());
+        return account;
     }
-    
     
     public Account getAuthenticatedAccount() {
         return this.account;
     }
     
-
-    
-    
+    private SessionFactory sessionFactory;
     private Account account;
 }

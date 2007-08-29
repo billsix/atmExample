@@ -24,13 +24,6 @@ package com.billsix.examples.atm.domain;
 import java.io.Serializable;
 
 /**
- *  Acts as a Layer Supertype for all Domain Model objects
- *
- *  Responsiblity - Domain object which contains an Identity Field to maintain
- *     identity between an in-memory object and a database row.  Additionally,
- *     it contains a version number so that the READ_COMMITTED isolation level
- *     can have the same level of concreteness as REPEATABLE_READ.
- *
  * @author Bill Six
  */
 public class BaseDomainObject implements Serializable{

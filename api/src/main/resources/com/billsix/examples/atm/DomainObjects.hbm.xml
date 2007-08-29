@@ -35,7 +35,7 @@ THE SOFTWARE.
         <property name="currentBalance"/>
         <set name="transactionHistory" inverse="true" cascade="all">
             <key column="ACCOUNT_ID"/>
-            <one-to-many class="AccountTransaction"/>
+            <one-to-many class="FundTransfer"/>
         </set>        
     </class>        
     <class name="FundTransfer" >
