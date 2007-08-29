@@ -62,7 +62,7 @@ public class Account extends BaseDomainObject{
         return this.password.equals(password);
     }
     
-    public Double getCurrentBalance() {
+    public Double getBalance() {
         return this.balance;
     }
     

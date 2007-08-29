@@ -53,7 +53,7 @@ public class ATMServiceImplementation implements ATMService{
     
     public Double getBalance() {
         sessionFactory.getCurrentSession().saveOrUpdate(this.account);
-        return this.account.getCurrentBalance();
+        return this.account.getBalance();
     }
     
     public void deposit(Double amountToDeposit) {
