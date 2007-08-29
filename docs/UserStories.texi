@@ -37,6 +37,23 @@ Foundation.
 @headings off
 @headings on
 
+
+
+@node Business Domain
+@chapter Business Domain
+@c %MENU% Business Domain
+
+@itemize @bullet
+@item
+Account - An account is the base unit in which a person can transfer funds.
+@item
+Fund Transfer - Any action which involves increasing or decreasing the current balance of an account.
+@end itemize
+
+
+
+
+
 @node Roles
 @chapter Roles
 @c %MENU% Roles
@@ -96,10 +113,10 @@ Bill's deposits $50, and his current balance is now $150.
 @end itemize
 
 @item
-Bill withdraws $50, deposits 25, is able to see a history of all of his transactions.
+Bill withdraws $50, deposits $25, is able to see a history of all of his fund transfers.
 @itemize @minus
 @item
-Bill is able to see all of the transactions.
+Bill is able to see all of the fund transfers.
 @end itemize
 
 

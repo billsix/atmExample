@@ -33,29 +33,29 @@ public class Account extends BaseDomainObject{
         
     }
     
-    public Account(String username, String password, Double currentBalance) {
+    public Account(String username, String password, Double balance) {
         this.username = username;
         this.password = password;
-        this.currentBalance = currentBalance;
-        transactionHistory = new HashSet<FundTransfer>();
+        this.balance = balance;
+        fundTransferHistory = new HashSet<FundTransfer>();
     }
     
     public void deposit(Double deposit) {
-        Double newBalance = this.currentBalance + deposit;
-        FundTransfer transaction = new FundTransfer(this, this.currentBalance, newBalance );
-        this.currentBalance = newBalance;
-        transactionHistory.add(transaction);
+        Double newBalance = this.balance + deposit;
+        FundTransfer fundTransfer = new FundTransfer(this, this.balance, newBalance );
+        this.balance = newBalance;
+        fundTransferHistory.add(fundTransfer);
     }
     
     public void withdraw(Double withdraw) {
-        Double newBalance = this.currentBalance - withdraw;
-        FundTransfer transaction = new FundTransfer(this, this.currentBalance, newBalance );
-        this.currentBalance = newBalance;
-        transactionHistory.add(transaction);
+        Double newBalance = this.balance - withdraw;
+        FundTransfer fundTransfer = new FundTransfer(this, this.balance, newBalance );
+        this.balance = newBalance;
+        fundTransferHistory.add(fundTransfer);
     }
     
-    public Set<FundTransfer> getTransactionHistory() {
-        return transactionHistory;
+    public Set<FundTransfer> getFundTransferHistory() {
+        return fundTransferHistory;
     }
     
     public boolean passwordIsValid(String password) {
@@ -63,11 +63,11 @@ public class Account extends BaseDomainObject{
     }
     
     public Double getCurrentBalance() {
-        return this.currentBalance;
+        return this.balance;
     }
     
     private String username;
     private transient String password;
-    private Double currentBalance;
-    private Set<FundTransfer> transactionHistory;
+    private Double balance;
+    private Set<FundTransfer> fundTransferHistory;
 }

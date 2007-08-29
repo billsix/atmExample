@@ -66,9 +66,9 @@ public class ATMServiceImplementation implements ATMService{
         this.account.withdraw(amountToWithdraw);
     }
     
-    public Account fetchAccountTransactions() {
+    public Account fetchFundTransferHistory() {
         sessionFactory.getCurrentSession().saveOrUpdate(this.account);
-        Hibernate.initialize(account.getTransactionHistory());
+        Hibernate.initialize(account.getFundTransferHistory());
         return account;
     }
     

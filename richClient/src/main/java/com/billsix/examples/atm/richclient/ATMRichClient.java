@@ -365,11 +365,11 @@ public class ATMRichClient extends javax.swing.JFrame {
     }
     
     private void refreshAccountHistoryTable() {
-        Account account =  atmService.fetchAccountTransactions();
+        Account account =  atmService.fetchFundTransferHistory();
         while(tableModel.getRowCount() > 0) {
             tableModel.removeRow(0);
         }
-        for(FundTransfer transaction : account.getTransactionHistory()) {
+        for(FundTransfer transaction : account.getFundTransferHistory()) {
             String id = transaction.getAccount().getId().toString();
             tableModel.addRow(new Object[]{id, dateFormat.format(transaction.getDate().getTime()),transaction.getBalanceBeforeTransaction(), transaction.getBalanceAfterTransaction()});
         }

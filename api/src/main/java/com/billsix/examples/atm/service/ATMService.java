@@ -30,5 +30,5 @@ public interface ATMService extends Authenticatable{
     public Double getBalance();    
     public void deposit(Double amountToDeposit);    
     public void withDraw(Double amountToWithdraw);    
-    public Account fetchAccountTransactions();
+    public Account fetchFundTransferHistory();
 }

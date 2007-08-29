@@ -81,7 +81,7 @@ public class ATMServiceBackingBean {
     public DataModel getTransactions() {
         transactions = new ListDataModel();
         ArrayList<FundTransfer> wrappedList = new ArrayList<FundTransfer>();
-        wrappedList.addAll(atmService.fetchAccountTransactions().getTransactionHistory());
+        wrappedList.addAll(atmService.fetchFundTransferHistory().getFundTransferHistory());
         transactions.setWrappedData(wrappedList);
         return transactions;
     }

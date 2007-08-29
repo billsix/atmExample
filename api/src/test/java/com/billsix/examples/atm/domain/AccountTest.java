@@ -45,7 +45,7 @@ public class AccountTest extends TestCase {
     public void testDeposit() {
         account.deposit(50.00);
         assertTrue(account.getCurrentBalance() == 150.0);
-        Set<FundTransfer> transactions = account.getTransactionHistory(); 
+        Set<FundTransfer> transactions = account.getFundTransferHistory(); 
         assertTrue(transactions.size()==1);
         FundTransfer transaction = transactions.iterator().next(); 
         assertTrue(transaction.getBalanceAfterTransaction() == 150.0);
@@ -55,7 +55,7 @@ public class AccountTest extends TestCase {
     public void testWithdraw() {
         account.withdraw(50.00);
         assertTrue(account.getCurrentBalance() == 50.0);
-        Set<FundTransfer> transactions = account.getTransactionHistory(); 
+        Set<FundTransfer> transactions = account.getFundTransferHistory(); 
         assertTrue(transactions.size()==1);
         FundTransfer transaction = transactions.iterator().next(); 
         assertTrue(transaction.getBalanceAfterTransaction() == 50.0);

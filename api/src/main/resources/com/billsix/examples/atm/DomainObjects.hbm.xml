@@ -32,8 +32,8 @@ THE SOFTWARE.
         <version name="version" type="long"/>            
         <property name="username"/>
         <property name="password"/>
-        <property name="currentBalance"/>
-        <set name="transactionHistory" inverse="true" cascade="all">
+        <property name="balance"/>
+        <set name="fundTransferHistory" inverse="true" cascade="all">
             <key column="ACCOUNT_ID"/>
             <one-to-many class="FundTransfer"/>
         </set>        
