@@ -21,7 +21,7 @@ THE SOFTWARE.
  */
 package com.billsix.examples.atm.webclient;
 
-import com.billsix.examples.atm.domain.AccountTransaction;
+import com.billsix.examples.atm.domain.FundTransfer;
 import com.billsix.examples.atm.service.ATMService;
 import com.billsix.examples.atm.service.Main;
 import java.util.ArrayList;
@@ -74,13 +74,13 @@ public class ATMServiceBackingBean {
     }
     
     public String viewSingleTransaction() {
-        selectedTransaction = (AccountTransaction) transactions.getRowData();
+        selectedTransaction = (FundTransfer) transactions.getRowData();
         return "viewTransactionDetails";
     }
     
     public DataModel getTransactions() {
         transactions = new ListDataModel();
-        ArrayList<AccountTransaction> wrappedList = new ArrayList<AccountTransaction>();
+        ArrayList<FundTransfer> wrappedList = new ArrayList<FundTransfer>();
         wrappedList.addAll(atmService.fetchAccountTransactions().getTransactionHistory());
         transactions.setWrappedData(wrappedList);
         return transactions;
@@ -123,7 +123,7 @@ public class ATMServiceBackingBean {
         deposit = deposit;
     }
     
-    public AccountTransaction getSelectedTransaction() {
+    public FundTransfer getSelectedTransaction() {
         return selectedTransaction;
     }
     
@@ -133,6 +133,6 @@ public class ATMServiceBackingBean {
     private String withdrawal;
     private String deposit;
     private DataModel transactions ;
-    private AccountTransaction selectedTransaction;
+    private FundTransfer selectedTransaction;
     
 }

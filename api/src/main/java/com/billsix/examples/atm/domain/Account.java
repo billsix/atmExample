@@ -42,24 +42,24 @@ public class Account extends BaseDomainObject{
         this.username = username;
         this.password = password;
         this.currentBalance = currentBalance;
-        transactionHistory = new HashSet<AccountTransaction>();
+        transactionHistory = new HashSet<FundTransfer>();
     }
     
     public void deposit(Double deposit) {
         Double newBalance = this.currentBalance + deposit;
-        AccountTransaction transaction = new AccountTransaction(this, this.currentBalance, newBalance );
+        FundTransfer transaction = new FundTransfer(this, this.currentBalance, newBalance );
         this.currentBalance = newBalance;
         transactionHistory.add(transaction);
     }
     
     public void withdraw(Double withdraw) {
         Double newBalance = this.currentBalance - withdraw;
-        AccountTransaction transaction = new AccountTransaction(this, this.currentBalance, newBalance );
+        FundTransfer transaction = new FundTransfer(this, this.currentBalance, newBalance );
         this.currentBalance = newBalance;
         transactionHistory.add(transaction);
     }
     
-    public Set<AccountTransaction> getTransactionHistory() {
+    public Set<FundTransfer> getTransactionHistory() {
         return transactionHistory;
     }
     
@@ -74,5 +74,5 @@ public class Account extends BaseDomainObject{
     private String username;
     private transient String password;
     private Double currentBalance;
-    private Set<AccountTransaction> transactionHistory;
+    private Set<FundTransfer> transactionHistory;
 }

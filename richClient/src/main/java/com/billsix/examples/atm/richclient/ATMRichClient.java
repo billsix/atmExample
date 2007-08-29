@@ -22,7 +22,7 @@ THE SOFTWARE.
 package com.billsix.examples.atm.richclient;
 
 import com.billsix.examples.atm.domain.Account;
-import com.billsix.examples.atm.domain.AccountTransaction;
+import com.billsix.examples.atm.domain.FundTransfer;
 import com.billsix.examples.atm.service.ATMService;
 import com.billsix.examples.atm.service.ClientSideServiceLocator;
 import com.billsix.examples.atm.service.Main;
@@ -370,7 +370,7 @@ public class ATMRichClient extends javax.swing.JFrame {
         while(tableModel.getRowCount() > 0) {
             tableModel.removeRow(0);
         }
-        for(AccountTransaction transaction : account.getTransactionHistory()) {
+        for(FundTransfer transaction : account.getTransactionHistory()) {
             String id = transaction.getAccount().getId().toString();
             tableModel.addRow(new Object[]{id, dateFormat.format(transaction.getDate().getTime()),transaction.getBalanceBeforeTransaction(), transaction.getBalanceAfterTransaction()});
         }

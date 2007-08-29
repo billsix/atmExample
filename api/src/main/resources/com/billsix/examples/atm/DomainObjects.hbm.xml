@@ -38,7 +38,7 @@ THE SOFTWARE.
             <one-to-many class="AccountTransaction"/>
         </set>        
     </class>        
-    <class name="AccountTransaction" >
+    <class name="FundTransfer" >
         <id name="id">
             <generator class="native"/>
         </id>
