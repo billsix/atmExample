@@ -1,0 +1,121 @@
+\input texinfo 
+@setfilename atmuserstories.info
+@settitle ATM User Stories
+@paragraphindent 1
+@tex
+\global\bindingoffset=0.00in
+\global\normaloffset =0.00in
+@end tex
+@dircategory Atm User Stories
+@direntry
+* ATM : (atm).                 ATM
+@end direntry
+@set xref-automatic-section-title
+@smallbook
+@set EDITION 1.0
+@set VERSION 2.0.x
+@set UPDATED 2007-06-03
+@set ISBN X-XXXXXX-XX-X
+@titlepage
+@sp 
+@title ATM User Stories
+@sp 4
+@author by Bill Six
+@page
+@vskip 0pt plus 1filll
+This manual documents the User Stories for the ATM example
+@sp
+Copyright @copyright{} 2007 Bill Six
+@sp 1
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the @acronym{GNU} Free Documentation License,
+Version 1.2, or any later version published by the Free Software
+Foundation.
+@end titlepage
+@page
+@contents
+@headings off
+@headings on
+
+@node Roles
+@chapter Roles
+@c %MENU% Roles
+
+
+@itemize @bullet
+@item
+Bill - a person who has an account at our ATM.
+
+@itemize @minus
+@item
+Username - wsix
+@item
+Password - password
+@item
+Initial balance = $100
+@end itemize
+
+@end itemize
+
+
+
+@node User Stories
+@chapter User Stories
+@c %MENU% User Stories
+
+@itemize @bullet
+
+@item
+Bill provides correct username and password before he can access any of the ATM's services
+@itemize @minus
+@item
+Bill does not provide the correct username and password, and is unable to access any services
+@item
+Bill does provide the correct username and password, and is able to access all services
+@end itemize
+
+@item
+Bill checks his current balance
+@itemize @minus
+@item
+Bill's see's that he has $100.  
+@end itemize
+
+@item
+Bill withdraws money from his account
+@itemize @minus
+@item
+Bill's withdraws $50, and his current balance is now $50.  
+@end itemize
+
+@item
+Bill deposits money to his account
+@itemize @minus
+@item
+Bill's deposits $50, and his current balance is now $150.  
+@end itemize
+
+@item
+Bill withdraws $50, deposits 25, is able to see a history of all of his transactions.
+@itemize @minus
+@item
+Bill is able to see all of the transactions.
+@end itemize
+
+
+
+
+
+
+@end itemize
+
+
+
+
+
+
+@c Local Variables:
+@c ispell-local-pdict: "ispell-dict"
+@c End:
+@bye
+
