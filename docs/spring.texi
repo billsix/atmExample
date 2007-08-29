@@ -75,6 +75,7 @@ I wrote this paper because it's the paper I would have liked to have read when I
 @node Background,  , Introduction
 @section Background
 
+@image{Layers}
 
 
 
