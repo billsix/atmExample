@@ -19,21 +19,25 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
  */
-package com.billsix.examples.atm.service;
+package com.billsix.examples.atm.richclient;
 
-import com.billsix.examples.atm.domain.Account;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
+import com.billsix.examples.atm.service.*;
+import org.springframework.remoting.rmi.RmiProxyFactoryBean;
 
-/**
- * @author Bill Six
- */
-@Transactional(isolation=Isolation.DEFAULT,
-                propagation=Propagation.REQUIRED)
-public interface ATMService extends Authenticatable{    
-    public Double getBalance();    
-    public void deposit(Double amountToDeposit);    
-    public void withdraw(Double amountToWithdraw);    
-    public Account fetchFundTransferHistory();
+public class Main {
+    
+    public Main() {
+        RmiProxyFactoryBean proxyFactoryBean = new RmiProxyFactoryBean();
+        proxyFactoryBean.setServiceUrl("rmi://localhost:1199/ATM");
+        proxyFactoryBean.setServiceInterface(ATMService.class);
+        proxyFactoryBean.afterPropertiesSet();
+        atmService = (ATMService) proxyFactoryBean.getObject();
+    }
+    
+    public ATMService getATMService()
+    {
+        return atmService;
+    }
+    
+    private ATMService atmService;
 }

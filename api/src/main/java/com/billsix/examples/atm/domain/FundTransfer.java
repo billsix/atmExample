@@ -22,11 +22,23 @@ THE SOFTWARE.
 package com.billsix.examples.atm.domain;
 
 import java.util.Calendar;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Version;
+
+import org.hibernate.annotations.AccessType;
 
 /**
  * @author Bill Six
  */
-
+@Entity()
+@AccessType("field")
 public class FundTransfer extends BaseDomainObject{
     
     public FundTransfer() {
@@ -63,9 +75,17 @@ public class FundTransfer extends BaseDomainObject{
     public Account getAccount() {
         return this.account;
     }
+    
+    public Long getId() {
+        return id;
+    }    
 
+    @ManyToOne( cascade = {CascadeType.ALL} )
+    @JoinColumn(name="ACCOUNT_ID")
     private Account account;
     private Double balanceBeforeTransaction;
     private Double balanceAfterTransaction;
-    private Calendar date;
+    @Temporal(TemporalType.TIMESTAMP) private Calendar date;
+    @Id @GeneratedValue private Long id;
+    @Version private Long version;
 }

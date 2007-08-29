@@ -22,10 +22,15 @@ THE SOFTWARE.
 package com.billsix.examples.atm.service;
 
 import com.billsix.examples.atm.domain.Account;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author Bill Six
  */
+@Transactional(isolation=Isolation.DEFAULT,
+                propagation=Propagation.REQUIRED)
 public interface Authenticatable {    
     public boolean authenticate(String username, String password);
     public Account getAuthenticatedAccount();

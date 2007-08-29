@@ -72,6 +72,11 @@ THE SOFTWARE.
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-annotations</artifactId>
+            <version>3.2.0.ga</version>
+        </dependency>
+        <dependency>
             <groupId>jboss</groupId>
             <artifactId>jboss-j2ee</artifactId>
             <version>4.0.2</version>

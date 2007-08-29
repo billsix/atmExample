@@ -23,10 +23,20 @@ package com.billsix.examples.atm.domain;
 
 import java.util.Set;
 import java.util.HashSet;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.Version;
+import org.hibernate.annotations.AccessType;
 
 /**
  * @author Bill Six
  */
+@Entity()
+@AccessType("field")
 public class Account extends BaseDomainObject{
     
     public Account() {
@@ -65,9 +75,18 @@ public class Account extends BaseDomainObject{
     public Double getBalance() {
         return this.balance;
     }
+
+    public Long getId() {
+        return id;
+    }
     
     private String username;
-    private transient String password;
+    private String password;
     private Double balance;
+    @OneToMany(cascade = {CascadeType.ALL})
+    @JoinColumn(name="ACCOUNT_ID")
     private Set<FundTransfer> fundTransferHistory;
+    @Id @GeneratedValue private Long id;
+    @Version private Long version;
+    
 }

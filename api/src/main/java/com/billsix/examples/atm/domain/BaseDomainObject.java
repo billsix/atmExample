@@ -22,6 +22,7 @@ THE SOFTWARE.
 package com.billsix.examples.atm.domain;
 
 import java.io.Serializable;
+import javax.persistence.Entity;
 
 /**
  * @author Bill Six
@@ -30,11 +31,4 @@ public class BaseDomainObject implements Serializable{
     
     public BaseDomainObject() {
     }
-    
-    public Long getId() {
-        return id;
-    }
-    
-    private Long id;
-    private Long version;
 }

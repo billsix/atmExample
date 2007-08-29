@@ -30,9 +30,9 @@ import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.beans.BeansException;
 import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
 import org.springframework.orm.hibernate3.HibernateTransactionManager;
-import org.springframework.transaction.interceptor.DefaultTransactionAttribute;
-import org.springframework.transaction.interceptor.NameMatchTransactionAttributeSource;
+import org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean;
 import org.springframework.remoting.rmi.RmiServiceExporter;
+import org.springframework.transaction.annotation.AnnotationTransactionAttributeSource;
 import org.springframework.transaction.interceptor.TransactionInterceptor;
 
 /**
@@ -53,18 +53,21 @@ public class Main {
     }
     
     private void initializeLocalSessionFactoryBean() throws Exception {
+        AnnotationSessionFactoryBean annotationSessionFactoryBean = new AnnotationSessionFactoryBean();
         BasicDataSource dataSource = new BasicDataSource();
         dataSource.setDriverClassName("org.postgresql.Driver");
         dataSource.setUrl("jdbc:postgresql://localhost/hibernatetest");
         dataSource.setUsername("wsix");
         dataSource.setPassword("password");
-        localSessionFactoryBean = new LocalSessionFactoryBean();
         Properties hibernateProperties = new Properties();
         hibernateProperties.setProperty("hibernate.dialect","org.hibernate.dialect.PostgreSQLDialect");
-        localSessionFactoryBean.setDataSource(dataSource);
-        localSessionFactoryBean.setMappingResources(new String[]{"com/billsix/examples/atm/DomainObjects.hbm.xml"});
-        localSessionFactoryBean.setHibernateProperties(hibernateProperties);
-        localSessionFactoryBean.afterPropertiesSet();
+        annotationSessionFactoryBean.setDataSource(dataSource);
+        annotationSessionFactoryBean.setAnnotatedClasses(
+                new Class[]{com.billsix.examples.atm.domain.Account.class,
+                        com.billsix.examples.atm.domain.FundTransfer.class});
+        annotationSessionFactoryBean.setHibernateProperties(hibernateProperties);
+        annotationSessionFactoryBean.afterPropertiesSet();
+        localSessionFactoryBean = annotationSessionFactoryBean;
     }
     
     
@@ -75,14 +78,7 @@ public class Main {
     }
     
     private void addTransactionInterceptor() throws AopConfigException, BeansException {
-        
-        NameMatchTransactionAttributeSource transactionAttributeSource = new NameMatchTransactionAttributeSource() ;
-        DefaultTransactionAttribute transactionAttribute = new DefaultTransactionAttribute();
-        transactionAttribute.setIsolationLevel(transactionAttribute.ISOLATION_DEFAULT);
-        transactionAttribute.setPropagationBehavior(transactionAttribute.PROPAGATION_REQUIRED);
-        transactionAttributeSource.addTransactionalMethod("*", transactionAttribute);
-        
-        TransactionInterceptor transactionInterceptor = new TransactionInterceptor(hibernateTransactionManager,transactionAttributeSource);
+        TransactionInterceptor transactionInterceptor = new TransactionInterceptor(hibernateTransactionManager,new AnnotationTransactionAttributeSource());
         transactionInterceptor.afterPropertiesSet();
         
         ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
