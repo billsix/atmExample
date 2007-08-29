@@ -118,7 +118,8 @@ public class ATMServiceTest extends TestCase {
         atmService.deposit(25.0);
         Account account = atmService.fetchFundTransferHistory();
         for(FundTransfer fundTransfer : account.getFundTransferHistory()) {
-            if(fundTransfer.getBalanceAfterTransaction() != 50.0 && fundTransfer.getBalanceAfterTransaction() != 75.0 ) {
+            if(fundTransfer.getBalanceAfterTransaction() != 50.0 && 
+                    fundTransfer.getBalanceAfterTransaction() != 75.0 ) {
                 fail("Incorrect set of fund transfers");
             }
         }
