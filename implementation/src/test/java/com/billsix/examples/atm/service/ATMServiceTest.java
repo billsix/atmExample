@@ -21,6 +21,7 @@ THE SOFTWARE.
  */
 package com.billsix.examples.atm.service;
 import com.billsix.examples.atm.domain.Account;
+import com.billsix.examples.atm.domain.FundTransfer;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -84,7 +85,7 @@ public class ATMServiceTest extends TestCase {
         } catch(IllegalStateException ise) {
         }
     }
-
+    
     public void testCurrentBalance() {
         if( !atmService.authenticate("bill","password")) {
             fail("Valid user should be able to log in");
@@ -108,13 +109,19 @@ public class ATMServiceTest extends TestCase {
         atmService.deposit(50.0);
         assertTrue(atmService.getBalance() == 150.0);
     }
-
+    
     public void testFundTransferHistory() {
         if( !atmService.authenticate("bill","password")) {
             fail("Valid user should be able to log in");
         }
         atmService.withDraw(50.0);
         atmService.deposit(25.0);
+        Account account = atmService.fetchFundTransferHistory();
+        for(FundTransfer fundTransfer : account.getFundTransferHistory()) {
+            if(fundTransfer.getBalanceAfterTransaction() != 50.0 && fundTransfer.getBalanceAfterTransaction() != 75.0 ) {
+                fail("Incorrect set of fund transfers");
+            }
+        }
     }
     
     
