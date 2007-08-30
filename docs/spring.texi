@@ -42,8 +42,8 @@ Foundation.
 @chapter Executive Summary
 @c %MENU% Executive Summary
 
-Why should your company use Spring Framework?  You should because the Spring Framework offers 
-a unemcumbered alternative to EJB's Stateful, Stateless Session Beans, and Message Driven Beans.  
+Why should your company use the Spring Framework?  In short, the Spring Framework offers 
+a unemcumbered alternative to EJB's Stateful/Stateless Session Beans, and Message Driven Beans.  
 This alternative allows your service layer to integrate with the Java Transaction API seamlessly 
 whether the code is deployed in or outside of an application server.
 
@@ -54,11 +54,12 @@ whether the code is deployed in or outside of an application server.
 @c %MENU% Purpose of the Spring Framework
 
 While Hibernate is an excellent object-relational mapping tool which supplanted EJB 2.1's EntityBeans 
-as the persistence mechanism of choice for many Java developers; Hibernate requires developers
+as the persistence mechanism of choice for many Java developers, Hibernate requires developers
 to use different interfaces in the Service Layer depending on whether the transaction
 is being used in a distributed transaction or not.  The Spring Framework defines an interface
-as an abstraction over different transaction management technologies, and provides an implementation
-that integrates with Hibernate.  Furthermore, Spring's transaction management includes support 
+as an abstraction over different transaction management technologies, which is configured programmaticaly,
+via annotations, or using external metadata.
+Furthermore, Spring's transaction management includes support 
 for the delivery and asynchronous consumption of JMS messages.
 
 Transaction management is a good demonstration of the abstractions that Spring provides.
@@ -72,10 +73,29 @@ their merits, I chose to focus instead on the abstractions Spring provides over 
 
 I wrote this paper because it's the paper I would have liked to have read when I first picked up Spring after college.
 
-@node Background,  , Introduction
-@section Background
+@node Layered Architecture,  , Introduction
+@section Layered Architecture
 
+Ideally, organizations structure their enterprise applications as depicted in the following
+diagram.  The arrows represent method calls across layers.
+
+@center{
 @image{Layers}
+}
+
+The Domain Model is the core of an enterprise application.  A solid Domain Model encapsulates
+the data and behavior of the business processes.  As my feeble diagram attempts to convey,
+the Domain Model should be the focus of the entire application.
+
+
+The responsiblity of the User Interface is to display data to the user.  
+To achieve this, the User Interface calls the Service Layer to retrieve a subgraph of the persistent
+Domain Model object graph.  Upon receiving this subgraph, the User Interface calls
+selector@footnote{selector - a procedure which retrieves the concrete representation of the abstract data}     
+methods, and displays the result.  After rendering this data, the user of the application needs
+to manipulate it.  The User Interface calls upon the Service Layer to mutate the data.
+
+The Service Layer is a very thin layer over the Domain Model.
 
 
 
@@ -84,7 +104,7 @@ I wrote this paper because it's the paper I would have liked to have read when I
 @c %MENU% The Proxy Pattern 
 
 Before getting Spring's integration with data access technologies and transaction 
-management, it's important to understand what the Proxy pattern.  Modern Java frameworks 
+management, it's important to understand the Proxy pattern.  Modern Java frameworks 
 such as Spring and Hibernate make heavy use of dynamic proxies; 
 specifically Spring uses them to simplify transaction management in the Service Layer.
 
@@ -98,7 +118,7 @@ The object then decides to execute whatever action(s) it sees fit based on the s
 of the message.  This feature allows a developer to create proxy objects which forward these unknown messages
 to another ``target'' object.@footnote{http://en.wikipedia.org/wiki/Proxy_pattern}
 
-While dynamic languages natively support the Proxy pattern, the statically-typed nature of 
+While dynamic languages support the Proxy pattern via the language's semantics, the statically-typed nature of 
 Java mandates that an object cannot receive a message, or MethodInvocation in Spring's vernacular, 
 for which it does not have a corresponding Method.  As such, a purely statically-typed system cannot allow
 for proxy objects without manual delegation to the proxy.  In order to get around this limitation, 
@@ -241,15 +261,15 @@ interface is not feasible.
 However, it is possible to define a data access technology agnostic set of DataAccessExceptions,
 used to unify the commit/rollback transactional logic in the Service Layer.  The most appropriate
 way of transforming data-access technology specific Exceptions into Spring's DataAccessExceptions is 
-to put a dynamic proxy in front of each data access technologies which performs the rethrowing of
-the DataAccessExceptions.
+to put a dynamic proxy in front of each data access technology's Unit of Work which performs the 
+catching/rethrowing of the DataAccessExceptions.
 
 
 @node Hibernate Configuration,  , Data Access Layer 
 @section Configuration
 
 
-This section shows how to use Hibernate using Spring
+This section shows how to configure Hibernate using Spring
 
 
 First, Hibernate needs a data source to connect to, so I use Apache Common's data base connection pool's
@@ -290,7 +310,8 @@ afterPropertiesSet() must be called.
 I prefer creating valid objects at construction time, so I my humble opinion
 Spring should expose constructors that take in the required collaborators, calling afterPropertiesSet() 
 at the end of the constructor.  This would guarantee correct initialization of the objects,
-while reducing the amount of code needed to instantiate Spring's objects.
+while reducing the amount of code needed to instantiate Spring's 
+objects.
 
 
       
@@ -388,25 +409,21 @@ This section shows how to use Spring to use the RmiServiceExporter to export a S
 using RMI and a RmiProxyFactoryBean to connect to that service.
 
 @smallexample
-private void exportRMI() throws RemoteException {
+private void exportRMI() throws RemoteException @{
     RmiServiceExporter rmiServiceExporter = new RmiServiceExporter();
     rmiServiceExporter.setServiceName("ATM");
     rmiServiceExporter.setService(registry.getAtmService());
     rmiServiceExporter.setServiceInterface(ATMService.class);
     rmiServiceExporter.setRegistryPort(1199);
     rmiServiceExporter.afterPropertiesSet();
-}
-public void consumeRMI() {
+@}
+public void consumeRMI() @{
     RmiProxyFactoryBean proxyFactoryBean = new RmiProxyFactoryBean();
     proxyFactoryBean.setServiceUrl("rmi://localhost:1199/ATM");
     proxyFactoryBean.setServiceInterface(ATMService.class);
     proxyFactoryBean.afterPropertiesSet();
-    atmService = (ATMService) proxyFactoryBean.getObject();
-}
+    atmService = (ATMService) proxyFactoryBean.getObject();@}
 @end smallexample
-
-
-
 
 @node Conclusion
 @chapter Conclusion
