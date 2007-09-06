@@ -1,0 +1,456 @@
+\input texinfo 
+@setfilename introjavaee.info
+@settitle  JavaEE using Hibernate, Spring, and JSF
+@paragraphindent 1
+@tex
+\global\bindingoffset=0.00in
+\global\normaloffset =0.00in
+@end tex
+@dircategory Hibernate, Spring, and JSF
+@direntry
+* Hibernate, Spring, and JSF: (javaee).                 Hibernate, Spring, and JSF
+@end direntry
+@set xref-automatic-section-title
+@smallbook
+@set EDITION 1.0
+@set VERSION 2.0.x
+@set UPDATED 2007-06-03
+@set ISBN X-XXXXXX-XX-X
+@titlepage
+@sp 
+@title Introduction to the JavaEE
+@subtitle Using Hibernate 3.2.x, Spring 2.0.x, and JSF 1.1
+@sp 4
+@author by Bill Six
+@page
+@vskip 0pt plus 1filll
+@sp
+Copyright @copyright{} 2007 Bill Six
+@sp 1
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the @acronym{GNU} Free Documentation License,
+Version 1.2, or any later version published by the Free Software
+Foundation.
+@end titlepage
+@page
+@contents
+@headings off
+@headings on
+
+
+
+
+@node Introduction
+@chapter Introduction
+
+
+The purpose of this paper is to show how to use Hibernate, Spring, and JavaServer Faces to
+structure an enterprise application.
+
+I wrote this paper because it's the paper I would have liked to have read when I first started
+work after college.
+
+
+@node Road Map,  , Introduction
+
+@section Road Map
+@itemize @bullet
+@item
+Chapter 2 - Data Access Layer, introduces Hibernate, an object-relational mapper used to save
+a domain model to a relational database.  It will discuss the basics
+of the impedence mismatch between objects and relational databases.
+     
+@item
+Chapter 3 - Service Layer, is a short introduction to the Spring Framework.  It will show
+how to use Spring to simplify transaction management in the service layer.
+
+@item
+Chapter 4 - UI Layer, is discusses JavaServer Faces, the standard framework for
+creating web pages.  
+
+@end itemize
+
+
+
+@node Layered Architecture,  , Introduction
+@section Layered Architecture
+
+Ideally, organizations structure their enterprise applications as depicted in the following
+diagram.  The arrows represent method calls across layers.
+
+@center{
+@image{Layers}
+}
+
+The Domain Model is the core of an enterprise application.  A solid Domain Model encapsulates
+the data and behavior of the business processes.  As my feeble diagram attempts to convey,
+the Domain Model should be the focus of the entire application.
+
+
+The responsiblity of the User Interface is to display data to the user.  
+To achieve this, the User Interface calls the Service Layer to retrieve a subgraph of the persistent
+Domain Model object graph.  Upon receiving this subgraph, the User Interface calls
+selector@footnote{selector - a procedure which retrieves the concrete representation of the abstract data}     
+methods, and displays the result.  After rendering this data, the user of the application needs
+to manipulate it.  The User Interface calls upon the Service Layer to mutate the data.
+
+The Service Layer is a very thin layer over the Domain Model.
+
+
+
+@node The Proxy Pattern 
+@chapter The Proxy Pattern 
+@c %MENU% The Proxy Pattern 
+
+Before getting Spring's integration with data access technologies and transaction 
+management, it's important to understand the Proxy pattern.  Modern Java frameworks 
+such as Spring and Hibernate make heavy use of dynamic proxies; 
+specifically Spring uses them to simplify transaction management in the Service Layer.
+
+@node Dynamic Proxies,  , The Proxy Pattern
+@section Dynamic Proxies
+
+Dynamic, message-passing object-oriented languages such as Smalltalk-80, Objective C, Ruby, and Groovy  
+allow an object to inspect messages which it receives should it not have a method which correspond to the message's 
+selector@footnote{The method signature and in Java parlance}.  
+The object then decides to execute whatever action(s) it sees fit based on the selector and arguments
+of the message.  This feature allows a developer to create proxy objects which forward these unknown messages
+to another ``target'' object.@footnote{http://en.wikipedia.org/wiki/Proxy_pattern}
+
+While dynamic languages support the Proxy pattern via the language's semantics, the statically-typed nature of 
+Java mandates that an object cannot receive a message, or MethodInvocation in Spring's vernacular, 
+for which it does not have a corresponding Method.  As such, a purely statically-typed system cannot allow
+for proxy objects without manual delegation to the proxy.  In order to get around this limitation, 
+Sun introduced the notion of a dynamic proxy in JDK 1.3
+@footnote{I'm not quite sure
+why the name ``dynamic'' proxy is used instead of just ``proxy''.  I'm guessing it's because you can statically 
+type a proxy class which implements a ``dynamic'' set of interfaces}
+, which is a Java class that can be configured as a proxy to any number of Java interfaces at runtime: thus allowing safe type-casting of the proxy object to a set of target interfaces.  Sun's implementation of this uses reflection.  
+Around the same time, an open source project called CGLIB appeared, allowing similar proxying behavior 
+via byte-code enhancement instead of reflection.  
+The additional benefit of CGLIB is that it removed the restriction
+that a dynamic proxy can only proxy instances of interfaces, thus providing the ability to proxy an instance of a class.
+
+
+
+@node Proxy Example - Smalltalk-80
+@subsection Proxy Example - Smalltalk-80
+
+The following example shows how proxy objects are implemented in Smalltalk.  Since the proxy object intercepts the method call
+to the target object, the proxy object can perform logic before and after the actual method call is forwarded to the target.
+
+@smallexample
+ ProtoObject subclass: #CustomProxyClass
+   instanceVariableNames: 'target'
+   classVariableNames: ''
+   poolDictionaries: ''
+   category: 'Examples'
+  
+  initializeTarget: t 
+   target := t
+
+  doesNotUnderstand: aMessage 
+   | answer |
+   Transcript show: 'Here I would open a transaction'; cr.
+   answer := target perform: aMessage selector 
+                    withArguments: aMessage arguments.
+   Transcript show: 'Here commit the transaction unless I caught an unrecoverable exception!';cr.
+   ^ answer .
+	
+ Object subclass: #CalculatorService
+   instanceVariableNames: ''
+   classVariableNames: ''
+   poolDictionaries: ''
+   category: 'Examples
+
+  add: first and: second
+   ^ first + second .
+
+ ClassTestCase subclass: #CustomProxyClassTest
+   instanceVariableNames: 'calculatorService'
+   classVariableNames: ''
+   poolDictionaries: ''
+   category: 'Examples
+
+  setUp
+   calculatorService := CustomProxyClass target: (CalculatorService new).
+
+  testCalculatorService
+   self assert: ( (calculatorService add: 1 and: 2) = 3)
+
+@end smallexample
+
+
+
+
+
+@node Dynamic Proxy Example - Spring
+@subsection Dynamic Proxy Example - Spring
+
+The following shows the same example implemented using the Java's dynamic proxies, initialized
+through Spring.
+
+@smallexample
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
+public class TransactionInterceptor implements MethodInterceptor @{
+    public Object invoke(MethodInvocation invocation) throws Throwable @{
+        System.out.println("Here I would open a transaction");
+        Object answer = invocation.proceed();
+        System.out.println("Here commit the transaction unless I \
+caught an unrecoverable exception!");
+        return answer;
+    @}
+@}
+public interface CalculatorService @{    
+    public Integer add(Integer first, Integer second);
+@}
+public class CalculatorServiceImplementation 
+       implements CalculatorService @{    
+    public Integer add(Integer first, Integer second) @{
+        return first + second;
+    @}
+@}
+import org.springframework.aop.framework.ProxyFactoryBean;
+
+public class CalculatorServiceTest extends TestCase @{
+    public CalculatorServiceTest( String testName ) @{
+        super( testName );
+    @}
+    public static Test suite() @{
+        return new TestSuite( CalculatorServiceTest.class );
+    @}
+    public void setUp() throws Exception@{
+        CalculatorServiceImplementation target = 
+                        new CalculatorServiceImplementation();
+        ProxyFactoryBean factory = new ProxyFactoryBean();
+        factory.addAdvice(new TransactionInterceptor());
+        factory.setTarget(target);
+        factory.setProxyInterfaces(new Class[]@{CalculatorService.class@});
+        calculatorService = (CalculatorService) factory.getObject();
+    @}
+    public void testValidAccess() @{
+        assertTrue(calculatorService.add(4,5) == 9);
+    @}
+    CalculatorService calculatorService ;
+@}
+
+@end smallexample
+
+
+Notice that Spring does not actually do the proxying itself; instead, it unifies
+the notion of a dynamic proxy under a single interface, and provides integration
+which multiple implementation technologies.
+The determination of the actual implementation
+technology is defered until instance creation of the proxy by the ProxyFactoryBean.  
+In the example above, the ProxyFactoryBean 
+defaults to using the JDK's dynamic proxy mechanism.  To use the CGLIB implementation,
+you would just need to call factory.setProxyTargetClass(true); before calling factory.getObject().
+
+@node Data Access Layer 
+@chapter Data Access Layer
+@c %MENU% Data Access 
+
+In the previous section on dynamic proxies, both the JDK and CGLIB implementation took in a target object, 
+a list of interfaces to implement, and returned a proxy object.  
+Data access technologies, however, solve persistence in a multitude of 
+ways@footnote{See Table Data Gateway, Row Data Gateway, and Data Mapper in PoEAA}, and as such, extracting common
+interface is not feasible.
+
+However, it is possible to define a data access technology agnostic set of DataAccessExceptions,
+used to unify the commit/rollback transactional logic in the Service Layer.  The most appropriate
+way of transforming data-access technology specific Exceptions into Spring's DataAccessExceptions is 
+to put a dynamic proxy in front of each data access technology's Unit of Work which performs the 
+catching/rethrowing of the DataAccessExceptions.
+
+
+@node Hibernate Configuration,  , Data Access Layer 
+@section Configuration
+
+
+This section shows how to configure Hibernate using Spring
+
+
+First, Hibernate needs a data source to connect to, so I use Apache Common's data base connection pool's
+BasicDataSource.  Next, I create a Spring LocalSessionFactoryBean, which is the Exception-catching 
+dynamic proxy in front of Hibernate's SessionFactory.  
+
+@smallexample
+
+private LocalSessionFactoryBean localSessionFactoryBean;
+private void initializeLocalSessionFactoryBean() throws Exception@{
+  AnnotationSessionFactoryBean annotationSessionFactoryBean = 
+                               new AnnotationSessionFactoryBean();
+  BasicDataSource dataSource = new BasicDataSource();
+  dataSource.setDriverClassName("org.postgresql.Driver");
+  dataSource.setUrl("jdbc:postgresql://localhost/hibernatetest");
+  dataSource.setUsername("wsix");
+  dataSource.setPassword("password");
+  Properties hibernateProperties = new Properties();
+  hibernateProperties.setProperty(
+        "hibernate.dialect","org.hibernate.dialect.PostgreSQLDialect");
+  annotationSessionFactoryBean.setDataSource(dataSource);
+  annotationSessionFactoryBean.setAnnotatedClasses(
+      new Class[]{com.billsix.examples.atm.domain.Account.class,
+       com.billsix.examples.atm.domain.FundTransfer.class});
+  annotationSessionFactoryBean.setHibernateProperties(
+                                hibernateProperties);
+  annotationSessionFactoryBean.afterPropertiesSet();
+  localSessionFactoryBean = annotationSessionFactoryBean;
+@}
+@end smallexample
+
+
+
+The one minor complaint I have against Spring's design is that each of these objects have empty constructors,
+requiring that necessary collaborators are set using setter methods.  After all of the required collaborators are set, 
+afterPropertiesSet() must be called.  
+
+I prefer creating valid objects at construction time, so I my humble opinion
+Spring should expose constructors that take in the required collaborators, calling afterPropertiesSet() 
+at the end of the constructor.  This would guarantee correct initialization of the objects,
+while reducing the amount of code needed to instantiate Spring's 
+objects.
+
+
+      
+
+@node Service Layer
+@chapter Service Layer
+@c %MENU% Service Layer
+
+
+The Service Layer is a thin layer on top of a Domain Model which provides application logic
+such as management of transactions, authentication and authorization,
+and logging.  Since much of this logic is very similar, the Service Layer can amass quite a bit of boilerplate code.
+This boilerplate code is minimized using dynamic proxies.
+
+
+
+@node Transaction Management  , Service Layer
+@section Transaction Management
+
+Spring defines an interface called the PlatformTransactionManager, for which there are multiple implementations; 
+allowing you to develop your Service Layer code completely independently of a specific transaction technology.
+These include the HibernateTransactionManager, JTATransactionManager, and others.  By having the 
+PlatformTransactionManager interface, transaction management code in the Service Layer can be developed 
+regardless of the underlying transaction management scheme.  Since the Data Access Layer provides the Service Layer
+with Spring's DataAccessExceptions, commit/rollback logic is straightforward.
+
+
+@node Configuration,  , Service Layer
+@section Configuration
+
+
+This section shows how to use Spring to instantiate a HibernateTransactionManager.  
+The HibernateTransactionManager only needs a copy of the Hiberate SessionFactory.  
+After creating the HibernateTransactionManager, I need to 
+add a dynamic proxy in front of the Service I want to execute in a transactional context.  I specify that 
+the TransactionInterceptor should use the annotations of the Service Layer class to determine
+the isolation and propagation levels.
+
+
+@smallexample
+private void addTransactionInterceptor() throws AopConfigException, BeansException {
+  hibernateTransactionManager = new HibernateTransactionManager(
+           (SessionFactory) localSessionFactoryBean.getObject());
+  TransactionInterceptor transactionInterceptor = 
+           new TransactionInterceptor(hibernateTransactionManager,
+                        new AnnotationTransactionAttributeSource());
+  transactionInterceptor.afterPropertiesSet();
+  ProxyFactoryBean proxyFactoryBean = new ProxyFactoryBean();
+  proxyFactoryBean.addAdvice(transactionInterceptor);
+  proxyFactoryBean.setTarget(atmService);
+  atmService = (ATMService) proxyFactoryBean.getObject();
+}
+@end smallexample
+
+
+
+
+
+@node Remoting
+@chapter Remoting
+@c %MENU% Remoting
+
+
+Spring defines interfaces called RemoteExporter and RemoteAccessor for creating and accessing
+remoting technologies, and integrates with remoting technologies such as 
+RMI@footnote{Spring enables the use of RMI using a plain Java interface, instead of one that extends Remote}
+, Hessian, Burlap, and Spring's own
+RMI over HTTP@footnote{RMI over HTTP is a good choice if you want to use RMI but you are behind a firewall}.  
+For the most part, changing to a different remoting technology is as easy as
+changing the implementation of the RemoteExporter and RemoteAccessor that you instantiate.  
+However, remoting schemes such as
+Hessian and Burlap which use reflection-based serialization instead of native Java serialization
+fail when the domain model is persisted using Hibernate, or possibly any other bytecode-enhanced dynamic proxies.  
+
+One of the best features of Hibernate is that
+it allows a developer to fetch a specified subgraph of the persistent Domain Model object graph 
+(thus, solving the n+1 select problem).  With a reasonably complex domain model, it's common for some 
+of the objects in the fetched subgraph to reference objects that were not fetched in
+the database roundtrip.  Hibernate does not model this dangling reference with a null pointer; 
+instead, since Hibernate uses CGLIB's dynamic proxies, the dangling reference is a proxy object 
+to the unfetched object in the database.  Upon method calls to that dynamic proxy, the proxy 
+attempts to fetch the target object from the database.  This means that if you're outside of the
+Service Layer and as such the Hibernate Session (Hibernate's Unit Of Work) is closed, 
+an Exception will be thrown.  Thus, reflection-based
+serialization techniques as employed by Hessian and Burlap fail.
+
+
+
+
+@node Rmi Configuration,  , Remoting 
+@section Remoting
+
+
+This section shows how to use Spring to use the RmiServiceExporter to export a Service
+using RMI and a RmiProxyFactoryBean to connect to that service.
+
+@smallexample
+private void exportRMI() throws RemoteException @{
+    RmiServiceExporter rmiServiceExporter = new RmiServiceExporter();
+    rmiServiceExporter.setServiceName("ATM");
+    rmiServiceExporter.setService(registry.getAtmService());
+    rmiServiceExporter.setServiceInterface(ATMService.class);
+    rmiServiceExporter.setRegistryPort(1199);
+    rmiServiceExporter.afterPropertiesSet();
+@}
+public void consumeRMI() @{
+    RmiProxyFactoryBean proxyFactoryBean = new RmiProxyFactoryBean();
+    proxyFactoryBean.setServiceUrl("rmi://localhost:1199/ATM");
+    proxyFactoryBean.setServiceInterface(ATMService.class);
+    proxyFactoryBean.afterPropertiesSet();
+    atmService = (ATMService) proxyFactoryBean.getObject();@}
+@end smallexample
+
+@node Conclusion
+@chapter Conclusion
+@c %MENU% Conclusion
+
+The Spring Framework is an excellent library for the Java programming language
+because it defines common abstractions for competing technologies, and integrates
+them together well.  With that said, it's my opinion that while Spring is very useful, 
+the majority of the hard work is not actually implemented by Spring; instead, 
+it is already taken care of through Data Mappers such as Hibernate
+and JPA.
+
+
+This document, and all sample code can be downloaded from anonymously via subversion.
+
+@smallexample
+svn co https://atmexample.svn.sourceforge.net/svnroot/atmexample
+@end smallexample
+
+In addition to the dynamic proxy examples in this paper, it has a relatively simple
+ATM application: using PostgreSQL, Hibernate, Spring, with a Swing and a JavaServer Faces
+frontend.
+
+
+
+
+@c Local Variables:
+@c ispell-local-pdict: "ispell-dict"
+@c End:
+@bye
+
