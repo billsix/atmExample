@@ -121,7 +121,7 @@ sub-graphs of the persistent Domain Model object graph.
 @c %MENU% The User Stories
 
 This section describes the User Stories that will drive the application development.  
-
+@footnote{You should read ``User Stories Applied'' by Mike Cohn}
 
 @node Business Domain
 @section Business Domain
@@ -501,13 +501,6 @@ behavioral differences, called the impedance mismatch.
 @node Structural Mismatch
 @section Structural Mismatch
 
-
-@b{Object Identity}
-
-In the object-oriented model, two objects are equal if they are located
-in the same place in memory.  In a relational model, two rows are equal
-if they have the same primary key. 
-
 @b{Inheritance}
 
 In the object-oriented model, objects can have superclasses and subclasses.
@@ -555,8 +548,8 @@ public class FundTransfer extends BaseDomainObject@{
 @subsection Relational structure
 
 Relational databases model data as tables.  Data is stored
-in columns.  Rows are uniquely
-identified by a primary key.  Collections are represented by
+in columns.  Rows are uniquelyidentified by a primary key.  
+Collections are represented by
 foreign keys which map to another tables primary key.
 
 
@@ -683,6 +676,37 @@ and that Hibernate should generate a value upon insertion into the database.
 @end itemize
 
 
+@b{Collections}
+
+Using the annotations, Hibernate performs a join on the tables, and returns an 
+instance of the Set interface.
+
+
+@b{Inheritance}
+
+Solving the inheritance mismatch is outside of the scope of this paper.  If you 
+need to learn more, consult Hibernate's online documentation, and Martin Fowler's
+Patterns of Enterprise Application Architecture.
+
+
+
+
+
+@node Behavioral Mismatch
+@section Behavioral Mismatch
+
+
+@b{Object Identity}
+
+In the object-oriented model, two objects are equal if they are located
+in the same place in memory.  In a relational model, two rows are equal
+if they have the same primary key. 
+
+
+@node Overcoming the Behavioral Mismatch
+@subsection Overcoming the Behavioral Mismatch
+
+
 @b{Object Identity}
 
 When using create/read/update/delete operations in Hibernate, Hibernate doesn't directly
@@ -692,24 +716,13 @@ correct transaction isolation levels to deal with concurrency}
 cache is a local copy of the user accessed sub-graph of the persistent object graph. 
 As such,
 the Level 1 cache acts as a buffer which ensures that each unique entry in the
-database corresponds to the same Java object in memory.
-
-@b{Inheritance}
-
-Solving the inheritance mismatch is outside of the scope of this paper.  If you 
-need to learn more, consult Hibernate's online documentation, and Martin Fowler's
-Patterns of Enterprise Application Architecture.
-
-@b{Collections}
-
-Using the annotations, Hibernate performs a join on the tables, and returns an 
-instance of the Set interface.
+database corresponds to the same Java object in memory. @footnote{This is described as the ``Identity Map''
+in Martin Fowler's Patterns of Enterprise Application Architecture}
 
 
 
 
-@node Behavioral Mismatch
-@section Behavioral Mismatch
+(Hibernate Session === Unit of Work)
 
 
 @node N+1 Selects Problem
@@ -731,8 +744,9 @@ Load every object into the Level 1 cache that is referenced by an object in the 
 
 @item 
 Lazy-load all non-Value objects referenced by any objects in the Level 1 cache.  The Set of
-FundTransfers will not be a null reference, it will be a reference to a dynamic proxy which 
-can pull back the FundTransfers only when it is required.
+FundTransfers will not be a null reference, it will be a reference to a dynamic proxy
+@footnote{In this case, the dynamic proxy is an implementation of the ``Lazy Load'' pattern decribed in PoEAA} 
+which can pull back the FundTransfers only when it is required.
 
 @item 
 Load a user-specified sub-graph of the persistent object graph into the Level 1 cache.
