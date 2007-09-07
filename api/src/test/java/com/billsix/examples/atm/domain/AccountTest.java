@@ -38,6 +38,12 @@ public class AccountTest extends TestCase {
         account = new Account("bill", "password", 100.00);
     }
     
+    public void testPasswordIsValid() {
+        assertTrue(account.passwordIsValid("password"));
+        assertFalse(account.passwordIsValid("passw"));
+    }
+
+
     public void testCurrentBalance() {
         assertTrue(account.getBalance() == 100.0);
     }
@@ -61,10 +67,17 @@ public class AccountTest extends TestCase {
         assertTrue(transaction.getBalanceAfterTransaction() == 50.0);
         assertTrue(transaction.getBalanceBeforeTransaction() == 100.0);
     }
-    
-    public void testPasswordIsValid() {
-        assertTrue(account.passwordIsValid("password"));
-        assertFalse(account.passwordIsValid("passw"));
+
+
+    public void testFundTransferHistory() {
+        account.withdraw(50.00);
+        account.deposit(25.0);
+        for(FundTransfer fundTransfer : account.getFundTransferHistory()) {
+            if(fundTransfer.getBalanceAfterTransaction() != 50.0 &&
+                    fundTransfer.getBalanceAfterTransaction() != 75.0 ) {
+                fail("Incorrect set of fund transfers");
+            }
+        }
     }
     
     private Account account;
