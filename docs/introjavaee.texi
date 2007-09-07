@@ -808,7 +808,7 @@ levels for the Service.
 
 
 @node Service Unit Test
-@subsection Service Unit Test
+@section Service Unit Test
 
 
 The unit test for the Service Layer could then be implemented as follows.
@@ -849,7 +849,7 @@ public class ATMServiceTest extends TestCase @{
 
 
 @node Service Implementation
-@subsection Service Implementation
+@section Service Implementation
 
 
 @smallexample
@@ -857,6 +857,14 @@ public class ATMServiceImplementation implements ATMService@{
   public ATMServiceImplementation(SessionFactory sessionFactory) @{
       this.sessionFactory = sessionFactory;
   @}
+@end smallexample
+
+
+Calling sessionFactory.getCurrrentSession() gets Hibernate's Session, which accesses
+the thread-local Session.  The Query uses Hibernate's 
+HQL@footnote{HQL queries specify the sub-graph you want to load into the Level 1 cache}.
+  
+@smallexample
   public boolean authenticate(String username, String password) @{
       Account account = (Account) sessionFactory.getCurrentSession()
       .createQuery("from Account as account where account.username like :username")
@@ -872,6 +880,13 @@ public class ATMServiceImplementation implements ATMService@{
       @}
       return false;
   @}
+@end smallexample
+
+Calling saveOrUpdate(object) on the session reattaches the ``detached'' instance
+into the current transaction.  Although, since the account object will not have
+changed in the UI, calling load(Account.class, this.account.getId()) would
+perform better. 
+@smallexample
   public Double getBalance() @{
       sessionFactory.getCurrentSession().saveOrUpdate(this.account);
       return this.account.getBalance();
@@ -884,6 +899,13 @@ public class ATMServiceImplementation implements ATMService@{
       sessionFactory.getCurrentSession().saveOrUpdate(this.account);
       this.account.withdraw(amountToWithdraw);
   @}
+@end smallexample
+
+Since the FundTransfer set is lazily loaded, calling Hibernate.initialize(objects)
+forces the fundHistory dynamic proxy to actually fetch the collection into
+the Level 1 cache.
+
+@smallexample
   public Account fetchFundTransferHistory() @{
       sessionFactory.getCurrentSession().saveOrUpdate(this.account);
       Hibernate.initialize(account.getFundTransferHistory());
