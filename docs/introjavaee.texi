@@ -1040,19 +1040,19 @@ Bill withdraws money from his account
 @item
 Bill deposits money to his account
 
-@center{@image{deposit}}
+@image{deposit}
 
 @item
 Bill withdraws $50, deposits $25, is able to see a history of all of his fund transfers.
 
 
-@center{@image{transactiondetails}}
+@image{fundtransfer}
 
 @item
 A fund transfer page.  I admit this is goldplating.  It wasn't in the User Stories.  I put this in
 only to show how an individual element of a table is selected.
 
-@center{@image{fundtransfer}}
+@image{transactiondetails}
 
 @end itemize
 
