@@ -136,8 +136,8 @@ Account - An account is the base unit in which a person can transfer funds.  Eac
 has a collection of fund transfers.
 @item
 Fund Transfer - Any action which involves increasing or decreasing the current balance of an account. 
-A Fund Transfer needs to record the balance before the transaction, after the transaction, and the
-time of the transaction.
+A Fund Transfer needs to record the balance before the fund transfer, after the fund transfer, and the
+time of the fund transfer.
 @item
 Deposit - A fund transfer which adds money to the account.
 @item
@@ -292,11 +292,11 @@ the before and after balance.
     public void testDeposit() @{
         account.deposit(50.00);
         assertTrue(account.getBalance() == 150.0);
-        Set<FundTransfer> transactions = account.getFundTransferHistory(); 
-        assertTrue(transactions.size()==1);
-        FundTransfer transaction = transactions.iterator().next(); 
-        assertTrue(transaction.getBalanceAfterTransaction() == 150.0);
-        assertTrue(transaction.getBalanceBeforeTransaction() == 100.0);
+        Set<FundTransfer> fundTransfers = account.getFundTransferHistory(); 
+        assertTrue(fundTransfers.size()==1);
+        FundTransfer fundTransfer = fundTransfers.iterator().next(); 
+        assertTrue(fundTransfer.getBalanceAfterFundTransfer() == 150.0);
+        assertTrue(fundTransfer.getBalanceBeforeFundTransfer() == 100.0);
     @}
 
 @end smallexample
@@ -316,11 +316,11 @@ the before and after balance.
     public void testWithdraw() @{
         account.withdraw(50.00);
         assertTrue(account.getBalance() == 50.0);
-        Set<FundTransfer> transactions = account.getFundTransferHistory(); 
-        assertTrue(transactions.size()==1);
-        FundTransfer transaction = transactions.iterator().next(); 
-        assertTrue(transaction.getBalanceAfterTransaction() == 50.0);
-        assertTrue(transaction.getBalanceBeforeTransaction() == 100.0);
+        Set<FundTransfer> fundTransfers = account.getFundTransferHistory(); 
+        assertTrue(fundTransfers.size()==1);
+        FundTransfer fundTransfer = fundTransfers.iterator().next(); 
+        assertTrue(fundTransfer.getBalanceAfterFundTransfer() == 50.0);
+        assertTrue(fundTransfer.getBalanceBeforeFundTransfer() == 100.0);
     @}
 
 @end smallexample
@@ -339,8 +339,8 @@ Bill is able to see all of the fund transfers.
         account.withdraw(50.00);
         account.deposit(25.0);
         for(FundTransfer fundTransfer : account.getFundTransferHistory()) @{
-            if(fundTransfer.getBalanceAfterTransaction() != 50.0 &&
-                    fundTransfer.getBalanceAfterTransaction() != 75.0 ) @{
+            if(fundTransfer.getBalanceAfterFundTransfer() != 50.0 &&
+                    fundTransfer.getBalanceAfterFundTransfer() != 75.0 ) @{
                 fail("Incorrect set of fund transfers");
             @}
         @}
@@ -531,8 +531,8 @@ public class Account extends BaseDomainObject@{
 public class FundTransfer extends BaseDomainObject@{
     ......
     private Account account;
-    private Double balanceBeforeTransaction;
-    private Double balanceAfterTransaction;
+    private Double balanceBeforeFundTransfer;
+    private Double balanceAfterFundTransfer;
     private Calendar date;
 @}
 @end smallexample
@@ -576,8 +576,8 @@ WITHOUT OIDS;
 CREATE TABLE fundtransfer
 (
   id int8 NOT NULL,
-  balancebeforetransaction float8,
-  balanceaftertransaction float8,
+  balancebeforefundtransfer float8,
+  balanceafterfundtransfer float8,
   date timestamp,
   version int8,
   account_id int8,
@@ -648,8 +648,8 @@ public class FundTransfer extends BaseDomainObject@{
     @@ManyToOne( cascade = {CascadeType.ALL} )
     @@JoinColumn(name="ACCOUNT_ID")
     private Account account;
-    private Double balanceBeforeTransaction;
-    private Double balanceAfterTransaction;
+    private Double balanceBeforeFundTransfer;
+    private Double balanceAfterFundTransfer;
     @@Temporal(TemporalType.TIMESTAMP) private Calendar date;
     @@Id @@GeneratedValue private Long id;
     @@Version private Long version;
@@ -1154,7 +1154,7 @@ An outputlink is like an HREF
       </h:outputLink>                        
      </td>
      <td>
-      <h:outputLink value="transactionHistory.xhtml" >Transaction History
+      <h:outputLink value="fundTransferHistory.xhtml" >Fund Transfer History
       </h:outputLink>                        
      </td>
     </tr>
@@ -1314,55 +1314,55 @@ Use the template, and override the body component
  <body>
  <ui:composition template="/template.xhtml">
  <ui:define name="body">
-  <h:form id="transactionHistoryForm">
+  <h:form id="fundTransferHistoryForm">
 
 @end smallexample
 @itemize @bullet
 @item 
 A dataTable loops over a ListDataModel, binding each elemnent to
-the ``transaction'' variable
+the ``fundTransfer'' variable
 @end itemize
 @smallexample
-  <h:dataTable id="transactions" 
-               value="@#@{atmServiceBackingBean.transactions@}" 
-               var="transaction">		
+  <h:dataTable id="fundTransfers" 
+               value="@#@{atmServiceBackingBean.fundTransfers@}" 
+               var="fundTransfer">		
   <h:column>
    <f:facet name="header">
     <h:outputText  value="Account ID"/>
    </f:facet>                            
-   <h:outputText value="@#@{transaction.account.id@}"/>
+   <h:outputText value="@#@{fundTransfer.account.id@}"/>
   </h:column>
   <h:column>
    <f:facet name="header">
-    <h:outputText  value="Transaction Date"/>
+    <h:outputText  value="Fund Transfer Date"/>
    </f:facet>                            
-  <h:outputText value="@#@{transaction.date.time@}"/>
+  <h:outputText value="@#@{fundTransfer.date.time@}"/>
   </h:column>
   <h:column>
    <f:facet name="header">
-    <h:outputText  value="Balance Before Transaction"/>
+    <h:outputText  value="Balance Before Fund Transfer"/>
    </f:facet>                            
-   <h:outputText value="@#@{transaction.balanceBeforeTransaction@}"/>
+   <h:outputText value="@#@{fundTransfer.balanceBeforeFundTransfer@}"/>
   </h:column>
   <h:column>
    <f:facet name="header">
-    <h:outputText  value="Balance After Transaction"/>
+    <h:outputText  value="Balance After Fund Transfer"/>
    </f:facet>                            
-   <h:outputText value="@#@{transaction.balanceAfterTransaction@}"/>
+   <h:outputText value="@#@{fundTransfer.balanceAfterFundTransfer@}"/>
   </h:column>                        
   <h:column>
    <f:facet name="header">
-    <h:outputText  value="Transaction Details"/>
+    <h:outputText  value="Fund Transfer Details"/>
    </f:facet>                            
 @end smallexample
 @itemize @bullet
 @item 
-This link calls the viewSingleTransaction method.  This method will have to inspect
+This link calls the viewSingleFundTransfer method.  This method will have to inspect
 the DataModel to see which row was chosen.
 @end itemize
 @smallexample   
-    <h:commandLink action="@#@{atmServiceBackingBean.viewSingleTransaction@}">                                 
-    <h:outputText value="Transaction Details"/>                                 
+    <h:commandLink action="@#@{atmServiceBackingBean.viewSingleFundTransfer@}">                                 
+    <h:outputText value="Fund Transfer Details"/>                                 
    </h:commandLink>                                                     
   </h:column>                        
  </h:dataTable>                        	
@@ -1386,22 +1386,22 @@ the DataModel to see which row was chosen.
  <body>
   <ui:composition template="/template.xhtml">
   <ui:define name="body">
-   <h:form id="transactionHistoryForm">
+   <h:form id="fundTransferHistoryForm">
    <p>
 @end smallexample
 @itemize @bullet
 @item 
-Since the viewSingleTransaction set the current row to ``selectecTransaction'',
+Since the viewSingleFundTransfer set the current row to ``selectFundTransfer'',
 this page can access the single record
 @end itemize
 @smallexample   <h:outputText id="deposit"
-    value="On @#@{atmServiceBackingBean.selectedTransaction.date.time@}, 
-    you committed a transaction on account 
-    @#@{atmServiceBackingBean.selectedTransaction.account.id@} 
+    value="On @#@{atmServiceBackingBean.selectedFundTransfer.date.time@}, 
+    you committed a fund transfer on account 
+    @#@{atmServiceBackingBean.selectedFundTransfer.account.id@} 
     to change your balance from 
-    @#@{atmServiceBackingBean.selectedTransaction.balanceBeforeTransaction@} 
+    @#@{atmServiceBackingBean.selectedFundTransfer.balanceBeforeFundTransfer@} 
     to 
-    @#@{atmServiceBackingBean.selectedTransaction.balanceAfterTransaction@}
+    @#@{atmServiceBackingBean.selectedFundTransfer.balanceAfterFundTransfer@}
     "/>
    </p>                                        
    </h:form>
@@ -1452,11 +1452,11 @@ in form ``withdrawalForm'' with id ``withdrawalInput''
      try@{
          Double amountToWithdraw = Double.parseDouble(withdrawal);
          atmService.withdraw(amountToWithdraw);
-         return "transactionSuccess";
+         return "fundTransferSuccess";
      @} catch(NumberFormatException nfe) @{
          context.addMessage("withdrawalForm:withdrawalInput", 
                    new FacesMessage("Please enter a decimal number"));
-         return "transactionFailure";
+         return "fundTransferFailure";
      @}
  @}
  public String deposit() @{
@@ -1464,11 +1464,11 @@ in form ``withdrawalForm'' with id ``withdrawalInput''
      try@{
         Double amountToDeposit = Double.parseDouble(deposit);
          atmService.deposit(amountToDeposit);
-         return "transactionSuccess";
+         return "fundTransferSuccess";
      @} catch(NumberFormatException nfe) @{
          context.addMessage("depositForm:depositInput", 
                    new FacesMessage("Please enter a decimal number"));
-         return "transactionFailure";
+         return "fundTransferFailure";
      @}
  @}
 @end smallexample
@@ -1478,22 +1478,22 @@ When an individual row in the fund transfer table is selected, the backing
 bean needs to get the element that was selected.
 @end itemize
 @smallexample
- public String viewSingleTransaction() @{
-     selectedTransaction = (FundTransfer) transactions.getRowData();
-     return "viewTransactionDetails";
+ public String viewSingleFundTransfer() @{
+     selectedFundTransfer = (FundTransfer) fundTransfers.getRowData();
+     return "viewFundTransferDetails";
  @}
 @end smallexample
 @itemize @bullet
 @item 
 JSF requires that a java.util.List is wrapped with a JSF model component
 @end itemize
-@smallexample public DataModel getTransactions() @{
-     transactions = new ListDataModel();
+@smallexample public DataModel getFundTransfers() @{
+     funTransfers = new ListDataModel();
      ArrayList<FundTransfer> wrappedList = new ArrayList<FundTransfer>();
      wrappedList.addAll(
         atmService.fetchFundTransferHistory().getFundTransferHistory());
-     transactions.setWrappedData(wrappedList);
-     return transactions;
+     fundTransfers.setWrappedData(wrappedList);
+     return fundTransfers;
  @}
  ..........getters/setters...............
  private ATMService atmService;
@@ -1501,8 +1501,8 @@ JSF requires that a java.util.List is wrapped with a JSF model component
  private String password;
  private String withdrawal;
  private String deposit;
- private DataModel transactions ;
- private FundTransfer selectedTransaction;
+ private DataModel fundTransfers ;
+ private FundTransfer selectedFundTransfer;
     
 @}
 @end smallexample
@@ -1540,11 +1540,11 @@ and defining page flow between the pages.  It's pretty self explanatory.
     <description>Navigation from the withdrawal page.</description>
      <from-view-id>/withdraw.xhtml</from-view-id>
      <navigation-case>
-      <from-outcome>transactionSuccess</from-outcome>
+      <from-outcome>fundTransferSuccess</from-outcome>
       <to-view-id>/currentBalance.xhtml</to-view-id>
      </navigation-case>
      <navigation-case>
-      <from-outcome>transactionFailure</from-outcome>
+      <from-outcome>fundTransferFailure</from-outcome>
       <to-view-id>/withdraw.xhtml</to-view-id>
      </navigation-case>
     </navigation-rule>
@@ -1553,22 +1553,22 @@ and defining page flow between the pages.  It's pretty self explanatory.
      <description>Navigation from the deposit page.</description>
      <from-view-id>/deposit.xhtml</from-view-id>
       <navigation-case>
-       <from-outcome>transactionSuccess</from-outcome>
+       <from-outcome>fundTransferSuccess</from-outcome>
        <to-view-id>/currentBalance.xhtml</to-view-id>
       </navigation-case>
       <navigation-case>
-       <from-outcome>transactionFailure</from-outcome>
+       <from-outcome>fundTransferFailure</from-outcome>
        <to-view-id>/deposit.xhtml</to-view-id>
       </navigation-case>
     </navigation-rule>
 
     <navigation-rule>
-     <description>Navigation from the Transaction History page.
+     <description>Navigation from the Fund Transfer History page.
      </description>
-     <from-view-id>/transactionHistory.xhtml</from-view-id>
+     <from-view-id>/fundTransferHistory.xhtml</from-view-id>
      <navigation-case>
-      <from-outcome>viewTransactionDetails</from-outcome>
-      <to-view-id>/viewTransactionDetails.xhtml</to-view-id>
+      <from-outcome>viewFundTransferDetails</from-outcome>
+      <to-view-id>/viewFundTransferDetails.xhtml</to-view-id>
      </navigation-case>
     </navigation-rule>
     
