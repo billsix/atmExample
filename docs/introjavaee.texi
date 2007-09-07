@@ -1016,9 +1016,14 @@ A deposit page
 @center{@image{deposit}}
 
 @item
-An account history page
+An fund transfer history page
 
 @center{@image{transactiondetails}}
+
+@item
+An fund transfer page
+
+@center{@image{fundtransfer}}
 
 @end itemize
 
@@ -1171,7 +1176,7 @@ An account history page
                   value="Amount To Withdraw:"/>
     </h:outputLabel>
     <h:inputText id="withdrawalInput" 
-                 value="#{atmServiceBackingBean.withdrawal}" 
+                 value="@#@{atmServiceBackingBean.withdrawal@}" 
                  required="true">
     </h:inputText>
    <h:message id="errors" for="withdrawalInput" style="color: red"/>
@@ -1205,14 +1210,14 @@ An account history page
                    value="Amount To Deposit:"/>
      </h:outputLabel>
      <h:inputText id="depositInput" 
-                  value="#{atmServiceBackingBean.deposit}" 
+                  value="@#@{atmServiceBackingBean.deposit@}" 
                   required="true">
      </h:inputText>
      <h:message id="errors" for="depositInput" style="color: red"/>
    </p>
             
    <h:commandButton id="depositCommand" type="submit" value="Deposit" 
-                    action="#{atmServiceBackingBean.deposit}" />                
+                    action="@#@{atmServiceBackingBean.deposit@}" />                
    </h:form>                  
   </ui:define>
  </ui:composition >
@@ -1235,37 +1240,37 @@ An account history page
  <ui:define name="body">
   <h:form id="transactionHistoryForm">
   <h:dataTable id="transactions" 
-               value="#{atmServiceBackingBean.transactions}" 
+               value="@#@{atmServiceBackingBean.transactions@}" 
                var="transaction">		
   <h:column>
    <f:facet name="header">
     <h:outputText  value="Account ID"/>
    </f:facet>                            
-   <h:outputText value="#{transaction.account.id}"/>
+   <h:outputText value="@#@{transaction.account.id@}"/>
   </h:column>
   <h:column>
    <f:facet name="header">
     <h:outputText  value="Transaction Date"/>
    </f:facet>                            
-  <h:outputText value="#{transaction.date.time}"/>
+  <h:outputText value="@#@{transaction.date.time@}"/>
   </h:column>
   <h:column>
    <f:facet name="header">
     <h:outputText  value="Balance Before Transaction"/>
    </f:facet>                            
-   <h:outputText value="#{transaction.balanceBeforeTransaction}"/>
+   <h:outputText value="@#@{transaction.balanceBeforeTransaction@}"/>
   </h:column>
   <h:column>
    <f:facet name="header">
     <h:outputText  value="Balance After Transaction"/>
    </f:facet>                            
-   <h:outputText value="#{transaction.balanceAfterTransaction}"/>
+   <h:outputText value="@#@{transaction.balanceAfterTransaction@}"/>
   </h:column>                        
   <h:column>
    <f:facet name="header">
     <h:outputText  value="Transaction Details"/>
    </f:facet>                            
-   <h:commandLink action="#{atmServiceBackingBean.viewSingleTransaction}">                                 
+   <h:commandLink action="@#@{atmServiceBackingBean.viewSingleTransaction@}">                                 
     <h:outputText value="Transaction Details"/>                                 
    </h:commandLink>                                                     
   </h:column>                        
@@ -1276,6 +1281,103 @@ An account history page
 </body>
 </html>
 @end smallexample
+
+
+@node FundTransfer  page
+@section FundTransfer page
+
+@smallexample
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html">
+ <body>
+  <ui:composition template="/template.xhtml">
+  <ui:define name="body">
+   <h:form id="transactionHistoryForm">
+   <p>
+   <h:outputText id="deposit"
+    value="On @#@{atmServiceBackingBean.selectedTransaction.date.time@}, 
+    you committed a transaction on account 
+    @#@{atmServiceBackingBean.selectedTransaction.account.id@} 
+    to change your balance from 
+    @#@{atmServiceBackingBean.selectedTransaction.balanceBeforeTransaction@} 
+    to 
+    @#@{atmServiceBackingBean.selectedTransaction.balanceAfterTransaction@}
+    "/>
+   </p>                                        
+   </h:form>
+  </ui:define>
+  </ui:composition >
+ </body>
+</html>
+@end smallexample
+
+
+
+@node BackingBean
+@section BackingBean
+
+@smallexample
+
+public class ATMServiceBackingBean @{
+ public ATMServiceBackingBean() @{
+   atmService = new Main().getAtmService();
+ @}
+ public String login() @{
+     if (atmService.authenticate(username, password))
+         return "loginSuccess";
+     return "loginFailure";
+ @}
+ public String withdraw() @{
+    FacesContext context = FacesContext.getCurrentInstance();
+     try@{
+         Double amountToWithdraw = Double.parseDouble(withdrawal);
+         atmService.withdraw(amountToWithdraw);
+         return "transactionSuccess";
+     @} catch(NumberFormatException nfe) @{
+         context.addMessage("withdrawalForm:withdrawalInput", 
+                   new FacesMessage("Please enter a decimal number"));
+         return "transactionFailure";
+     @}
+ @}
+ public String deposit() @{
+     FacesContext context = FacesContext.getCurrentInstance();
+     try@{
+        Double amountToDeposit = Double.parseDouble(deposit);
+         atmService.deposit(amountToDeposit);
+         return "transactionSuccess";
+     @} catch(NumberFormatException nfe) @{
+         context.addMessage("depositForm:depositInput", 
+                   new FacesMessage("Please enter a decimal number"));
+         return "transactionFailure";
+     @}
+ @}
+ public String viewSingleTransaction() @{
+     selectedTransaction = (FundTransfer) transactions.getRowData();
+     return "viewTransactionDetails";
+ @}
+ public DataModel getTransactions() @{
+     transactions = new ListDataModel();
+     ArrayList<FundTransfer> wrappedList = new ArrayList<FundTransfer>();
+     wrappedList.addAll(
+        atmService.fetchFundTransferHistory().getFundTransferHistory());
+     transactions.setWrappedData(wrappedList);
+     return transactions;
+ @}
+ ..........
+ private ATMService atmService;
+ private String username;
+ private String password;
+ private String withdrawal;
+ private String deposit;
+ private DataModel transactions ;
+ private FundTransfer selectedTransaction;
+    
+@}
+@end smallexample
+
 
 
 
