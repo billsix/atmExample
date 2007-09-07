@@ -18,7 +18,7 @@
 @set ISBN X-XXXXXX-XX-X
 @titlepage
 @sp 
-@title Introduction to the JavaEE
+@title Introduction to JavaEE
 @subtitle Using Hibernate 3.2.x, Spring 2.0.x, and JSF 1.1
 @sp 4
 @author by Bill Six
@@ -55,17 +55,29 @@ work after college.
 
 @section Road Map
 @itemize @bullet
+
 @item
-Chapter 2 - Data Access Layer, introduces Hibernate, an object-relational mapper used to save
+Chapter 2 - The User Stories. All examples in this paper will be driven by User Stories.
+
+@item
+Chapter 3 - The Domain Model. This section shows how to create a Domain Model to
+implement all of the User Stories which involve the business logic.
+
+@item
+Chapter 4 - The Proxy Pattern, introduces a core technology that Hibernate and Spring
+use internally.
+
+@item
+Chapter 5 - Data Access Layer, introduces Hibernate, an object-relational mapper used to save
 a domain model to a relational database.  It will discuss the basics
 of the impedence mismatch between objects and relational databases.
      
 @item
-Chapter 3 - Service Layer, is a short introduction to the Spring Framework.  It will show
+Chapter 6 - Service Layer, is a short introduction to the Spring Framework.  It will show
 how to use Spring to simplify transaction management in the service layer.
 
 @item
-Chapter 4 - UI Layer, is discusses JavaServer Faces, the standard framework for
+Chapter 7 - UI Layer, is discusses JavaServer Faces, the standard framework for
 creating web pages.  
 
 @end itemize
@@ -90,22 +102,150 @@ the Domain Model should be the focus of the entire application.
 The responsiblity of the User Interface is to display data to the user.  
 To achieve this, the User Interface calls the Service Layer to retrieve a subgraph of the persistent
 Domain Model object graph.  Upon receiving this subgraph, the User Interface calls
-selector@footnote{selector - a procedure which retrieves the concrete representation of the abstract data}     
-methods, and displays the result.  After rendering this data, the user of the application needs
+accessor methods, and displays the result.  After rendering this data, the end user of the application needs
 to manipulate it.  The User Interface calls upon the Service Layer to mutate the data.
 
-The Service Layer is a very thin layer over the Domain Model.
+The Service Layer is a very thin layer which provides application logic
+such as management of transactions, authentication and authorization,
+and logging.  As such, the Service Layer mainly delegates method calls
+to the Domain Model and Data Access Layer.  Because of its limited responsibilities, 
+the Service Layer should fairly small.
+
+The responsiblity of the Data Access Layer is to retrieve and persist
+subgraphs of the persistant Domain Model object graph.
+
+
+@node The User Stories
+@chapter The User Stories
+@c %MENU% The User Stories
+
+This section describes the User Stories that will drive the application development.  
+
+
+@node Business Domain
+@section Business Domain
+
+The Business Domain is how people who use the system refer to the entities involved.  It is
+developed as part of object-oriented analysis.
+
+
+@itemize @bullet
+@item
+Account - An account is the base unit in which a person can transfer funds.
+@item
+Fund Transfer - Any action which involves increasing or decreasing the current balance of an account.
+@item
+Deposit - A fund transfer which adds money to the account.
+@item
+Withdraw - A fund transfer which removes money from the account.
+@end itemize
+
+
+
+
+
+@node Roles
+@section Roles
+
+I find it helpful to not only define the roles for people using the application, but also
+to define named users with sample data.  I find this helps to drive unit tests.
+
+
+@itemize @bullet
+@item
+Bill - a person who has an account at our ATM.
+
+@itemize @minus
+@item
+Username - wsix
+@item
+Password - password
+@item
+Initial balance = $100
+@end itemize
+
+@end itemize
+
+
+
+@node User Stories
+@section User Stories
+
+The user stories are defined in the following format
+@itemize @bullet
+
+@item
+Brief description of the user story
+@itemize @minus
+@item
+Acceptance criteria
+@end itemize
+@end itemize
+
+@*
+
+@itemize @bullet
+
+@item
+Bill provides correct username and password before he can access any of the ATM's services
+@itemize @minus
+@item
+Bill does not provide the correct username and password, and is unable to access any services
+@item
+Bill does provide the correct username and password, and is able to access all services
+@end itemize
+
+@item
+Bill checks his current balance
+@itemize @minus
+@item
+Bill's see's that he has $100.  
+@end itemize
+
+@item
+Bill withdraws money from his account
+@itemize @minus
+@item
+Bill's withdraws $50, and his current balance is now $50.  
+@end itemize
+
+@item
+Bill deposits money to his account
+@itemize @minus
+@item
+Bill's deposits $50, and his current balance is now $150.  
+@end itemize
+
+@item
+Bill withdraws $50, deposits $25, is able to see a history of all of his fund transfers.
+@itemize @minus
+@item
+Bill is able to see all of the fund transfers.
+@end itemize
+@end itemize
+
+
+
+
+
+
+
+
+@node The Domain Model
+@chapter The Domain Model
+
+
 
 
 
 @node The Proxy Pattern 
 @chapter The Proxy Pattern 
-@c %MENU% The Proxy Pattern 
 
-Before getting Spring's integration with data access technologies and transaction 
-management, it's important to understand the Proxy pattern.  Modern Java frameworks 
-such as Spring and Hibernate make heavy use of dynamic proxies; 
-specifically Spring uses them to simplify transaction management in the Service Layer.
+
+Before getting into Hibernate, Spring, and JSF, it's important to understand the 
+Proxy pattern.  Modern Java frameworks such as Spring and Hibernate make heavy use of dynamic proxies; 
+specifically Hibernate uses them to model unresolved references
+in the Domain Model subgraph, and Spring uses them to simplify transaction management.
 
 @node Dynamic Proxies,  , The Proxy Pattern
 @section Dynamic Proxies
@@ -116,6 +256,7 @@ selector@footnote{The method signature and in Java parlance}.
 The object then decides to execute whatever action(s) it sees fit based on the selector and arguments
 of the message.  This feature allows a developer to create proxy objects which forward these unknown messages
 to another ``target'' object.@footnote{http://en.wikipedia.org/wiki/Proxy_pattern}
+
 
 While dynamic languages support the Proxy pattern via the language's semantics, the statically-typed nature of 
 Java mandates that an object cannot receive a message, or MethodInvocation in Spring's vernacular, 
@@ -237,15 +378,6 @@ public class CalculatorServiceTest extends TestCase @{
 
 @end smallexample
 
-
-Notice that Spring does not actually do the proxying itself; instead, it unifies
-the notion of a dynamic proxy under a single interface, and provides integration
-which multiple implementation technologies.
-The determination of the actual implementation
-technology is defered until instance creation of the proxy by the ProxyFactoryBean.  
-In the example above, the ProxyFactoryBean 
-defaults to using the JDK's dynamic proxy mechanism.  To use the CGLIB implementation,
-you would just need to call factory.setProxyTargetClass(true); before calling factory.getObject().
 
 @node Data Access Layer 
 @chapter Data Access Layer
