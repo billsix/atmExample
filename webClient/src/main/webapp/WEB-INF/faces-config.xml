@@ -49,11 +49,11 @@ THE SOFTWARE.
         <description>Navigation from the withdrawal page.</description>
         <from-view-id>/withdraw.xhtml</from-view-id>
         <navigation-case>
-            <from-outcome>transactionSuccess</from-outcome>
+            <from-outcome>fundTransferSuccess</from-outcome>
             <to-view-id>/currentBalance.xhtml</to-view-id>
         </navigation-case>
         <navigation-case>
-            <from-outcome>transactionFailure</from-outcome>
+            <from-outcome>fundTransferFailure</from-outcome>
             <to-view-id>/withdraw.xhtml</to-view-id>
         </navigation-case>
     </navigation-rule>
@@ -62,21 +62,21 @@ THE SOFTWARE.
         <description>Navigation from the deposit page.</description>
         <from-view-id>/deposit.xhtml</from-view-id>
         <navigation-case>
-            <from-outcome>transactionSuccess</from-outcome>
+            <from-outcome>fundTransferSuccess</from-outcome>
             <to-view-id>/currentBalance.xhtml</to-view-id>
         </navigation-case>
         <navigation-case>
-            <from-outcome>transactionFailure</from-outcome>
+            <from-outcome>fundTransferFailure</from-outcome>
             <to-view-id>/deposit.xhtml</to-view-id>
         </navigation-case>
     </navigation-rule>
 
     <navigation-rule>
-        <description>Navigation from the Transaction History page.</description>
-        <from-view-id>/transactionHistory.xhtml</from-view-id>
+        <description>Navigation from the FundTransfer History page.</description>
+        <from-view-id>/fundTransferHistory.xhtml</from-view-id>
         <navigation-case>
-            <from-outcome>viewTransactionDetails</from-outcome>
-            <to-view-id>/viewTransactionDetails.xhtml</to-view-id>
+            <from-outcome>viewFundTransferDetails</from-outcome>
+            <to-view-id>/viewFundTransferDetails.xhtml</to-view-id>
         </navigation-case>
     </navigation-rule>
     
