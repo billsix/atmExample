@@ -131,9 +131,12 @@ developed as part of object-oriented analysis.
 
 @itemize @bullet
 @item
-Account - An account is the base unit in which a person can transfer funds.
+Account - An account is the base unit in which a person can transfer funds.  Each account
+has a collection of fund transfers.
 @item
-Fund Transfer - Any action which involves increasing or decreasing the current balance of an account.
+Fund Transfer - Any action which involves increasing or decreasing the current balance of an account. 
+A Fund Transfer needs to record the balance before the transaction, after the transaction, and the
+time of the transaction.
 @item
 Deposit - A fund transfer which adds money to the account.
 @item
@@ -206,14 +209,17 @@ Bill's see's that he has $100.
 Bill withdraws money from his account
 @itemize @minus
 @item
-Bill's withdraws $50, and his current balance is now $50.  
+Bill's withdraws $50, and his current balance is now $50.  The Fund Transfer reflects
+the before and after balance.
 @end itemize
 
 @item
 Bill deposits money to his account
 @itemize @minus
 @item
-Bill's deposits $50, and his current balance is now $150.  
+Bill's deposits $50, and his current balance is now $150.  The Fund Transfer reflects
+the before and after balance.
+
 @end itemize
 
 @item
@@ -234,8 +240,113 @@ Bill is able to see all of the fund transfers.
 @node The Domain Model
 @chapter The Domain Model
 
+Rather than creating a class diagram to describe the Domain Model, I find that a good suite of 
+unit tests drive the creation of a good Domain Model, as well as provide adequate documentation.
+
+@smallexample
+public class AccountTest extends TestCase @{
+    public AccountTest( String testName ) @{
+        super( testName );
+    @}
+    public static Test suite() @{
+        return new TestSuite( AccountTest.class );
+    @}
+    public void setUp() @{
+        account = new Account("bill", "password", 100.00);
+    @}
+    public void testPasswordIsValid() @{
+        assertTrue(account.passwordIsValid("password"));
+        assertFalse(account.passwordIsValid("passw"));
+    @}
+
+@end smallexample
+
+@itemize @bullet
+@item
+Bill checks his current balance
+@itemize @minus
+@item
+Bill's see's that he has $100.  
+@end itemize
+@end itemize
+@smallexample
+
+    public void testCurrentBalance() @{
+        assertTrue(account.getBalance() == 100.0);
+    @}
+@end smallexample
 
 
+@itemize @bullet
+@item 
+Bill deposits money to his account
+@itemize @minus
+@item
+Bill's deposits $50, and his current balance is now $150.  The Fund Transfer reflects
+the before and after balance.
+@end itemize
+@end itemize
+
+@smallexample
+    public void testDeposit() @{
+        account.deposit(50.00);
+        assertTrue(account.getBalance() == 150.0);
+        Set<FundTransfer> transactions = account.getFundTransferHistory(); 
+        assertTrue(transactions.size()==1);
+        FundTransfer transaction = transactions.iterator().next(); 
+        assertTrue(transaction.getBalanceAfterTransaction() == 150.0);
+        assertTrue(transaction.getBalanceBeforeTransaction() == 100.0);
+    @}
+
+@end smallexample
+
+@itemize @bullet
+@item
+Bill withdraws money from his account
+@itemize @minus
+@item
+Bill's withdraws $50, and his current balance is now $50.  The Fund Transfer reflects
+the before and after balance.
+@end itemize
+@end itemize
+
+
+@smallexample
+    public void testWithdraw() @{
+        account.withdraw(50.00);
+        assertTrue(account.getBalance() == 50.0);
+        Set<FundTransfer> transactions = account.getFundTransferHistory(); 
+        assertTrue(transactions.size()==1);
+        FundTransfer transaction = transactions.iterator().next(); 
+        assertTrue(transaction.getBalanceAfterTransaction() == 50.0);
+        assertTrue(transaction.getBalanceBeforeTransaction() == 100.0);
+    @}
+
+@end smallexample
+
+@itemize @bullet
+@item
+Bill withdraws $50, deposits $25, is able to see a history of all of his fund transfers.
+@itemize @minus
+@item
+Bill is able to see all of the fund transfers.
+@end itemize
+@end itemize
+
+@smallexample
+    public void testFundTransferHistory() @{
+        account.withdraw(50.00);
+        account.deposit(25.0);
+        for(FundTransfer fundTransfer : account.getFundTransferHistory()) @{
+            if(fundTransfer.getBalanceAfterTransaction() != 50.0 &&
+                    fundTransfer.getBalanceAfterTransaction() != 75.0 ) @{
+                fail("Incorrect set of fund transfers");
+            @}
+        @}
+    @}
+    private Account account;
+@}
+@end smallexample
 
 
 @node The Proxy Pattern 
@@ -256,7 +367,7 @@ selector@footnote{The method signature and in Java parlance}.
 The object then decides to execute whatever action(s) it sees fit based on the selector and arguments
 of the message.  This feature allows a developer to create proxy objects which forward these unknown messages
 to another ``target'' object.@footnote{http://en.wikipedia.org/wiki/Proxy_pattern}
-
+@footnote{In languages like Lisp where code is data, macros are a more elegant solution}
 
 While dynamic languages support the Proxy pattern via the language's semantics, the statically-typed nature of 
 Java mandates that an object cannot receive a message, or MethodInvocation in Spring's vernacular, 
