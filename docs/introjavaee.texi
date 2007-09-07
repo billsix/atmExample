@@ -1379,6 +1379,76 @@ public class ATMServiceBackingBean @{
 @end smallexample
 
 
+@node faces-config.xml
+@section faces-config.xml
+
+@smallexample
+
+<faces-config>
+ <application>
+   <view-handler>
+    com.sun.facelets.FaceletViewHandler
+   </view-handler>    
+ </application>   
+ 
+ <navigation-rule>
+  <description>Navigation from the login page.</description>
+   <from-view-id>/login.xhtml</from-view-id>
+    <navigation-case>
+     <from-outcome>loginSuccess</from-outcome>
+     <to-view-id>/main.xhtml</to-view-id>
+    </navigation-case>
+    <navigation-case>
+     <from-outcome>loginFailure</from-outcome>
+     <to-view-id>/login.xhtml</to-view-id>
+    </navigation-case>
+   </navigation-rule>
+
+   <navigation-rule>
+    <description>Navigation from the withdrawal page.</description>
+     <from-view-id>/withdraw.xhtml</from-view-id>
+     <navigation-case>
+      <from-outcome>transactionSuccess</from-outcome>
+      <to-view-id>/currentBalance.xhtml</to-view-id>
+     </navigation-case>
+     <navigation-case>
+      <from-outcome>transactionFailure</from-outcome>
+      <to-view-id>/withdraw.xhtml</to-view-id>
+     </navigation-case>
+    </navigation-rule>
+
+    <navigation-rule>
+     <description>Navigation from the deposit page.</description>
+     <from-view-id>/deposit.xhtml</from-view-id>
+      <navigation-case>
+       <from-outcome>transactionSuccess</from-outcome>
+       <to-view-id>/currentBalance.xhtml</to-view-id>
+      </navigation-case>
+      <navigation-case>
+       <from-outcome>transactionFailure</from-outcome>
+       <to-view-id>/deposit.xhtml</to-view-id>
+      </navigation-case>
+    </navigation-rule>
+
+    <navigation-rule>
+     <description>Navigation from the Transaction History page.</description>
+     <from-view-id>/transactionHistory.xhtml</from-view-id>
+     <navigation-case>
+      <from-outcome>viewTransactionDetails</from-outcome>
+      <to-view-id>/viewTransactionDetails.xhtml</to-view-id>
+     </navigation-case>
+    </navigation-rule>
+    
+    <managed-bean>
+     <description>Backing bean used for logging into the ATM system</description>
+     <managed-bean-name>atmServiceBackingBean</managed-bean-name>
+     <managed-bean-class>com.billsix.examples.atm.webclient.ATMServiceBackingBean
+     </managed-bean-class>
+     <managed-bean-scope>session</managed-bean-scope>
+    </managed-bean>
+    
+</faces-config>
+
 
 
 
