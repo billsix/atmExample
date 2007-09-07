@@ -992,15 +992,290 @@ The User Interface needs to provide a few screens to implement the User Stories.
 @itemize @bullet
 @item
 A Login page
+
+@center{@image{login}}
+
+@item
+A Main page
+
+@center{@image{main}}
+
 @item
 A current balance page
+
+@center{@image{currentbalance}}
+
 @item
 A withdraw page
+
+@center{@image{withdraw}}
+
 @item
 A deposit page
+
+@center{@image{deposit}}
+
 @item
 An account history page
+
+@center{@image{transactiondetails}}
+
 @end itemize
+
+
+
+@node Login Page
+@section Login Page
+
+@smallexample
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html">
+ <body>
+  <h:form id="atmLoginForm">
+   <p>
+    <h:outputLabel for="nameInput">
+    <h:outputText id="nameInputLabel"
+                  value="Username:"/>
+    </h:outputLabel>
+    <h:inputText id="nameInput" value="@#@{atmServiceBackingBean.username@}" 
+                 required="true">
+    </h:inputText>
+    <h:message id="errors" for="nameInput" style="color: red"/>
+   </p>
+   <p>
+    <h:outputLabel for="Password">
+      <h:outputText id="passInputLabel"
+                    value="Password:"/>
+      </h:outputLabel>
+    <h:inputSecret id="Password" value="@#@{atmServiceBackingBean.password@}"
+                   required="true">
+    </h:inputSecret>
+    <h:message id="errors2" for="Password" style="color: red"/>
+   </p>
+   <h:commandButton id="goodbyeCommand" type="submit" value="Login" 
+                    action="#{atmServiceBackingBean.login}" />
+  </h:form>
+ </body>
+</html>
+@end smallexample
+
+
+@node Template
+@section Template
+
+@smallexample
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html">
+ <body>          
+  <h:form id="atmBaseForm">
+   <table border="2">
+    <tr>
+     <td>            
+      <h:outputLink value="currentBalance.xhtml">Current Balance
+      </h:outputLink>
+     </td>
+     <td>
+      <h:outputLink value="withdraw.xhtml">Withdraw
+      </h:outputLink>                                               
+     </td>
+     <td>
+      <h:outputLink value="deposit.xhtml">Deposit
+      </h:outputLink>                        
+     </td>
+     <td>
+      <h:outputLink value="transactionHistory.xhtml" >Transaction History
+      </h:outputLink>                        
+     </td>
+    </tr>
+   </table>
+   <br/>
+  </h:form>
+  <ui:insert name="body">Default Body</ui:insert>
+ </body>
+</html>
+@end smallexample
+
+
+
+@node Main page
+@section Main page
+
+@smallexample
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html">
+ <body>
+  <ui:composition template="/template.xhtml">
+
+  <ui:define name="body">
+   <h:form id="mainForm">
+    <p>
+     <h:outputText value="Hello @#@{atmServiceBackingBean.username@}" />
+     <br/>
+    </p>
+   </h:form>
+  </ui:define>            
+  </ui:composition >
+ </body>
+</html>
+@end smallexample
+
+
+
+@node Current Balance page
+@section Current Balance page
+
+@smallexample
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:t="http://myfaces.apache.org/tomahawk"
+      xmlns:h="http://java.sun.com/jsf/html">
+ <body>
+  <ui:composition template="/template.xhtml">
+  <ui:define name="body">
+  <h:form id="currentBalanceForm">
+  <p>
+   <h:outputLabel for="currentBalanceLabel">                        
+   <h:outputText id="currentBalance"
+   value="Current Balance: @#@{atmServiceBackingBean.atmService.balance@}"/>                            
+   </h:outputLabel>                                            
+  </p>
+  </h:form>                
+  </ui:define>
+  </ui:composition >
+ </body>
+</html>
+@end smallexample
+
+
+@node Withdraw page
+@section Withdraw page
+
+@smallexample
+
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html">
+ <body>
+  <ui:composition template="/template.xhtml">
+  <ui:define name="body">
+   <h:form id="withdrawalForm">                
+    <p>
+    <h:outputLabel for="withdrawalInput">
+    <h:outputText id="withdrawalInputLabel"
+                  value="Amount To Withdraw:"/>
+    </h:outputLabel>
+    <h:inputText id="withdrawalInput" 
+                 value="#{atmServiceBackingBean.withdrawal}" 
+                 required="true">
+    </h:inputText>
+   <h:message id="errors" for="withdrawalInput" style="color: red"/>
+   </p>
+   <h:commandButton id="withdrawCommand" type="submit" value="Withdraw" 
+                   action="@#@{atmServiceBackingBean.withdraw@}" />                
+   </h:form>                
+  </ui:define>
+ </ui:composition >
+ </body>
+</html>
+@end smallexample
+
+
+@node Deposit page
+@section Deposit page
+
+@smallexample
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html">
+ <body>
+  <ui:composition template="/template.xhtml">
+  <ui:define name="body">
+   <h:form id="depositForm">                
+   <p>
+    <h:outputLabel for="depositInput">
+     <h:outputText id="depositInputLabel"
+                   value="Amount To Deposit:"/>
+     </h:outputLabel>
+     <h:inputText id="depositInput" 
+                  value="#{atmServiceBackingBean.deposit}" 
+                  required="true">
+     </h:inputText>
+     <h:message id="errors" for="depositInput" style="color: red"/>
+   </p>
+            
+   <h:commandButton id="depositCommand" type="submit" value="Deposit" 
+                    action="#{atmServiceBackingBean.deposit}" />                
+   </h:form>                  
+  </ui:define>
+ </ui:composition >
+ </body>
+</html>
+@end smallexample
+
+
+@node FundTransfer History page
+@section FundTransfer History page
+
+@smallexample
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html">
+ <body>
+ <ui:composition template="/template.xhtml">
+ <ui:define name="body">
+  <h:form id="transactionHistoryForm">
+  <h:dataTable id="transactions" 
+               value="#{atmServiceBackingBean.transactions}" 
+               var="transaction">		
+  <h:column>
+   <f:facet name="header">
+    <h:outputText  value="Account ID"/>
+   </f:facet>                            
+   <h:outputText value="#{transaction.account.id}"/>
+  </h:column>
+  <h:column>
+   <f:facet name="header">
+    <h:outputText  value="Transaction Date"/>
+   </f:facet>                            
+  <h:outputText value="#{transaction.date.time}"/>
+  </h:column>
+  <h:column>
+   <f:facet name="header">
+    <h:outputText  value="Balance Before Transaction"/>
+   </f:facet>                            
+   <h:outputText value="#{transaction.balanceBeforeTransaction}"/>
+  </h:column>
+  <h:column>
+   <f:facet name="header">
+    <h:outputText  value="Balance After Transaction"/>
+   </f:facet>                            
+   <h:outputText value="#{transaction.balanceAfterTransaction}"/>
+  </h:column>                        
+  <h:column>
+   <f:facet name="header">
+    <h:outputText  value="Transaction Details"/>
+   </f:facet>                            
+   <h:commandLink action="#{atmServiceBackingBean.viewSingleTransaction}">                                 
+    <h:outputText value="Transaction Details"/>                                 
+   </h:commandLink>                                                     
+  </h:column>                        
+ </h:dataTable>                        	
+ </h:form>
+</ui:define>
+</ui:composition >
+</body>
+</html>
+@end smallexample
 
 
 
@@ -1012,6 +1287,7 @@ Hibernate solves the object-relational impedance mismatch while performing effic
 Spring simplifies transaction management by offering a uniform transaction management scheme.
 JavaServer Faces faciliates exposing the Domain Model in web forms almost as easily
 as with rich clients.
+
 
 This document, and all sample code can be downloaded from anonymously via subversion.
 
