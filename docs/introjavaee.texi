@@ -71,7 +71,7 @@ use internally.
 @item
 Chapter 5 - Data Access Layer, introduces Hibernate, an object-relational mapper used to save
 a domain model to a relational database.  It will discuss the basics
-of the impedence mismatch between objects and relational databases.
+of the impedance mismatch between objects and relational databases.
      
 @item
 Chapter 6 - Service Layer, is a short introduction to the Spring Framework.  It will show
@@ -100,9 +100,9 @@ the data and behavior of the business processes.  As my feeble diagram attempts 
 the Domain Model should be the focus of the entire application.
 
 
-The responsiblity of the User Interface is to display data to the user.  
-To achieve this, the User Interface calls the Service Layer to retrieve a subgraph of the persistent
-Domain Model object graph.  Upon receiving this subgraph, the User Interface calls
+The responsibility of the User Interface is to display data to the user.  
+To achieve this, the User Interface calls the Service Layer to retrieve a sub-graph of the persistent
+Domain Model object graph.  Upon receiving this sub-graph, the User Interface calls
 accessor methods, and displays the result.  After rendering this data, the end user of the application needs
 to manipulate it.  The User Interface calls upon the Service Layer to mutate the data.
 
@@ -112,8 +112,8 @@ and logging.  As such, the Service Layer mainly delegates method calls
 to the Domain Model and Data Access Layer.  Because of its limited responsibilities, 
 the Service Layer should fairly small.
 
-The responsiblity of the Data Access Layer is to retrieve and persist
-subgraphs of the persistant Domain Model object graph.
+The responsibility of the Data Access Layer is to retrieve and persist
+sub-graphs of the persistent Domain Model object graph.
 
 
 @node The User Stories
@@ -203,7 +203,7 @@ Bill does provide the correct username and password, and is able to access all s
 Bill checks his current balance
 @itemize @minus
 @item
-Bill's see's that he has $100.  
+Bill's sees that he has $100.  
 @end itemize
 
 @item
@@ -267,7 +267,7 @@ public class AccountTest extends TestCase @{
 Bill checks his current balance
 @itemize @minus
 @item
-Bill's see's that he has $100.  
+Bill's sees that he has $100.  
 @end itemize
 @end itemize
 @smallexample
@@ -357,7 +357,7 @@ This section has nothing to do with the User Stories, but before we get
 into Hibernate, Spring, and JSF, it's important to understand the 
 Proxy pattern.  Modern Java frameworks such as Spring and Hibernate make heavy use of dynamic proxies; 
 specifically Hibernate uses them to model unresolved references
-in the Domain Model subgraph, and Spring uses them to simplify transaction management.
+in the Domain Model sub-graph, and Spring uses them to simplify transaction management.
 
 @node Dynamic Proxies,  , The Proxy Pattern
 @section Dynamic Proxies
@@ -494,8 +494,8 @@ public class CalculatorServiceTest extends TestCase @{
 @node Data Access Layer 
 @chapter Data Access Layer
 
-The object-oriented model and the relational model have structual and
-behavioral differences, called the impedence mismatch.
+The object-oriented model and the relational model have structural and
+behavioral differences, called the impedance mismatch.
 
 
 @node Structural Mismatch
@@ -629,8 +629,8 @@ WITHOUT OIDS;
 @node Overcoming the Structural Mismatch
 @subsection Overcoming the Structural Mismatch
 
-To overcome these structual differences, Hibernate uses Java 5's annotations
-as metadata.
+To overcome these structural differences, Hibernate uses Java 5's annotations
+as meta-data.
 
 
 @smallexample
@@ -689,7 +689,7 @@ When using create/read/update/delete operations in Hibernate, Hibernate doesn't 
 execute your calls, it operates through Hibernate's Level 1 cache.  This 
 thread-scoped@footnote{Because the cache is thread-scoped, a developer only needs to set
 correct transaction isolation levels to deal with concurrency}
-cache is a local copy of the user accessed subgraph of the persistent object graph. 
+cache is a local copy of the user accessed sub-graph of the persistent object graph. 
 As such,
 the Level 1 cache acts as a buffer which ensures that each unique entry in the
 database corresponds to the same Java object in memory.
@@ -735,7 +735,7 @@ FundTransfers will not be a null reference, it will be a reference to a dynamic 
 can pull back the FundTransfers only when it is required.
 
 @item 
-Load a user-specified subgraph of the persistent object graph into the Level 1 cache.
+Load a user-specified sub-graph of the persistent object graph into the Level 1 cache.
 @end itemize
 
 The first option is by far the worst.  There can be gigabytes of data stored in the database,
@@ -743,11 +743,11 @@ causing a simple read to pull back a large portion of the object graph when only
 required.
 
 The second option is more sensible, and this was the model for EJB's before EJB 3.0.  The problem
-with this model is that you may know that you want a specified subgraph of the full object graph.
-Lazy-loading will force multiple database roundtrips to fetch the subgraph (hence the name
+with this model is that you may know that you want a specified sub-graph of the full object graph.
+Lazy-loading will force multiple database roundtrips to fetch the sub-graph (hence the name
 N+1 selects).
 
-Hibernate (and now EJB 3.0) allows the third model, enabling loading a subgraph in one database roundtrip. 
+Hibernate (and now EJB 3.0) allows the third model, enabling loading a sub-graph in one database roundtrip. 
 
       
 
@@ -803,7 +803,7 @@ public interface ATMService extends Authenticatable@{
 @}
 @end smallexample
 
-The @@Transactional annotatation are Spring's way of setting isolation and propagation
+The @@Transactional annotation are Spring's way of setting isolation and propagation
 levels for the Service.
 
 
