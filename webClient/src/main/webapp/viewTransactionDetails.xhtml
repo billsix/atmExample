@@ -27,10 +27,10 @@ THE SOFTWARE.
     <body>
         <ui:composition template="/template.xhtml">
             <ui:define name="body">
-                <h:form id="transactionHistoryForm">
+                <h:form id="fundTransferHistoryForm">
                     <p>
                         <h:outputText id="deposit"
-                                      value="On #{atmServiceBackingBean.selectedTransaction.date.time}, you committed a transaction on account #{atmServiceBackingBean.selectedTransaction.account.id} to change your balance from #{atmServiceBackingBean.selectedTransaction.balanceBeforeTransaction} to #{atmServiceBackingBean.selectedTransaction.balanceAfterTransaction}"/>
+                                      value="On #{atmServiceBackingBean.selectedFundTransfer.date.time}, you committed a fundTransfer on account #{atmServiceBackingBean.selectedFundTransfer.account.id} to change your balance from #{atmServiceBackingBean.selectedFundTransfer.balanceBeforeFundTransfer} to #{atmServiceBackingBean.selectedFundTransfer.balanceAfterFundTransfer}"/>
                     </p>                                        
                 </h:form>
             </ui:define>

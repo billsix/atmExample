@@ -27,38 +27,38 @@ THE SOFTWARE.
     <body>
         <ui:composition template="/template.xhtml">
             <ui:define name="body">
-                <h:form id="transactionHistoryForm">
-                    <h:dataTable id="transactions" value="#{atmServiceBackingBean.transactions}" var="transaction">		
+                <h:form id="fundTransferHistoryForm">
+                    <h:dataTable id="fundTransfers" value="#{atmServiceBackingBean.fundTransfers}" var="fundTransfer">		
                         <h:column>
                             <f:facet name="header">
                                 <h:outputText  value="Account ID"/>
                             </f:facet>                            
-                            <h:outputText value="#{transaction.account.id}"/>
+                            <h:outputText value="#{fundTransfer.account.id}"/>
                         </h:column>
                         <h:column>
                             <f:facet name="header">
-                                <h:outputText  value="Transaction Date"/>
+                                <h:outputText  value="FundTransfer Date"/>
                             </f:facet>                            
-                            <h:outputText value="#{transaction.date.time}"/>
+                            <h:outputText value="#{fundTransfer.date.time}"/>
                         </h:column>
                         <h:column>
                             <f:facet name="header">
-                                <h:outputText  value="Balance Before Transaction"/>
+                                <h:outputText  value="Balance Before FundTransfer"/>
                             </f:facet>                            
-                            <h:outputText value="#{transaction.balanceBeforeTransaction}"/>
+                            <h:outputText value="#{fundTransfer.balanceBeforeFundTransfer}"/>
                         </h:column>
                         <h:column>
                             <f:facet name="header">
-                                <h:outputText  value="Balance After Transaction"/>
+                                <h:outputText  value="Balance After FundTransfer"/>
                             </f:facet>                            
-                            <h:outputText value="#{transaction.balanceAfterTransaction}"/>
+                            <h:outputText value="#{fundTransfer.balanceAfterFundTransfer}"/>
                         </h:column>                        
                         <h:column>
                             <f:facet name="header">
-                                <h:outputText  value="Transaction Details"/>
+                                <h:outputText  value="FundTransfer Details"/>
                             </f:facet>                            
-                            <h:commandLink action="#{atmServiceBackingBean.viewSingleTransaction}">                                 
-                                <h:outputText value="Transaction Details"/>                                 
+                            <h:commandLink action="#{atmServiceBackingBean.viewSingleFundTransfer}">                                 
+                                <h:outputText value="FundTransfer Details"/>                                 
                             </h:commandLink>                                                     
                         </h:column>                        
                     </h:dataTable>                        	
