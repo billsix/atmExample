@@ -19,7 +19,7 @@
 @titlepage
 @sp 
 @title Introduction to JavaEE
-@subtitle Using Hibernate 3.2.x, Spring 2.0.x, and JSF 1.1
+@subtitle Using Hibernate 3.2.x, Spring 2.0.x, and JSF 1.2
 @sp 4
 @author by Bill Six
 @page
@@ -45,7 +45,8 @@ Foundation.
 
 
 The purpose of this paper is to show how to use Hibernate, Spring, and JavaServer Faces to
-structure an enterprise application.
+structure an enterprise application.  To facilitate the readers understanding, I have created
+a simple application which almost everybody uses - an ATM.
 
 I wrote this paper because it's the paper I would have liked to have read when I first started
 work after college.
@@ -77,8 +78,8 @@ Chapter 6 - Service Layer, is a short introduction to the Spring Framework.  It 
 how to use Spring to simplify transaction management in the service layer.
 
 @item
-Chapter 7 - UI Layer, is discusses JavaServer Faces, the standard framework for
-creating web pages.  
+Chapter 7 - UI Layer, is discusses JavaServer Faces, the JavaEE standard framework for
+creating dynamic web pages.  
 
 @end itemize
 
@@ -352,8 +353,8 @@ Bill is able to see all of the fund transfers.
 @node The Proxy Pattern 
 @chapter The Proxy Pattern 
 
-
-Before getting into Hibernate, Spring, and JSF, it's important to understand the 
+This section has nothing to do with the User Stories, but before we get 
+into Hibernate, Spring, and JSF, it's important to understand the 
 Proxy pattern.  Modern Java frameworks such as Spring and Hibernate make heavy use of dynamic proxies; 
 specifically Hibernate uses them to model unresolved references
 in the Domain Model subgraph, and Spring uses them to simplify transaction management.
@@ -548,7 +549,7 @@ public class FundTransfer extends BaseDomainObject@{
 @center{
 @image{ObjectGraph}
 }
-
+@footnote{from Fowler's PoEAA, a Value object is ``a small simple object, like money or a date range, whose equality isn't based on identity.''}
 
 @node Relational structure
 @subsection Relational structure
@@ -685,7 +686,9 @@ and that Hibernate should generate a value upon insertion into the database.
 @b{Object Identity}
 
 When using create/read/update/delete operations in Hibernate, Hibernate doesn't directly
-execute your calls, it operates through Hibernate's Level 1 cache.  This thread-scoped
+execute your calls, it operates through Hibernate's Level 1 cache.  This 
+thread-scoped@footnote{Because the cache is thread-scoped, a developer only needs to set
+correct transaction isolation levels to deal with concurrency}
 cache is a local copy of the user accessed subgraph of the persistent object graph. 
 As such,
 the Level 1 cache acts as a buffer which ensures that each unique entry in the
@@ -729,7 +732,7 @@ Load every object into the Level 1 cache that is referenced by an object in the 
 @item 
 Lazy-load all non-Value objects referenced by any objects in the Level 1 cache.  The Set of
 FundTransfers will not be a null reference, it will be a reference to a dynamic proxy which 
-can pull back the FundTransfers when it is required.
+can pull back the FundTransfers only when it is required.
 
 @item 
 Load a user-specified subgraph of the persistent object graph into the Level 1 cache.
@@ -800,6 +803,16 @@ public interface ATMService extends Authenticatable@{
 @}
 @end smallexample
 
+The @@Transactional annotatation are Spring's way of setting isolation and propagation
+levels for the Service.
+
+
+@node Service Unit Test
+@subsection Service Unit Test
+
+
+The unit test for the Service Layer could then be implemented as follows.
+
 
 @smallexample
 public class ATMServiceTest extends TestCase @{
@@ -835,6 +848,55 @@ public class ATMServiceTest extends TestCase @{
 @end smallexample
 
 
+@node Service Implementation
+@subsection Service Implementation
+
+
+@smallexample
+public class ATMServiceImplementation implements ATMService@{
+  public ATMServiceImplementation(SessionFactory sessionFactory) @{
+      this.sessionFactory = sessionFactory;
+  @}
+  public boolean authenticate(String username, String password) @{
+      Account account = (Account) sessionFactory.getCurrentSession()
+      .createQuery("from Account as account where account.username like :username")
+      .setParameter("username", username, Hibernate.STRING)
+      .uniqueResult();
+      if(account == null) @{
+          return false;
+      @}
+      
+      if(account.passwordIsValid(password)) @{
+          this.account = account;
+          return true;
+      @}
+      return false;
+  @}
+  public Double getBalance() @{
+      sessionFactory.getCurrentSession().saveOrUpdate(this.account);
+      return this.account.getBalance();
+  @}
+  public void deposit(Double amountToDeposit) @{
+      sessionFactory.getCurrentSession().saveOrUpdate(this.account);
+      this.account.deposit(amountToDeposit);
+  @}
+  public void withdraw(Double amountToWithdraw) @{
+      sessionFactory.getCurrentSession().saveOrUpdate(this.account);
+      this.account.withdraw(amountToWithdraw);
+  @}
+  public Account fetchFundTransferHistory() @{
+      sessionFactory.getCurrentSession().saveOrUpdate(this.account);
+      Hibernate.initialize(account.getFundTransferHistory());
+      return account;
+  @}
+  public Account getAuthenticatedAccount() @{
+      return this.account;
+  @}
+  private SessionFactory sessionFactory;
+  private Account account;
+@}
+@end smallexample
+
 
 
 @node Transaction Management  , Service Layer
@@ -846,20 +908,39 @@ These include the HibernateTransactionManager, JTATransactionManager, and others
 PlatformTransactionManager interface, transaction management code in the Service Layer can be developed 
 regardless of the underlying transaction management scheme.  
 
-In the Hibernate section, you may have noticed that Hibernate is initialized using 
-Spring's LocalSessionFactoryBean, not Hibernate's SessionFactory.  This is because
-Spring inserts a dynamic proxy in front of the Hibernate SessionFactory, which catches all Hibernate's HibernateExceptions,
-and casts them into Spring's DataAccessExceptions.  Spring uses this scheme for all Data Access technologies
-that it integrates with, allowing Spring's commit/rollback logic to be the same whether you're using Spring
-with JDBC, Hibernate, JPA, or iBatis.
-
-Spring determines the isolation and propagation levels based off of Spring's @@Transactional annotations.
 
 
 
 
-@node JavaServer Faces
-@chapter JavaServer Faces
+
+@node UI Layer
+@chapter UI Layer
+
+
+
+
+With a rich/fat client application, the state of the forms which you fill out are stored
+locally in RAM.
+
+Since HTTP is inherently stateless, the Java Servlet API provides abstractions which allow
+state for a web session.  JavaServer Faces is built on top of the bare Java Servlet API, and
+state is stored in a so called ``BackingBean''. 
+
+The User Interface needs to provide a few screens to implement the User Stories.
+
+@itemize @bullet
+@item
+A Login page
+@item
+A current balance page
+@item
+A withdraw page
+@item
+A deposit page
+@item
+An account history page
+@end itemize
+
 
 
 
