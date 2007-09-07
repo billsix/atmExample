@@ -1025,17 +1025,17 @@ Bill provides correct username and password before he can access any of the ATM'
 @item
 Welcome page.  It wasn't specified in the User Stories, but I felt it was needed.
 
-@center{@image{main}}
+@image{main}
 
 @item
 Bill checks his current balance
 
-@center{@image{currentbalance}}
+@image{currentbalance}
 
 @item
 Bill withdraws money from his account
 
-@center{@image{withdraw}}
+@image{withdraw}
 
 @item
 Bill deposits money to his account
