@@ -1114,7 +1114,7 @@ The commandButton is the ``Submit'' button.  It calls the backing bean's login()
 @end itemize
 @smallexample
    <h:commandButton id="goodbyeCommand" type="submit" value="Login" 
-                    action="#{atmServiceBackingBean.login}" />
+                    action="@#@{atmServiceBackingBean.login@}" />
   </h:form>
  </body>
 </html>
