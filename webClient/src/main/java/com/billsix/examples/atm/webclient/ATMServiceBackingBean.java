@@ -40,6 +40,7 @@ import javax.faces.model.ListDataModel;
 public class ATMServiceBackingBean {
     
     public ATMServiceBackingBean() {
+	atmService = new Main().getAtmService();
     }
     
     
@@ -91,7 +92,7 @@ public class ATMServiceBackingBean {
     }
     
     public void setUsername(String username) {
-        username = username;
+        this.username = username;
     }
     
     public String getPassword() {
@@ -99,7 +100,7 @@ public class ATMServiceBackingBean {
     }
     
     public void setPassword(String password) {
-        password = password;
+        this.password = password;
     }
     
     public ATMService getAtmService() {
@@ -112,7 +113,7 @@ public class ATMServiceBackingBean {
     }
     
     public void setWithdrawal(String withdrawal) {
-        withdrawal = withdrawal;
+        this.withdrawal = withdrawal;
     }
     
     public String getDeposit() {
@@ -120,14 +121,14 @@ public class ATMServiceBackingBean {
     }
     
     public void setDeposit(String deposit) {
-        deposit = deposit;
+        this.deposit = deposit;
     }
     
     public FundTransfer getSelectedTransaction() {
         return selectedTransaction;
     }
     
-    private ATMService atmService = new Main().getAtmService();
+    private ATMService atmService;
     private String username;
     private String password;
     private String withdrawal;
