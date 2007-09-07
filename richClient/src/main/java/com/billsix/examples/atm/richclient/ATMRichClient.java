@@ -75,9 +75,9 @@ public class ATMRichClient extends javax.swing.JFrame {
         _amountToDepositTextField = new javax.swing.JTextField();
         _amountToDepositLabel = new javax.swing.JLabel();
         _amountToDepositButton = new javax.swing.JButton();
-        accountHistoryPanel = new javax.swing.JPanel();
+        fundTransferHistoryPanel = new javax.swing.JPanel();
         scrollPane = new javax.swing.JScrollPane();
-        transactionHistoryTable = new javax.swing.JTable();
+        fundTransferHistoryTable = new javax.swing.JTable();
         menuBar = new javax.swing.JMenuBar();
         menu = new javax.swing.JMenu();
         fileMenuItem = new javax.swing.JMenuItem();
@@ -153,14 +153,14 @@ public class ATMRichClient extends javax.swing.JFrame {
             .addGroup(currentBalancePanelLayout.createSequentialGroup()
                 .addGap(298, 298, 298)
                 .addComponent(currentBalanceLabel)
-                .addContainerGap(375, Short.MAX_VALUE))
+                .addContainerGap(369, Short.MAX_VALUE))
         );
         currentBalancePanelLayout.setVerticalGroup(
             currentBalancePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(currentBalancePanelLayout.createSequentialGroup()
                 .addGap(112, 112, 112)
                 .addComponent(currentBalanceLabel)
-                .addContainerGap(243, Short.MAX_VALUE))
+                .addContainerGap(234, Short.MAX_VALUE))
         );
         tabbedPane.addTab("Current Balance", currentBalancePanel);
 
@@ -185,7 +185,7 @@ public class ATMRichClient extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(amountToWithdrawButton))
                     .addComponent(amountToWithdrawLabel))
-                .addContainerGap(314, Short.MAX_VALUE))
+                .addContainerGap(299, Short.MAX_VALUE))
         );
         withdrawPanelLayout.setVerticalGroup(
             withdrawPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -196,7 +196,7 @@ public class ATMRichClient extends javax.swing.JFrame {
                 .addGroup(withdrawPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(amountToWithdrawTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(amountToWithdrawButton))
-                .addContainerGap(223, Short.MAX_VALUE))
+                .addContainerGap(212, Short.MAX_VALUE))
         );
         tabbedPane.addTab("Withdraw", withdrawPanel);
 
@@ -258,22 +258,22 @@ public class ATMRichClient extends javax.swing.JFrame {
         );
         tabbedPane.addTab("Deposit", depositPanel);
 
-        transactionHistoryTable.setModel(getTableModel());
-        scrollPane.setViewportView(transactionHistoryTable);
+        fundTransferHistoryTable.setModel(getTableModel());
+        scrollPane.setViewportView(fundTransferHistoryTable);
 
-        javax.swing.GroupLayout accountHistoryPanelLayout = new javax.swing.GroupLayout(accountHistoryPanel);
-        accountHistoryPanel.setLayout(accountHistoryPanelLayout);
-        accountHistoryPanelLayout.setHorizontalGroup(
-            accountHistoryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 679, Short.MAX_VALUE)
+        javax.swing.GroupLayout fundTransferHistoryPanelLayout = new javax.swing.GroupLayout(fundTransferHistoryPanel);
+        fundTransferHistoryPanel.setLayout(fundTransferHistoryPanelLayout);
+        fundTransferHistoryPanelLayout.setHorizontalGroup(
+            fundTransferHistoryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 675, Short.MAX_VALUE)
         );
-        accountHistoryPanelLayout.setVerticalGroup(
-            accountHistoryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(accountHistoryPanelLayout.createSequentialGroup()
-                .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE)
+        fundTransferHistoryPanelLayout.setVerticalGroup(
+            fundTransferHistoryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(fundTransferHistoryPanelLayout.createSequentialGroup()
+                .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)
                 .addContainerGap())
         );
-        tabbedPane.addTab("Account History", accountHistoryPanel);
+        tabbedPane.addTab("Account History", fundTransferHistoryPanel);
 
         tabbedPane.getAccessibleContext().setAccessibleName("Withdraw");
 
@@ -281,11 +281,11 @@ public class ATMRichClient extends javax.swing.JFrame {
         atmInternalFrame.getContentPane().setLayout(atmInternalFrameLayout);
         atmInternalFrameLayout.setHorizontalGroup(
             atmInternalFrameLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 684, Short.MAX_VALUE)
+            .addComponent(tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 680, Short.MAX_VALUE)
         );
         atmInternalFrameLayout.setVerticalGroup(
             atmInternalFrameLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(tabbedPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 394, Short.MAX_VALUE)
+            .addComponent(tabbedPane, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
         );
         atmInternalFrame.setBounds(100, 50, 690, 420);
         desktopPane.add(atmInternalFrame, javax.swing.JLayeredPane.DEFAULT_LAYER);
@@ -369,11 +369,11 @@ public class ATMRichClient extends javax.swing.JFrame {
         while(tableModel.getRowCount() > 0) {
             tableModel.removeRow(0);
         }
-        for(FundTransfer transaction : account.getFundTransferHistory()) {
-            String id = transaction.getAccount().getId().toString();
-            tableModel.addRow(new Object[]{id, dateFormat.format(transaction.getDate().getTime()),transaction.getBalanceBeforeTransaction(), transaction.getBalanceAfterTransaction()});
+        for(FundTransfer fundTransfer : account.getFundTransferHistory()) {
+            String id = fundTransfer.getAccount().getId().toString();
+            tableModel.addRow(new Object[]{id, dateFormat.format(fundTransfer.getDate().getTime()),fundTransfer.getBalanceBeforeFundTransfer(), fundTransfer.getBalanceAfterFundTransfer()});
         }
-        transactionHistoryTable.repaint();
+        fundTransferHistoryTable.repaint();
     }
     
     
@@ -420,7 +420,6 @@ public class ATMRichClient extends javax.swing.JFrame {
     private javax.swing.JButton _amountToDepositButton;
     private javax.swing.JLabel _amountToDepositLabel;
     private javax.swing.JTextField _amountToDepositTextField;
-    private javax.swing.JPanel accountHistoryPanel;
     private javax.swing.JButton amountToWithdrawButton;
     private javax.swing.JLabel amountToWithdrawLabel;
     private javax.swing.JTextField amountToWithdrawTextField;
@@ -431,6 +430,8 @@ public class ATMRichClient extends javax.swing.JFrame {
     private javax.swing.JDesktopPane desktopPane;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JMenuItem fileMenuItem;
+    private javax.swing.JPanel fundTransferHistoryPanel;
+    private javax.swing.JTable fundTransferHistoryTable;
     private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
@@ -443,7 +444,6 @@ public class ATMRichClient extends javax.swing.JFrame {
     private javax.swing.JPasswordField passwordTextField;
     private javax.swing.JScrollPane scrollPane;
     private javax.swing.JTabbedPane tabbedPane;
-    private javax.swing.JTable transactionHistoryTable;
     private javax.swing.JPanel withdrawPanel;
     // End of variables declaration//GEN-END:variables
     

@@ -45,27 +45,27 @@ public class FundTransfer extends BaseDomainObject{
         
     }
     
-    protected FundTransfer(Account account, Double balanceBeforeTransaction,Double balanceAfterTransaction) {
+    protected FundTransfer(Account account, Double balanceBeforeFundTransfer,Double balanceAfterFundTransfer) {
         this.account = account;
-        this.balanceBeforeTransaction = balanceBeforeTransaction;
-        this.balanceAfterTransaction = balanceAfterTransaction;
+        this.balanceBeforeFundTransfer = balanceBeforeFundTransfer;
+        this.balanceAfterFundTransfer = balanceAfterFundTransfer;
         date = Calendar.getInstance();
     }
     
     public boolean equals(Object object) {
-        FundTransfer accountTransaction = (FundTransfer) object;
-        return date.equals(accountTransaction.date)
-        && this.balanceAfterTransaction.equals(accountTransaction.balanceAfterTransaction)
-        && this.balanceBeforeTransaction.equals(accountTransaction.balanceBeforeTransaction);
+        FundTransfer fundTransfer = (FundTransfer) object;
+        return date.equals(fundTransfer.date)
+        && this.balanceAfterFundTransfer.equals(fundTransfer.balanceAfterFundTransfer)
+        && this.balanceBeforeFundTransfer.equals(fundTransfer.balanceBeforeFundTransfer);
     }    
         
-    public Double getBalanceAfterTransaction() {
-        return this.balanceAfterTransaction;
+    public Double getBalanceAfterFundTransfer() {
+        return this.balanceAfterFundTransfer;
     }
     
     
-    public Double getBalanceBeforeTransaction() {
-        return this.balanceBeforeTransaction;
+    public Double getBalanceBeforeFundTransfer() {
+        return this.balanceBeforeFundTransfer;
     }
     
     public Calendar getDate() {
@@ -83,8 +83,8 @@ public class FundTransfer extends BaseDomainObject{
     @ManyToOne( cascade = {CascadeType.ALL} )
     @JoinColumn(name="ACCOUNT_ID")
     private Account account;
-    private Double balanceBeforeTransaction;
-    private Double balanceAfterTransaction;
+    private Double balanceBeforeFundTransfer;
+    private Double balanceAfterFundTransfer;
     @Temporal(TemporalType.TIMESTAMP) private Calendar date;
     @Id @GeneratedValue private Long id;
     @Version private Long version;

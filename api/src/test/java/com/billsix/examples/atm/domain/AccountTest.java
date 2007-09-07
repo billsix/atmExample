@@ -51,21 +51,21 @@ public class AccountTest extends TestCase {
     public void testDeposit() {
         account.deposit(50.00);
         assertTrue(account.getBalance() == 150.0);
-        Set<FundTransfer> transactions = account.getFundTransferHistory(); 
-        assertTrue(transactions.size()==1);
-        FundTransfer transaction = transactions.iterator().next(); 
-        assertTrue(transaction.getBalanceAfterTransaction() == 150.0);
-        assertTrue(transaction.getBalanceBeforeTransaction() == 100.0);
+        Set<FundTransfer> fundTransfers = account.getFundTransferHistory(); 
+        assertTrue(fundTransfers.size()==1);
+        FundTransfer fundTransfer = fundTransfers.iterator().next(); 
+        assertTrue(fundTransfer.getBalanceAfterFundTransfer() == 150.0);
+        assertTrue(fundTransfer.getBalanceBeforeFundTransfer() == 100.0);
     }
     
     public void testWithdraw() {
         account.withdraw(50.00);
         assertTrue(account.getBalance() == 50.0);
-        Set<FundTransfer> transactions = account.getFundTransferHistory(); 
-        assertTrue(transactions.size()==1);
-        FundTransfer transaction = transactions.iterator().next(); 
-        assertTrue(transaction.getBalanceAfterTransaction() == 50.0);
-        assertTrue(transaction.getBalanceBeforeTransaction() == 100.0);
+        Set<FundTransfer> fundTransfers = account.getFundTransferHistory(); 
+        assertTrue(fundTransfers.size()==1);
+        FundTransfer fundTransfer = fundTransfers.iterator().next(); 
+        assertTrue(fundTransfer.getBalanceAfterFundTransfer() == 50.0);
+        assertTrue(fundTransfer.getBalanceBeforeFundTransfer() == 100.0);
     }
 
 
@@ -73,8 +73,8 @@ public class AccountTest extends TestCase {
         account.withdraw(50.00);
         account.deposit(25.0);
         for(FundTransfer fundTransfer : account.getFundTransferHistory()) {
-            if(fundTransfer.getBalanceAfterTransaction() != 50.0 &&
-                    fundTransfer.getBalanceAfterTransaction() != 75.0 ) {
+            if(fundTransfer.getBalanceAfterFundTransfer() != 50.0 &&
+                    fundTransfer.getBalanceAfterFundTransfer() != 75.0 ) {
                 fail("Incorrect set of fund transfers");
             }
         }

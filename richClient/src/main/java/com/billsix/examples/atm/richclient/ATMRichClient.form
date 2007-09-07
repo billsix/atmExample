@@ -8,7 +8,7 @@
         <Property name="modal" type="boolean" value="true"/>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="_loginDialog = new javax.swing.JDialog(_atmRichClient);&#xa;&#xa;"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="loginDialog = new javax.swing.JDialog(atmRichClient);&#xa;&#xa;"/>
       </AuxValues>
 
       <Layout>
@@ -367,7 +367,7 @@
                     </Container>
                   </SubComponents>
                 </Container>
-                <Container class="javax.swing.JPanel" name="accountHistoryPanel">
+                <Container class="javax.swing.JPanel" name="fundTransferHistoryPanel">
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
                       <JTabbedPaneConstraints tabName="Account History">
@@ -399,7 +399,7 @@
 
                       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
                       <SubComponents>
-                        <Component class="javax.swing.JTable" name="transactionHistoryTable">
+                        <Component class="javax.swing.JTable" name="fundTransferHistoryTable">
                           <Properties>
                             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                               <Connection code="getTableModel()" type="code"/>
