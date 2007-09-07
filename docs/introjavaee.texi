@@ -242,7 +242,7 @@ Bill is able to see all of the fund transfers.
 @chapter The Domain Model
 
 Rather than creating a class diagram to describe the Domain Model, I find that a good suite of 
-unit tests drive the creation of a good Domain Model, as well as provide adequate documentation.
+unit tests not only drive the creation of a good Domain Model, they also provide adequate documentation.
 
 @smallexample
 public class AccountTest extends TestCase @{
@@ -548,7 +548,7 @@ public class FundTransfer extends BaseDomainObject@{
 @subsection Relational structure
 
 Relational databases model data as tables.  Data is stored
-in columns.  Rows are uniquelyidentified by a primary key.  
+in columns.  Rows are uniquely identified by a primary key.  
 Collections are represented by
 foreign keys which map to another tables primary key.
 
@@ -678,7 +678,7 @@ and that Hibernate should generate a value upon insertion into the database.
 
 @b{Collections}
 
-Using the annotations, Hibernate performs a join on the tables, and returns an 
+Using the meta-data, Hibernate performs a join on the tables, and returns an 
 instance of the Set interface.
 
 
@@ -703,6 +703,7 @@ in the same place in memory.  In a relational model, two rows are equal
 if they have the same primary key. 
 
 
+
 @node Overcoming the Behavioral Mismatch
 @subsection Overcoming the Behavioral Mismatch
 
@@ -722,7 +723,25 @@ in Martin Fowler's Patterns of Enterprise Application Architecture}
 
 
 
-(Hibernate Session === Unit of Work)
+
+@node Unit of Work
+@section Unit of Work
+
+When the Service Layer calls mutator methods on the Domain model, the Domain Model
+needs to flush its changes to the database upon the completion of the transaction.  
+
+Hibernate could 
+@itemize @bullet
+@item 
+Flush everything in the Level 1 cache to the database.  This would make for a lot of unnecessary SQL updates.
+@item 
+Force the developer to manually register which objects were modified, flushing only ``dirty'' objects.
+@item 
+Transparently register modified objects, flushing only ``dirty'' objects.
+@end itemize
+
+
+Hibernate uses the third method.
 
 
 @node N+1 Selects Problem
@@ -740,7 +759,7 @@ he has no need to pull back the thousands of previous fund transfers.
 Hibernate could
 @itemize @bullet
 @item 
-Load every object into the Level 1 cache that is referenced by an object in the Level 1 cache
+Load every object into the Level 1 cache that is referenced by any object in the Level 1 cache
 
 @item 
 Lazy-load all non-Value objects referenced by any objects in the Level 1 cache.  The Set of
@@ -873,11 +892,12 @@ public class ATMServiceImplementation implements ATMService@{
   @}
 @end smallexample
 
-
+@itemize @bullet
+@item
 Calling sessionFactory.getCurrrentSession() gets Hibernate's Session, which accesses
 the thread-local Session.  The Query uses Hibernate's 
 HQL@footnote{HQL queries specify the sub-graph you want to load into the Level 1 cache}.
-  
+@end itemize  
 @smallexample
   public boolean authenticate(String username, String password) @{
       Account account = (Account) sessionFactory.getCurrentSession()
@@ -896,10 +916,13 @@ HQL@footnote{HQL queries specify the sub-graph you want to load into the Level 1
   @}
 @end smallexample
 
+@itemize @bullet
+@item
 Calling saveOrUpdate(object) on the session reattaches the ``detached'' instance
 into the current transaction.  Although, since the account object will not have
 changed in the UI, calling load(Account.class, this.account.getId()) would
-perform better. 
+perform better.
+@end itemize 
 @smallexample
   public Double getBalance() @{
       sessionFactory.getCurrentSession().saveOrUpdate(this.account);
@@ -915,10 +938,12 @@ perform better.
   @}
 @end smallexample
 
+@itemize @bullet
+@item
 Since the FundTransfer set is lazily loaded, calling Hibernate.initialize(objects)
 forces the fundHistory dynamic proxy to actually fetch the collection into
 the Level 1 cache.
-
+@end itemize
 @smallexample
   public Account fetchFundTransferHistory() @{
       sessionFactory.getCurrentSession().saveOrUpdate(this.account);
@@ -982,6 +1007,11 @@ An account history page
 
 @node Conclusion
 @chapter Conclusion
+
+Hibernate solves the object-relational impedance mismatch while performing efficiently.
+Spring simplifies transaction management by offering a uniform transaction management scheme.
+JavaServer Faces faciliates exposing the Domain Model in web forms almost as easily
+as with rich clients.
 
 This document, and all sample code can be downloaded from anonymously via subversion.
 
