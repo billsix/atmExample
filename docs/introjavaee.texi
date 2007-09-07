@@ -978,50 +978,79 @@ regardless of the underlying transaction management scheme.
 @chapter UI Layer
 
 
+My personal preference is to use rich clients whenever possible, as I believe that end users
+should be viewing computers as ``personal dynamic media''.  With a rich client application, 
+the the UI layer can fetch a sub-graph of the Domain Model, and traverse it as the user
+sees fit, only contacting the server
+when the UI needs to invoke a method in the Service Layer.
+
+However, to my dismay, HTML-based UIs have become the standard.
+
+Since HTTP is inherently stateless, the Java Servlet API provides abstractions 
+on top of HTTP which save
+state for a web session@footnote{PoEAA discusses the various ways in which this is accomplished}.  
+
+JavaServer Faces is built on top of the bare Java Servlet API, and
+the user's session state is stored in a so called ``BackingBean''.  There is a multi-phase
+lifecycle which is used to convert/validate the state from the user's form to the BackingBean.
+JSF defines a basic suite of components, bound to model objects.  The JSF standard
+only defines basic components for text, input boxes, submit boxes, tables, and a few more; however,
+it is possible to create custom components.  JSF also has a XML-based system of page-flow
+
+The JSF standard mandates that implementors provide JSP as a view technology.  JSPs process
+pages in a linear order, as does PHP.  JSF has a much more complex lifecycle which doesn't quite
+mesh with JSP.  Facelets is an alternate view technology which is much more in line
+with the JSF lifecycle, so these examples will use Facelets as the view technology.
 
 
-With a rich/fat client application, the state of the forms which you fill out are stored
-locally in RAM.
 
-Since HTTP is inherently stateless, the Java Servlet API provides abstractions which allow
-state for a web session.  JavaServer Faces is built on top of the bare Java Servlet API, and
-state is stored in a so called ``BackingBean''. 
+
+@node User Stories
+@section User Stories
+
 
 The User Interface needs to provide a few screens to implement the User Stories.
 
+
+
+
 @itemize @bullet
+
 @item
-A Login page
+Bill provides correct username and password before he can access any of the ATM's services
 
 @center{@image{login}}
 
+
 @item
-A Main page
+Welcome page.  It wasn't specified in the User Stories, but I felt it was needed.
 
 @center{@image{main}}
 
 @item
-A current balance page
+Bill checks his current balance
 
 @center{@image{currentbalance}}
 
 @item
-A withdraw page
+Bill withdraws money from his account
 
 @center{@image{withdraw}}
 
 @item
-A deposit page
+Bill deposits money to his account
 
 @center{@image{deposit}}
 
 @item
-An fund transfer history page
+Bill withdraws $50, deposits $25, is able to see a history of all of his fund transfers.
+
 
 @center{@image{transactiondetails}}
 
 @item
-An fund transfer page
+A fund transfer page.  I admit this is goldplating.  It wasn't in the User Stories.  I put this in
+only to show how an individual element of a table is selected.
 
 @center{@image{fundtransfer}}
 
@@ -1037,12 +1066,32 @@ An fund transfer page
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:h="http://java.sun.com/jsf/html">
  <body>
+@end smallexample
+@itemize @bullet
+@item 
+All data is stored in forms
+@end itemize
+@smallexample
   <h:form id="atmLoginForm">
    <p>
     <h:outputLabel for="nameInput">
+@end smallexample
+@itemize @bullet
+@item 
+Output texts can be used for i18n and l10n
+@end itemize
+@smallexample
     <h:outputText id="nameInputLabel"
                   value="Username:"/>
     </h:outputLabel>
+@end smallexample
+@itemize @bullet
+@item 
+The value in this input text is bound to the backing bean's username field.
+If none is specified, the JSF lifecycle will abort early, and the message tag
+will be activated
+@end itemize
+@smallexample
     <h:inputText id="nameInput" value="@#@{atmServiceBackingBean.username@}" 
                  required="true">
     </h:inputText>
@@ -1058,6 +1107,12 @@ An fund transfer page
     </h:inputSecret>
     <h:message id="errors2" for="Password" style="color: red"/>
    </p>
+@end smallexample
+@itemize @bullet
+@item 
+The commandButton is the ``Submit'' button.  It calls the backing bean's login() method
+@end itemize
+@smallexample
    <h:commandButton id="goodbyeCommand" type="submit" value="Login" 
                     action="#{atmServiceBackingBean.login}" />
   </h:form>
@@ -1069,6 +1124,9 @@ An fund transfer page
 @node Template
 @section Template
 
+Facelet's templates are useful in cases where multiple pages have a similar structure.
+In this case, I'm using a template to define the navigational bars.
+
 @smallexample
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://java.sun.com/jsf/facelets"
@@ -1078,6 +1136,12 @@ An fund transfer page
    <table border="2">
     <tr>
      <td>            
+@end smallexample
+@itemize @bullet
+@item 
+An outputlink is like an HREF
+@end itemize
+@smallexample
       <h:outputLink value="currentBalance.xhtml">Current Balance
       </h:outputLink>
      </td>
@@ -1097,6 +1161,12 @@ An fund transfer page
    </table>
    <br/>
   </h:form>
+@end smallexample
+@itemize @bullet
+@item 
+Any page which uses this template will override this default body
+@end itemize
+@smallexample
   <ui:insert name="body">Default Body</ui:insert>
  </body>
 </html>
@@ -1104,14 +1174,20 @@ An fund transfer page
 
 
 
-@node Main page
-@section Main page
+@node Welcome page
+@section Welcome page
 
 @smallexample
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:h="http://java.sun.com/jsf/html">
  <body>
+@end smallexample
+@itemize @bullet
+@item 
+Use the template, and override the body component
+@end itemize
+@smallexample
   <ui:composition template="/template.xhtml">
 
   <ui:define name="body">
@@ -1239,6 +1315,14 @@ An fund transfer page
  <ui:composition template="/template.xhtml">
  <ui:define name="body">
   <h:form id="transactionHistoryForm">
+
+@end smallexample
+@itemize @bullet
+@item 
+A dataTable loops over a ListDataModel, binding each elemnent to
+the ``transaction'' variable
+@end itemize
+@smallexample
   <h:dataTable id="transactions" 
                value="@#@{atmServiceBackingBean.transactions@}" 
                var="transaction">		
@@ -1270,7 +1354,14 @@ An fund transfer page
    <f:facet name="header">
     <h:outputText  value="Transaction Details"/>
    </f:facet>                            
-   <h:commandLink action="@#@{atmServiceBackingBean.viewSingleTransaction@}">                                 
+@end smallexample
+@itemize @bullet
+@item 
+This link calls the viewSingleTransaction method.  This method will have to inspect
+the DataModel to see which row was chosen.
+@end itemize
+@smallexample   
+    <h:commandLink action="@#@{atmServiceBackingBean.viewSingleTransaction@}">                                 
     <h:outputText value="Transaction Details"/>                                 
    </h:commandLink>                                                     
   </h:column>                        
@@ -1297,7 +1388,13 @@ An fund transfer page
   <ui:define name="body">
    <h:form id="transactionHistoryForm">
    <p>
-   <h:outputText id="deposit"
+@end smallexample
+@itemize @bullet
+@item 
+Since the viewSingleTransaction set the current row to ``selectecTransaction'',
+this page can access the single record
+@end itemize
+@smallexample   <h:outputText id="deposit"
     value="On @#@{atmServiceBackingBean.selectedTransaction.date.time@}, 
     you committed a transaction on account 
     @#@{atmServiceBackingBean.selectedTransaction.account.id@} 
@@ -1319,18 +1416,38 @@ An fund transfer page
 @node BackingBean
 @section BackingBean
 
+The BackingBean is an object which resides on the server side which holds
+onto the state of the application.  When a Facelet page binds to a variable
+in this class, it doesn't directly set the fields, it follows the JavaBean
+standard of calling the get/set methods.
+
 @smallexample
 
 public class ATMServiceBackingBean @{
  public ATMServiceBackingBean() @{
    atmService = new Main().getAtmService();
  @}
+@end smallexample
+@itemize @bullet
+@item 
+Since username and password were bound by JSF, I know that these fields
+are populated.  JSF requires these action methods to return a String that
+JSF will use for page navigation
+@end itemize
+@smallexample
  public String login() @{
      if (atmService.authenticate(username, password))
          return "loginSuccess";
      return "loginFailure";
  @}
- public String withdraw() @{
+@end smallexample
+@itemize @bullet
+@item 
+This shows how to add a custom message to a component.  If the
+user didn't enter a number, a message is added to the component
+in form ``withdrawalForm'' with id ``withdrawalInput''
+@end itemize
+@smallexample public String withdraw() @{
     FacesContext context = FacesContext.getCurrentInstance();
      try@{
          Double amountToWithdraw = Double.parseDouble(withdrawal);
@@ -1354,11 +1471,23 @@ public class ATMServiceBackingBean @{
          return "transactionFailure";
      @}
  @}
+@end smallexample
+@itemize @bullet
+@item 
+When an individual row in the fund transfer table is selected, the backing
+bean needs to get the element that was selected.
+@end itemize
+@smallexample
  public String viewSingleTransaction() @{
      selectedTransaction = (FundTransfer) transactions.getRowData();
      return "viewTransactionDetails";
  @}
- public DataModel getTransactions() @{
+@end smallexample
+@itemize @bullet
+@item 
+JSF requires that a java.util.List is wrapped with a JSF model component
+@end itemize
+@smallexample public DataModel getTransactions() @{
      transactions = new ListDataModel();
      ArrayList<FundTransfer> wrappedList = new ArrayList<FundTransfer>();
      wrappedList.addAll(
@@ -1366,7 +1495,7 @@ public class ATMServiceBackingBean @{
      transactions.setWrappedData(wrappedList);
      return transactions;
  @}
- ..........
+ ..........getters/setters...............
  private ATMService atmService;
  private String username;
  private String password;
@@ -1381,6 +1510,9 @@ public class ATMServiceBackingBean @{
 
 @node faces-config.xml
 @section faces-config.xml
+
+The faces-config.xml file is responsible for instantiating backing beans,
+and defining page flow between the pages.  It's pretty self explanatory.
 
 @smallexample
 
@@ -1431,7 +1563,8 @@ public class ATMServiceBackingBean @{
     </navigation-rule>
 
     <navigation-rule>
-     <description>Navigation from the Transaction History page.</description>
+     <description>Navigation from the Transaction History page.
+     </description>
      <from-view-id>/transactionHistory.xhtml</from-view-id>
      <navigation-case>
       <from-outcome>viewTransactionDetails</from-outcome>
@@ -1440,16 +1573,18 @@ public class ATMServiceBackingBean @{
     </navigation-rule>
     
     <managed-bean>
-     <description>Backing bean used for logging into the ATM system</description>
+     <description>Backing bean used for logging into the ATM system
+     </description>
      <managed-bean-name>atmServiceBackingBean</managed-bean-name>
-     <managed-bean-class>com.billsix.examples.atm.webclient.ATMServiceBackingBean
+     <managed-bean-class>
+       com.billsix.examples.atm.webclient.ATMServiceBackingBean
      </managed-bean-class>
      <managed-bean-scope>session</managed-bean-scope>
     </managed-bean>
     
 </faces-config>
 
-
+@end smallexample
 
 
 @node Conclusion
