@@ -1,4 +1,4 @@
-\input texinfo 
+e\input texinfo 
 @setfilename introjavaee.info
 @settitle  JavaEE using Hibernate, Spring, and JSF
 @paragraphindent 1
@@ -19,7 +19,7 @@
 @titlepage
 @sp 
 @title Introduction to JavaEE
-@subtitle Using Hibernate 3.2.x, Spring 2.0.x, and JSF 1.2
+@subtitle Using Hibernate 3.2.x and Spring 2.0.x
 @sp 4
 @author by Bill Six
 @page
@@ -44,7 +44,7 @@ Foundation.
 @chapter Introduction
 
 
-The purpose of this paper is to show how to use Hibernate, Spring, and JavaServer Faces to
+The purpose of this paper is to show how to use Hibernate and Spring to
 structure an enterprise application.  To facilitate the readers understanding, I have created
 a simple application which almost everybody uses - an ATM.
 
@@ -76,10 +76,6 @@ of the impedance mismatch between objects and relational databases.
 @item
 Chapter 6 - Service Layer, is a short introduction to the Spring Framework.  It will show
 how to use Spring to simplify transaction management in the service layer.
-
-@item
-Chapter 7 - UI Layer, is discusses JavaServer Faces, the JavaEE standard framework for
-creating dynamic web pages.  
 
 @end itemize
 
@@ -126,14 +122,16 @@ This section describes the User Stories that will drive the application developm
 @node Business Domain
 @section Business Domain
 
-The Business Domain is how people who use the system refer to the entities involved.  It is
-developed as part of object-oriented analysis.
+The Business Domain is how end-users refer to the entities involved.  The Business Domain is
+developed as part of object-oriented analysis; as such, it is programming language-agnostic.
+
+In the ATM application, the following is the Business Domain:
 
 
 @itemize @bullet
 @item
 Account - An account is the base unit in which a person can transfer funds.  Each account
-has a collection of fund transfers.
+has an associated collection of fund transfers.
 @item
 Fund Transfer - Any action which involves increasing or decreasing the current balance of an account. 
 A Fund Transfer needs to record the balance before the fund transfer, after the fund transfer, and the
@@ -161,7 +159,7 @@ Bill - a person who has an account at our ATM.
 
 @itemize @minus
 @item
-Username - wsix
+Username - bill
 @item
 Password - password
 @item
@@ -210,16 +208,16 @@ Bill's sees that he has $100.
 Bill withdraws money from his account
 @itemize @minus
 @item
-Bill's withdraws $50, and his current balance is now $50.  The Fund Transfer reflects
-the before and after balance.
+Bill's withdraws $50, and his current balance is now $50.  A Fund Transfer is created to
+reflect this transaction, which correctly records the before and after balance.
 @end itemize
 
 @item
 Bill deposits money to his account
 @itemize @minus
 @item
-Bill's deposits $50, and his current balance is now $150.  The Fund Transfer reflects
-the before and after balance.
+Bill's deposits $50, and his current balance is now $150.  A Fund Transfer is created to
+reflect this transaction, which correctly records the before and after balance.
 
 @end itemize
 
@@ -279,14 +277,15 @@ Bill's sees that he has $100.
 
 
 @itemize @bullet
-@item 
+@item
 Bill deposits money to his account
 @itemize @minus
 @item
-Bill's deposits $50, and his current balance is now $150.  The Fund Transfer reflects
-the before and after balance.
+Bill's deposits $50, and his current balance is now $150.  A Fund Transfer is created to
+reflect this transaction, which correctly records the before and after balance.
 @end itemize
 @end itemize
+
 
 @smallexample
     public void testDeposit() @{
@@ -301,13 +300,15 @@ the before and after balance.
 
 @end smallexample
 
+
+
 @itemize @bullet
-@item
+@item 
 Bill withdraws money from his account
 @itemize @minus
 @item
-Bill's withdraws $50, and his current balance is now $50.  The Fund Transfer reflects
-the before and after balance.
+Bill's withdraws $50, and his current balance is now $50.  A Fund Transfer is created to
+reflect this transaction, which correctly records the before and after balance.
 @end itemize
 @end itemize
 
@@ -354,7 +355,7 @@ Bill is able to see all of the fund transfers.
 @chapter The Proxy Pattern 
 
 This section has nothing to do with the User Stories, but before we get 
-into Hibernate, Spring, and JSF, it's important to understand the 
+into Hibernate and Spring, it's important to understand the 
 Proxy pattern.  Modern Java frameworks such as Spring and Hibernate make heavy use of dynamic proxies; 
 specifically Hibernate uses them to model unresolved references
 in the Domain Model sub-graph, and Spring uses them to simplify transaction management.
@@ -501,16 +502,26 @@ behavioral differences, called the impedance mismatch.
 @node Structural Mismatch
 @section Structural Mismatch
 
-@b{Inheritance}
+@b{Granularity}
+The object model in the object-oriented application may be more fine-grained
+than the relational model.
+
+
+
+@b{Subtypes}
 
 In the object-oriented model, objects can have superclasses and subclasses.
 Relational databases do not have this notion.
 
-@b{Collections}
+@b{Associations}
 
-In the object-oriented model, collections are implemented natively using the
-object graph.  In the relational model, collections are represented using joins 
+In the object-oriented model, one-to-one, one-to-many, many-to-one, and
+many-to-many associations are implemented natively using the
+object graph.  In the relational model, references are represented using joins 
 on foreign keys
+
+
+
 
 
 @node Object structure
@@ -676,17 +687,22 @@ and that Hibernate should generate a value upon insertion into the database.
 @end itemize
 
 
-@b{Collections}
+@b{Granularity}
+
+No user stories in the ATM application have a granularity mismatch.  For more information,
+search for ``Embedded objects'' in the online Hibernate documentation.
+
+
+@b{Subtypes}
+
+No user stories in the ATM application have have the inheritance mismatch.  If you 
+need to learn more, consult Hibernate's online documentation, and Martin Fowler's
+Patterns of Enterprise Application Architecture.
+
+@b{Associations}
 
 Using the meta-data, Hibernate performs a join on the tables, and returns an 
 instance of the Set interface.
-
-
-@b{Inheritance}
-
-Solving the inheritance mismatch is outside of the scope of this paper.  If you 
-need to learn more, consult Hibernate's online documentation, and Martin Fowler's
-Patterns of Enterprise Application Architecture.
 
 
 
@@ -710,7 +726,7 @@ if they have the same primary key.
 
 @b{Object Identity}
 
-When using create/read/update/delete operations in Hibernate, Hibernate doesn't directly
+When using CRUD operations in Hibernate, Hibernate doesn't immediately
 execute your calls, it operates through Hibernate's Level 1 cache.  This 
 thread-scoped@footnote{Because the cache is thread-scoped, a developer only needs to set
 correct transaction isolation levels to deal with concurrency}
@@ -728,12 +744,13 @@ in Martin Fowler's Patterns of Enterprise Application Architecture}
 @section Unit of Work
 
 When the Service Layer calls mutator methods on the Domain model, the Domain Model
-needs to flush its changes to the database upon the completion of the transaction.  
+needs to flush the modified sub-graph to the database upon the completion of the transaction.  
 
 Hibernate could 
 @itemize @bullet
 @item 
-Flush everything in the Level 1 cache to the database.  This would make for a lot of unnecessary SQL updates.
+Flush everything in the Level 1 cache to the database.  However, not all objects in the Level 1
+cache have been modified, which results in unnecessary SQL updates.
 @item 
 Force the developer to manually register which objects were modified, flushing only ``dirty'' objects.
 @item 
@@ -747,14 +764,15 @@ Hibernate uses the third method.
 @node N+1 Selects Problem
 @section N+1 Selects Problem
 
-When Bill first logs into the ATM, he wants to check his balance, withdraw, deposit,
-or view the entire history of his fund transfers.  When he first logs in, Hibernate
-will pull back his Account object into the Level 1 cache, along with all of the
-Value objects that the Account object references.  
+When Bill first logs into the ATM, he may want to check his balance, withdraw, deposit,
+or view the entire history of his fund transfers.  These operations require different sub-graphs
+of the object graph to be presented to the UI, and as such, it would be nice to be able
+to specify the exact sub-graph that we would like to retrieve.
 
-Should Hibernate automatically load the entire
+When Bill first logs in, Hibernate will pull back his Account object into the Level 1 cache, 
+along with all of the Value objects that the Account object references.  Should Hibernate automatically load the entire
 object graph into the Level 1 cache?  Assuming he just wants to check his current balance,
-he has no need to pull back the thousands of previous fund transfers.
+he has no need to pull back all of his fund transfers.
 
 Hibernate could
 @itemize @bullet
@@ -763,7 +781,8 @@ Load every object into the Level 1 cache that is referenced by any object in the
 
 @item 
 Lazy-load all non-Value objects referenced by any objects in the Level 1 cache.  The Set of
-FundTransfers will not be a null reference, it will be a reference to a dynamic proxy
+FundTransfers will not be a null reference@footnote{as that would violate consistency of the database}, 
+it will be a reference to a dynamic proxy
 @footnote{In this case, the dynamic proxy is an implementation of the ``Lazy Load'' pattern decribed in PoEAA} 
 which can pull back the FundTransfers only when it is required.
 
@@ -778,7 +797,7 @@ required.
 The second option is more sensible, and this was the model for EJB's before EJB 3.0.  The problem
 with this model is that you may know that you want a specified sub-graph of the full object graph.
 Lazy-loading will force multiple database roundtrips to fetch the sub-graph (hence the name
-N+1 selects).
+``N+1 selects'').
 
 Hibernate (and now EJB 3.0) allows the third model, enabling loading a sub-graph in one database roundtrip. 
 
@@ -894,9 +913,13 @@ public class ATMServiceImplementation implements ATMService@{
 
 @itemize @bullet
 @item
-Calling sessionFactory.getCurrrentSession() gets Hibernate's Session, which accesses
-the thread-local Session.  The Query uses Hibernate's 
+Calling sessionFactory.getCurrrentSession() gets Hibernate's Session, gets the thread-local 
+Session.  The Query uses Hibernate's 
 HQL@footnote{HQL queries specify the sub-graph you want to load into the Level 1 cache}.
+@item
+Before the Service Layer returns an object sub-graph to the UI, the Unit of Work is closed.  
+Therefore this object sub-graph is considered ``detatched'', as Hibernate cannot track changes
+to it.
 @end itemize  
 @smallexample
   public boolean authenticate(String username, String password) @{
@@ -918,6 +941,7 @@ HQL@footnote{HQL queries specify the sub-graph you want to load into the Level 1
 
 @itemize @bullet
 @item
+
 Calling saveOrUpdate(object) on the session reattaches the ``detached'' instance
 into the current transaction.  Although, since the account object will not have
 changed in the UI, calling load(Account.class, this.account.getId()) would
@@ -972,619 +996,6 @@ regardless of the underlying transaction management scheme.
 
 
 
-
-
-@node UI Layer
-@chapter UI Layer
-
-
-My personal preference is to use rich clients whenever possible, as I believe that end users
-should be viewing computers as ``personal dynamic media''.  With a rich client application, 
-the the UI layer can fetch a sub-graph of the Domain Model, and traverse it as the user
-sees fit, only contacting the server
-when the UI needs to invoke a method in the Service Layer.
-
-However, to my dismay, HTML-based UIs have become the standard.
-
-Since HTTP is inherently stateless, the Java Servlet API provides abstractions 
-on top of HTTP which save
-state for a web session@footnote{PoEAA discusses the various ways in which this is accomplished}.  
-
-JavaServer Faces is built on top of the bare Java Servlet API, and
-the user's session state is stored in a so called ``BackingBean''.  There is a multi-phase
-lifecycle which is used to convert/validate the state from the user's form to the BackingBean.
-JSF defines a basic suite of components, bound to model objects.  The JSF standard
-only defines basic components for text, input boxes, submit boxes, tables, and a few more; however,
-it is possible to create custom components.  JSF also has a XML-based system of page-flow
-
-The JSF standard mandates that implementors provide JSP as a view technology.  JSPs process
-pages in a linear order, as does PHP.  JSF has a much more complex lifecycle which doesn't quite
-mesh with JSP.  Facelets is an alternate view technology which is much more in line
-with the JSF lifecycle, so these examples will use Facelets as the view technology.
-
-
-
-
-@node User Stories
-@section User Stories
-
-
-The User Interface needs to provide a few screens to implement the User Stories.
-
-
-
-
-@itemize @bullet
-
-@item
-Bill provides correct username and password before he can access any of the ATM's services
-
-@center{@image{login}}
-
-
-@item
-Welcome page.  It wasn't specified in the User Stories, but I felt it was needed.
-
-@image{main}
-
-@item
-Bill checks his current balance
-
-@image{currentbalance}
-
-@item
-Bill withdraws money from his account
-
-@image{withdraw}
-
-@item
-Bill deposits money to his account
-
-@image{deposit}
-
-@item
-Bill withdraws $50, deposits $25, is able to see a history of all of his fund transfers.
-
-
-@image{fundtransfer}
-
-@item
-A fund transfer page.  I admit this is goldplating.  It wasn't in the User Stories.  I put this in
-only to show how an individual element of a table is selected.
-
-@image{transactiondetails}
-
-@end itemize
-
-
-
-@node Login Page
-@section Login Page
-
-@smallexample
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://java.sun.com/jsf/html">
- <body>
-@end smallexample
-@itemize @bullet
-@item 
-All data is stored in forms
-@end itemize
-@smallexample
-  <h:form id="atmLoginForm">
-   <p>
-    <h:outputLabel for="nameInput">
-@end smallexample
-@itemize @bullet
-@item 
-Output texts can be used for i18n and l10n
-@end itemize
-@smallexample
-    <h:outputText id="nameInputLabel"
-                  value="Username:"/>
-    </h:outputLabel>
-@end smallexample
-@itemize @bullet
-@item 
-The value in this input text is bound to the backing bean's username field.
-If none is specified, the JSF lifecycle will abort early, and the message tag
-will be activated
-@end itemize
-@smallexample
-    <h:inputText id="nameInput" value="@#@{atmServiceBackingBean.username@}" 
-                 required="true">
-    </h:inputText>
-    <h:message id="errors" for="nameInput" style="color: red"/>
-   </p>
-   <p>
-    <h:outputLabel for="Password">
-      <h:outputText id="passInputLabel"
-                    value="Password:"/>
-      </h:outputLabel>
-    <h:inputSecret id="Password" value="@#@{atmServiceBackingBean.password@}"
-                   required="true">
-    </h:inputSecret>
-    <h:message id="errors2" for="Password" style="color: red"/>
-   </p>
-@end smallexample
-@itemize @bullet
-@item 
-The commandButton is the ``Submit'' button.  It calls the backing bean's login() method
-@end itemize
-@smallexample
-   <h:commandButton id="goodbyeCommand" type="submit" value="Login" 
-                    action="@#@{atmServiceBackingBean.login@}" />
-  </h:form>
- </body>
-</html>
-@end smallexample
-
-
-@node Template
-@section Template
-
-Facelet's templates are useful in cases where multiple pages have a similar structure.
-In this case, I'm using a template to define the navigational bars.
-
-@smallexample
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://java.sun.com/jsf/html">
- <body>          
-  <h:form id="atmBaseForm">
-   <table border="2">
-    <tr>
-     <td>            
-@end smallexample
-@itemize @bullet
-@item 
-An outputlink is like an HREF
-@end itemize
-@smallexample
-      <h:outputLink value="currentBalance.xhtml">Current Balance
-      </h:outputLink>
-     </td>
-     <td>
-      <h:outputLink value="withdraw.xhtml">Withdraw
-      </h:outputLink>                                               
-     </td>
-     <td>
-      <h:outputLink value="deposit.xhtml">Deposit
-      </h:outputLink>                        
-     </td>
-     <td>
-      <h:outputLink value="fundTransferHistory.xhtml" >Fund Transfer History
-      </h:outputLink>                        
-     </td>
-    </tr>
-   </table>
-   <br/>
-  </h:form>
-@end smallexample
-@itemize @bullet
-@item 
-Any page which uses this template will override this default body
-@end itemize
-@smallexample
-  <ui:insert name="body">Default Body</ui:insert>
- </body>
-</html>
-@end smallexample
-
-
-
-@node Welcome page
-@section Welcome page
-
-@smallexample
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://java.sun.com/jsf/html">
- <body>
-@end smallexample
-@itemize @bullet
-@item 
-Use the template, and override the body component
-@end itemize
-@smallexample
-  <ui:composition template="/template.xhtml">
-
-  <ui:define name="body">
-   <h:form id="mainForm">
-    <p>
-     <h:outputText value="Hello @#@{atmServiceBackingBean.username@}" />
-     <br/>
-    </p>
-   </h:form>
-  </ui:define>            
-  </ui:composition >
- </body>
-</html>
-@end smallexample
-
-
-
-@node Current Balance page
-@section Current Balance page
-
-@smallexample
-
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:t="http://myfaces.apache.org/tomahawk"
-      xmlns:h="http://java.sun.com/jsf/html">
- <body>
-  <ui:composition template="/template.xhtml">
-  <ui:define name="body">
-  <h:form id="currentBalanceForm">
-  <p>
-   <h:outputLabel for="currentBalanceLabel">                        
-   <h:outputText id="currentBalance"
-   value="Current Balance: @#@{atmServiceBackingBean.atmService.balance@}"/>                            
-   </h:outputLabel>                                            
-  </p>
-  </h:form>                
-  </ui:define>
-  </ui:composition >
- </body>
-</html>
-@end smallexample
-
-
-@node Withdraw page
-@section Withdraw page
-
-@smallexample
-
-
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:h="http://java.sun.com/jsf/html">
- <body>
-  <ui:composition template="/template.xhtml">
-  <ui:define name="body">
-   <h:form id="withdrawalForm">                
-    <p>
-    <h:outputLabel for="withdrawalInput">
-    <h:outputText id="withdrawalInputLabel"
-                  value="Amount To Withdraw:"/>
-    </h:outputLabel>
-    <h:inputText id="withdrawalInput" 
-                 value="@#@{atmServiceBackingBean.withdrawal@}" 
-                 required="true">
-    </h:inputText>
-   <h:message id="errors" for="withdrawalInput" style="color: red"/>
-   </p>
-   <h:commandButton id="withdrawCommand" type="submit" value="Withdraw" 
-                   action="@#@{atmServiceBackingBean.withdraw@}" />                
-   </h:form>                
-  </ui:define>
- </ui:composition >
- </body>
-</html>
-@end smallexample
-
-
-@node Deposit page
-@section Deposit page
-
-@smallexample
-
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:h="http://java.sun.com/jsf/html">
- <body>
-  <ui:composition template="/template.xhtml">
-  <ui:define name="body">
-   <h:form id="depositForm">                
-   <p>
-    <h:outputLabel for="depositInput">
-     <h:outputText id="depositInputLabel"
-                   value="Amount To Deposit:"/>
-     </h:outputLabel>
-     <h:inputText id="depositInput" 
-                  value="@#@{atmServiceBackingBean.deposit@}" 
-                  required="true">
-     </h:inputText>
-     <h:message id="errors" for="depositInput" style="color: red"/>
-   </p>
-            
-   <h:commandButton id="depositCommand" type="submit" value="Deposit" 
-                    action="@#@{atmServiceBackingBean.deposit@}" />                
-   </h:form>                  
-  </ui:define>
- </ui:composition >
- </body>
-</html>
-@end smallexample
-
-
-@node FundTransfer History page
-@section FundTransfer History page
-
-@smallexample
-
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:h="http://java.sun.com/jsf/html">
- <body>
- <ui:composition template="/template.xhtml">
- <ui:define name="body">
-  <h:form id="fundTransferHistoryForm">
-
-@end smallexample
-@itemize @bullet
-@item 
-A dataTable loops over a ListDataModel, binding each elemnent to
-the ``fundTransfer'' variable
-@end itemize
-@smallexample
-  <h:dataTable id="fundTransfers" 
-               value="@#@{atmServiceBackingBean.fundTransfers@}" 
-               var="fundTransfer">		
-  <h:column>
-   <f:facet name="header">
-    <h:outputText  value="Account ID"/>
-   </f:facet>                            
-   <h:outputText value="@#@{fundTransfer.account.id@}"/>
-  </h:column>
-  <h:column>
-   <f:facet name="header">
-    <h:outputText  value="Fund Transfer Date"/>
-   </f:facet>                            
-  <h:outputText value="@#@{fundTransfer.date.time@}"/>
-  </h:column>
-  <h:column>
-   <f:facet name="header">
-    <h:outputText  value="Balance Before Fund Transfer"/>
-   </f:facet>                            
-   <h:outputText value="@#@{fundTransfer.balanceBeforeFundTransfer@}"/>
-  </h:column>
-  <h:column>
-   <f:facet name="header">
-    <h:outputText  value="Balance After Fund Transfer"/>
-   </f:facet>                            
-   <h:outputText value="@#@{fundTransfer.balanceAfterFundTransfer@}"/>
-  </h:column>                        
-  <h:column>
-   <f:facet name="header">
-    <h:outputText  value="Fund Transfer Details"/>
-   </f:facet>                            
-@end smallexample
-@itemize @bullet
-@item 
-This link calls the viewSingleFundTransfer method.  This method will have to inspect
-the DataModel to see which row was chosen.
-@end itemize
-@smallexample   
-    <h:commandLink action="@#@{atmServiceBackingBean.viewSingleFundTransfer@}">                                 
-    <h:outputText value="Fund Transfer Details"/>                                 
-   </h:commandLink>                                                     
-  </h:column>                        
- </h:dataTable>                        	
- </h:form>
-</ui:define>
-</ui:composition >
-</body>
-</html>
-@end smallexample
-
-
-@node FundTransfer  page
-@section FundTransfer page
-
-@smallexample
-
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:h="http://java.sun.com/jsf/html">
- <body>
-  <ui:composition template="/template.xhtml">
-  <ui:define name="body">
-   <h:form id="fundTransferHistoryForm">
-   <p>
-@end smallexample
-@itemize @bullet
-@item 
-Since the viewSingleFundTransfer set the current row to ``selectFundTransfer'',
-this page can access the single record
-@end itemize
-@smallexample   <h:outputText id="deposit"
-    value="On @#@{atmServiceBackingBean.selectedFundTransfer.date.time@}, 
-    you committed a fund transfer on account 
-    @#@{atmServiceBackingBean.selectedFundTransfer.account.id@} 
-    to change your balance from 
-    @#@{atmServiceBackingBean.selectedFundTransfer.balanceBeforeFundTransfer@} 
-    to 
-    @#@{atmServiceBackingBean.selectedFundTransfer.balanceAfterFundTransfer@}
-    "/>
-   </p>                                        
-   </h:form>
-  </ui:define>
-  </ui:composition >
- </body>
-</html>
-@end smallexample
-
-
-
-@node BackingBean
-@section BackingBean
-
-The BackingBean is an object which resides on the server side which holds
-onto the state of the application.  When a Facelet page binds to a variable
-in this class, it doesn't directly set the fields, it follows the JavaBean
-standard of calling the get/set methods.
-
-@smallexample
-
-public class ATMServiceBackingBean @{
- public ATMServiceBackingBean() @{
-   atmService = new Main().getAtmService();
- @}
-@end smallexample
-@itemize @bullet
-@item 
-Since username and password were bound by JSF, I know that these fields
-are populated.  JSF requires these action methods to return a String that
-JSF will use for page navigation
-@end itemize
-@smallexample
- public String login() @{
-     if (atmService.authenticate(username, password))
-         return "loginSuccess";
-     return "loginFailure";
- @}
-@end smallexample
-@itemize @bullet
-@item 
-This shows how to add a custom message to a component.  If the
-user didn't enter a number, a message is added to the component
-in form ``withdrawalForm'' with id ``withdrawalInput''
-@end itemize
-@smallexample public String withdraw() @{
-    FacesContext context = FacesContext.getCurrentInstance();
-     try@{
-         Double amountToWithdraw = Double.parseDouble(withdrawal);
-         atmService.withdraw(amountToWithdraw);
-         return "fundTransferSuccess";
-     @} catch(NumberFormatException nfe) @{
-         context.addMessage("withdrawalForm:withdrawalInput", 
-                   new FacesMessage("Please enter a decimal number"));
-         return "fundTransferFailure";
-     @}
- @}
- public String deposit() @{
-     FacesContext context = FacesContext.getCurrentInstance();
-     try@{
-        Double amountToDeposit = Double.parseDouble(deposit);
-         atmService.deposit(amountToDeposit);
-         return "fundTransferSuccess";
-     @} catch(NumberFormatException nfe) @{
-         context.addMessage("depositForm:depositInput", 
-                   new FacesMessage("Please enter a decimal number"));
-         return "fundTransferFailure";
-     @}
- @}
-@end smallexample
-@itemize @bullet
-@item 
-When an individual row in the fund transfer table is selected, the backing
-bean needs to get the element that was selected.
-@end itemize
-@smallexample
- public String viewSingleFundTransfer() @{
-     selectedFundTransfer = (FundTransfer) fundTransfers.getRowData();
-     return "viewFundTransferDetails";
- @}
-@end smallexample
-@itemize @bullet
-@item 
-JSF requires that a java.util.List is wrapped with a JSF model component
-@end itemize
-@smallexample public DataModel getFundTransfers() @{
-     funTransfers = new ListDataModel();
-     ArrayList<FundTransfer> wrappedList = new ArrayList<FundTransfer>();
-     wrappedList.addAll(
-        atmService.fetchFundTransferHistory().getFundTransferHistory());
-     fundTransfers.setWrappedData(wrappedList);
-     return fundTransfers;
- @}
- ..........getters/setters...............
- private ATMService atmService;
- private String username;
- private String password;
- private String withdrawal;
- private String deposit;
- private DataModel fundTransfers ;
- private FundTransfer selectedFundTransfer;
-    
-@}
-@end smallexample
-
-
-@node faces-config.xml
-@section faces-config.xml
-
-The faces-config.xml file is responsible for instantiating backing beans,
-and defining page flow between the pages.  It's pretty self explanatory.
-
-@smallexample
-
-<faces-config>
- <application>
-   <view-handler>
-    com.sun.facelets.FaceletViewHandler
-   </view-handler>    
- </application>   
- 
- <navigation-rule>
-  <description>Navigation from the login page.</description>
-   <from-view-id>/login.xhtml</from-view-id>
-    <navigation-case>
-     <from-outcome>loginSuccess</from-outcome>
-     <to-view-id>/main.xhtml</to-view-id>
-    </navigation-case>
-    <navigation-case>
-     <from-outcome>loginFailure</from-outcome>
-     <to-view-id>/login.xhtml</to-view-id>
-    </navigation-case>
-   </navigation-rule>
-
-   <navigation-rule>
-    <description>Navigation from the withdrawal page.</description>
-     <from-view-id>/withdraw.xhtml</from-view-id>
-     <navigation-case>
-      <from-outcome>fundTransferSuccess</from-outcome>
-      <to-view-id>/currentBalance.xhtml</to-view-id>
-     </navigation-case>
-     <navigation-case>
-      <from-outcome>fundTransferFailure</from-outcome>
-      <to-view-id>/withdraw.xhtml</to-view-id>
-     </navigation-case>
-    </navigation-rule>
-
-    <navigation-rule>
-     <description>Navigation from the deposit page.</description>
-     <from-view-id>/deposit.xhtml</from-view-id>
-      <navigation-case>
-       <from-outcome>fundTransferSuccess</from-outcome>
-       <to-view-id>/currentBalance.xhtml</to-view-id>
-      </navigation-case>
-      <navigation-case>
-       <from-outcome>fundTransferFailure</from-outcome>
-       <to-view-id>/deposit.xhtml</to-view-id>
-      </navigation-case>
-    </navigation-rule>
-
-    <navigation-rule>
-     <description>Navigation from the Fund Transfer History page.
-     </description>
-     <from-view-id>/fundTransferHistory.xhtml</from-view-id>
-     <navigation-case>
-      <from-outcome>viewFundTransferDetails</from-outcome>
-      <to-view-id>/viewFundTransferDetails.xhtml</to-view-id>
-     </navigation-case>
-    </navigation-rule>
-    
-    <managed-bean>
-     <description>Backing bean used for logging into the ATM system
-     </description>
-     <managed-bean-name>atmServiceBackingBean</managed-bean-name>
-     <managed-bean-class>
-       com.billsix.examples.atm.webclient.ATMServiceBackingBean
-     </managed-bean-class>
-     <managed-bean-scope>session</managed-bean-scope>
-    </managed-bean>
-    
-</faces-config>
-
-@end smallexample
 
 
 @node Conclusion
