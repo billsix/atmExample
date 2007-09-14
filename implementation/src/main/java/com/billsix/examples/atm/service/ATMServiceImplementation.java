@@ -36,44 +36,47 @@ public class ATMServiceImplementation implements ATMService{
     }
     
     public boolean authenticate(String username, String password) {
-        Account account = (Account) sessionFactory.getCurrentSession()
+        Account hqlAccount = (Account) sessionFactory.getCurrentSession()
         .createQuery("from Account as account where account.username like :username")
         .setParameter("username", username, Hibernate.STRING)
         .uniqueResult();
-        if(account == null) {
+        if(hqlAccount == null) {
             return false;
         }
         
-        if(account.passwordIsValid(password)) {
-            this.account = account;
+        if(hqlAccount.passwordIsValid(password)) {
+            account = hqlAccount;
             return true;
         }
         return false;
     }
     
     public Double getBalance() {
-        sessionFactory.getCurrentSession().saveOrUpdate(this.account);
-        return this.account.getBalance();
+        return account.getBalance();
     }
     
     public void deposit(Double amountToDeposit) {
-        sessionFactory.getCurrentSession().saveOrUpdate(this.account);
-        this.account.deposit(amountToDeposit);
+	reloadAccount();
+        account.deposit(amountToDeposit);
     }
     
     public void withdraw(Double amountToWithdraw) {
-        sessionFactory.getCurrentSession().saveOrUpdate(this.account);
-        this.account.withdraw(amountToWithdraw);
+	reloadAccount();
+        account.withdraw(amountToWithdraw);
     }
     
     public Account fetchFundTransferHistory() {
-        sessionFactory.getCurrentSession().saveOrUpdate(this.account);
         Hibernate.initialize(account.getFundTransferHistory());
         return account;
     }
+
+    public void reloadAccount()
+    {
+        account = (Account) sessionFactory.getCurrentSession().load(Account.class, account.getId());
+    }
     
     public Account getAuthenticatedAccount() {
-        return this.account;
+        return account;
     }
     
     private SessionFactory sessionFactory;
